@@ -27,22 +27,23 @@ cd daledou
 
 ### 2.安装依赖（三选一）
 
+使用 [uv](https://hellowac.github.io/uv-zh-cn/) 安装：
+```sh
+uv sync
+```
+
 使用 `pip` 一键安装：
 ```sh
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 使用 `pip` 手动安装：
 ```sh
-pip3 install loguru
-pip3 install pyyaml
-pip3 install requests
-pip3 install schedule
-```
-
-使用 [uv](https://hellowac.github.io/uv-zh-cn/) 安装：
-```sh
-uv sync
+pip install loguru
+pip install pyyaml
+pip install questionary
+pip install requests
+pip install schedule
 ```
 
 ### 3.添加文字版大乐斗Cookie（必须）
@@ -80,47 +81,41 @@ python main.py --timing
 
 ### timing 模式
 
-启动定时：
+启动定时，不支持额外参数：
 ```sh
 python main.py --timing
 ```
 
 ### one 模式
 
-运行 `第一轮`，建议 `13:01` 后运行：
+运行 `第一轮` 所有任务，建议 `13:01` 后运行：
 ```sh
 python main.py --one
 ```
 
-运行 `第一轮` 中的某个任务
+调用 `one.py` 中的某个函数：
 ```sh
 python main.py --one 邪神秘宝
 ```
 
 ### two 模式
 
-运行 `第二轮`，建议 `20:01` 后运行：
+运行 `第二轮` 所有任务，建议 `20:01` 后运行：
 ```sh
 python main.py --two
 ```
 
-运行 `第二轮` 中的某个任务
+调用 `two.py` 中的某个函数：
 ```sh
 python main.py --two 邪神秘宝
 ```
 
 ### other 模式
 
-查看携带参数：
+运行其它任务，不支持额外参数：
 ```sh
 python main.py --other
 ```
-
-运行神装任务：
-```sh
-python main.py --other 神装
-```
-
 
 ## 安卓使用Termux来运行脚本
 
