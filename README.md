@@ -66,13 +66,19 @@ DALEDOU_COOKIES:
 PUSHPLUS_TOKEN: ""
 ```
 
-### 5.启动定时
+### 5.设置最大并发数
+
+```yaml
+MAX_CONCURRENCY: 5
+```
+
+### 6.启动定时
 
 ```sh
 python main.py --timing
 ```
 
-### 6.修改任务配置
+### 7.修改任务配置
 
 修改 `config/你的QQ.yaml` 文件
 

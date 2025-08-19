@@ -72,46 +72,54 @@ def 龙凰之境(d: DaLeDou):
 
 
 def 背包(d: DaLeDou):
-    """背包物品使用"""
-    config: list = d.config["背包"]
+    """使用背包物品"""
+    config: list[str] = d.config["背包"]
     if config is None:
+        d.log("你没有配置背包").append()
+        return
+
+    # 背包
+    d.get("cmd=store&store_type=0")
+    total_pages = d.find(r"第1/(\d+)")
+    if total_pages is None:
+        d.log("没有找到总页数").append()
         return
 
     data = []
-    # 背包
-    d.get("cmd=store&store_type=0")
-    page = int(d.find(r"第1/(\d+)"))
-    for p in range(1, (page + 1)):
+    for p in range(1, int(total_pages) + 1):
         d.get(f"cmd=store&store_type=0&page={p}")
         d.log(f"查找第 {p} 页")
         if "使用规则" in d.html:
-            d.log(d.find(r"】</p><p>(.*?)<br />"))
+            d.log(d.find(r"】</p><p>(.*?)<"))
             continue
-        _, _html = d.html.split("清理")
-        d.html, _ = _html.split("商店")
-        for _m in config:
-            for number, _id in d.findall(rf"{_m}.*?</a>数量：(\d+).*?id=(\d+)"):
-                data.append((_id, int(number)))
+        d.html = d.find(r"清理(.*?)商店")
+        for _id, name, number in d.findall(r'id=(\d+)">(.*?)</a>数量：(\d+)'):
+            for item in config:
+                if item not in name:
+                    continue
+                data.append((_id, name, int(number)))
 
     counter = Counter()
-    for _id, number in set(data):
-        if _id in ["3023", "3024", "3025"]:
-            # xx洗刷刷，3103生命洗刷刷除外
-            d.log("只能生命洗刷刷，其它洗刷刷不支持").append()
-            continue
+    for _id, name, number in set(data):
         for _ in range(number):
             # 使用
             d.get(f"cmd=use&id={_id}")
-            if "使用规则" in d.html:
-                # 该物品不能被使用
+            if "您使用了" in d.html or "你打开" in d.html:
+                msg = d.find()
+                d.log(msg)
+                counter.update({msg: 1})
+                continue
+            elif "该物品不能被使用" in d.html:
+                d.log(f"{name}{_id}：该物品不能被使用").append()
+            elif "提示信息" in d.html:
+                d.log(f"{name}{_id}：需二次确定使用").append()
+            elif "使用规则" in d.html:
                 # 该物品今天已经不能再使用了
-                d.log(d.find(r"】</p><p>(.*?)<br />"))
-                break
-            # 您使用了
-            # 你打开
-            msg = d.find()
-            d.log(msg)
-            counter.update({msg: 1})
+                # 很抱歉，系统繁忙，请稍后再试
+                d.log(f"{name}{_id}：" + d.find(r"】</p><p>(.*?)<"))
+            else:
+                d.log(f"{name}{_id}：没有匹配到使用结果").append()
+            break
 
     for k, v in counter.items():
         d.append(f"{v}次{k}")
@@ -178,6 +186,7 @@ def 普通合成(d: DaLeDou):
 def 符石分解(d: DaLeDou):
     config: list[int] = d.config["神匠坊"]
     if config is None:
+        d.log("你没有配置神匠坊符石分解").append()
         return
 
     data = []

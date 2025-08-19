@@ -6,3 +6,7 @@ DALEDOU_COOKIES:
 
 # pushplus推送加微信服务号 > 个人中心 > 开发设置 > 用户token
 PUSHPLUS_TOKEN: ""
+
+# 设置最大并发数，注意并发数不是越大越好
+# 设为0则脚本顺序执行；设为正整数则脚本并发执行
+MAX_CONCURRENCY: 5

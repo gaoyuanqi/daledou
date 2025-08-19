@@ -1,10 +1,12 @@
 import os
 import re
+import queue
+import textwrap
 import threading
 import time
 import traceback
 import sys
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from enum import Enum
 from functools import lru_cache
@@ -22,8 +24,10 @@ from requests.adapters import HTTPAdapter
 
 
 CPU_COUNT = os.cpu_count() or 1
+
 CONFIG_DIR = Path("./config")
 DEFAULT_CONFIG_PATH = CONFIG_DIR / "default_config.yaml"
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0",
 }
@@ -49,7 +53,25 @@ class Runtime(Enum):
     TWO = "20:01"  # 第二轮定时运行时间
 
 
-class ConfigManager:
+TIMING_INFO = textwrap.dedent(f"""
+    定时任务守护进程已启动：
+    第一轮默认 {Runtime.ONE.value} 定时运行
+    第二轮默认 {Runtime.TWO.value} 定时运行
+
+    任务配置：config/你的QQ.yaml
+    任务日志：log/
+
+    立即运行第一轮命令：
+    python main.py --one 或 uv run main.py --one
+
+    立即运行第二轮命令：
+    python main.py --two 或 uv run main.py --two
+
+    取消操作按键：CTRL + C（并发需多按几次）
+""")
+
+
+class Config:
     """配置管理类"""
 
     @staticmethod
@@ -89,7 +111,7 @@ class ConfigManager:
     @staticmethod
     def load_user_cookies() -> list[str] | None:
         """加载用户大乐斗cookies"""
-        if cookies := ConfigManager.load_settings_config("DALEDOU_COOKIES"):
+        if cookies := Config.load_settings_config("DALEDOU_COOKIES"):
             return cookies
         print("config/settings.yaml文件没有配置大乐斗cookies")
 
@@ -108,17 +130,23 @@ class Input:
             message=message,
             choices=tasks + ["取消操作"],
             use_arrow_keys=True,
-            instruction="(使用↑↓方向键选择，Enter确认)",
+            instruction="(↑↓选择，Enter确认)",
         ).ask()
 
-        return selected if selected != "取消操作" else None
+        if selected == "取消操作":
+            return
+
+        if selected is not None:
+            print("\n正在加载数据，请勿回车\n")
+
+        return selected
 
     @staticmethod
     def text(message: str) -> str | None:
         """获取用户输入的文本"""
         response = questionary.text(
             message=message,
-            instruction="(取消操作按键：CTRL + C)",
+            instruction="(取消操作：CTRL + C)",
             validate=lambda text: True if text.strip() else "输入不能为空",
         ).ask()
         if response is not None:
@@ -140,7 +168,7 @@ class Input:
         response = questionary.text(
             message=message,
             validate=Input._validate_number,
-            instruction="(取消操作按键：CTRL + C)",
+            instruction="(取消操作：CTRL + C)",
         ).ask()
         if response is not None:
             return int(response)
@@ -186,22 +214,22 @@ class LogManager:
         return user_logger, handler_id
 
     @staticmethod
-    def init_console_format() -> None:
-        """初始化控制台输出格式"""
-        LogManager.remove_handler()
-        logger.add(
-            sink=sys.stderr,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{message}</level>",
-            colorize=True,
-        )
-
-    @staticmethod
     def remove_handler(handler_id: int | None = None) -> None:
         """移除日志处理器，默认移除所有处理器"""
         if handler_id is None:
             logger.remove()
         else:
             logger.remove(handler_id)
+
+    @staticmethod
+    def set_console_output_format() -> None:
+        """设置控制台输出格式"""
+        LogManager.remove_handler()
+        logger.add(
+            sink=sys.stderr,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{message}</level>",
+            colorize=True,
+        )
 
 
 class TaskManager:
@@ -349,6 +377,7 @@ class TaskManager:
             "other": {
                 "奥义": True,
                 "背包": True,
+                "封印": True,
                 "掠夺": week == 2,
                 "神装": True,
                 "星盘": True,
@@ -455,7 +484,7 @@ def print_separator() -> None:
     try:
         width = os.get_terminal_size().columns
     except OSError:
-        width = 80
+        width = 48
 
     if width <= 80:
         separator = "-" * width
@@ -469,7 +498,7 @@ def print_separator() -> None:
 
 def push(title: str, content: str, user_logger: LoguruLogger) -> None:
     """pushplus微信通知"""
-    token: str = ConfigManager.load_settings_config("PUSHPLUS_TOKEN")
+    token: str = Config.load_settings_config("PUSHPLUS_TOKEN")
     if not token or not len(token) == 32:
         user_logger.warning(f"pushplus |无效token： {token}")
         return
@@ -497,14 +526,16 @@ class DaLeDou:
         user_logger: LoguruLogger,
         task_type: TaskType,
         task_names: list[str],
+        handler_id: int | None = None,
     ):
         self._qq = qq
         self._session = session
         self._user_logger = user_logger
         self._task_type = task_type.value
         self._task_names = task_names
+        self._handler_id = handler_id
 
-        ConfigManager.create_user_config(f"{self._qq}.yaml")
+        Config.create_user_config(f"{self._qq}.yaml")
 
         self._start_time = None
         self._end_time = None
@@ -513,9 +544,7 @@ class DaLeDou:
         self._pushplus_content: list[str] = [
             f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 星期{self.week}"
         ]
-        self._config: dict[str, Any] = ConfigManager.load_user_config(
-            f"{self._qq}.yaml"
-        )
+        self._config: dict[str, Any] = Config.load_user_config(f"{self._qq}.yaml")
 
         self.html: str | None = None
         self.current_task_name: str | None = None
@@ -626,6 +655,10 @@ class DaLeDou:
             user_logger=self._user_logger,
         )
 
+    def remove_user_handler(self):
+        """移除当前QQ日志处理器"""
+        LogManager.remove_handler(self._handler_id)
+
     def _get_progress(self) -> str:
         """获取进度字符串"""
         return f"{self._current_task_index}/{len(self.task_names)}"
@@ -663,159 +696,332 @@ class DaLeDou:
         )
 
 
-def get_all_qq() -> list[str]:
-    """返回所有QQ"""
-    qq_list = []
-    cookies: list = ConfigManager.load_user_cookies()
-    if cookies is None:
-        return
-    for cookie in cookies:
-        cookie_dict = SessionManager.parse_cookie(cookie)
-        qq = cookie_dict["newuin"]
-        qq_list.append(qq)
-    return qq_list
+class DaLeDouInstancesGenerator:
+    """大乐斗账号实例生成器"""
 
+    @staticmethod
+    def debug(
+        task_type: TaskType, select_qq: str | None = None
+    ) -> Generator[DaLeDou, None, None]:
+        """
+        适用模式：
+            python main.py --one xx
+            python main.py --two xx
+            python main.py --other
+        """
+        cookies: list = Config.load_user_cookies()
+        if cookies is None:
+            return
 
-def generate_dld_debug_instances(
-    task_type: TaskType, select_qq: str | None = None
-) -> Generator[DaLeDou, None, None]:
-    """生成调试模式的大乐斗实例"""
-    cookies: list = ConfigManager.load_user_cookies()
-    if cookies is None:
-        return
+        LogManager.set_console_output_format()
+        for cookie in cookies:
+            cookie_dict = SessionManager.parse_cookie(cookie)
+            qq = cookie_dict["newuin"]
 
-    LogManager.init_console_format()
-    for cookie in cookies:
-        cookie_dict = SessionManager.parse_cookie(cookie)
-        qq = cookie_dict["newuin"]
+            if select_qq is not None and select_qq != qq:
+                continue
 
-        if select_qq is not None and select_qq != qq:
-            continue
+            with LogContext(qq) as user_logger:
+                session = SessionManager.create_verified_session(qq, cookie_dict)
+                if session is None:
+                    user_logger.error(f"{qq} | Cookie无效")
+                    continue
 
-        with LogContext(qq) as user_logger:
+                task_names = TaskManager.get_task_func_names(qq, session, task_type)
+                if not task_names:
+                    user_logger.warning(f"{qq} | 未找到可用任务，可能官方繁忙或者维护")
+                    continue
+
+                user_logger.success(f"{qq} | Cookie有效")
+                yield DaLeDou(qq, session, user_logger, task_type, task_names)
+
+    @staticmethod
+    def sequential(task_type: TaskType) -> Generator[DaLeDou, None, None]:
+        """
+        适用模式（MAX_CONCURRENCY <= 0）：
+            python main.py --one
+            python main.py --two
+            python main.py --timing
+        """
+        cookies: list = Config.load_user_cookies()
+        if cookies is None:
+            return
+
+        LogManager.set_console_output_format()
+        for cookie in cookies:
+            cookie_dict = SessionManager.parse_cookie(cookie)
+            qq = cookie_dict["newuin"]
+
+            with LogContext(qq) as user_logger:
+                session = SessionManager.create_verified_session(qq, cookie_dict)
+                if session is None:
+                    user_logger.error(f"{qq} | Cookie无效")
+                    push(
+                        f"{qq} | Cookie无效",
+                        "请更换Cookie",
+                        user_logger,
+                    )
+                    print_separator()
+                    continue
+
+                task_names = TaskManager.get_task_func_names(qq, session, task_type)
+                if not task_names:
+                    user_logger.warning(f"{qq} | 未找到可用任务，可能官方繁忙或者维护")
+                    push(
+                        f"{qq} | 未找到可用任务",
+                        "可能官方繁忙或者维护",
+                        user_logger,
+                    )
+                    print_separator()
+                    continue
+
+                user_logger.success(f"{qq} | Cookie有效")
+                yield DaLeDou(qq, session, user_logger, task_type, task_names)
+
+    @staticmethod
+    def concurrency(task_type: TaskType) -> Generator[DaLeDou, None, None]:
+        """
+        适用模式（MAX_CONCURRENCY >= 1）：
+            python main.py --one
+            python main.py --two
+            python main.py --timing
+        """
+        cookies: list = Config.load_user_cookies()
+        if cookies is None:
+            return
+
+        LogManager.remove_handler()
+        for cookie in cookies:
+            cookie_dict = SessionManager.parse_cookie(cookie)
+            qq = cookie_dict["newuin"]
+
+            user_logger, handler_id = LogManager.get_user_logger(qq)
             session = SessionManager.create_verified_session(qq, cookie_dict)
             if session is None:
                 user_logger.error(f"{qq} | Cookie无效")
+                push(
+                    f"{qq} | Cookie无效",
+                    "请更换Cookie",
+                    user_logger,
+                )
                 continue
 
             task_names = TaskManager.get_task_func_names(qq, session, task_type)
             if not task_names:
                 user_logger.warning(f"{qq} | 未找到可用任务，可能官方繁忙或者维护")
+                push(
+                    f"{qq} | 未找到可用任务",
+                    "可能官方繁忙或者维护",
+                    user_logger,
+                )
                 continue
 
-            user_logger.success(f"{qq} | Cookie有效")
-            yield DaLeDou(qq, session, user_logger, task_type, task_names)
+            yield DaLeDou(qq, session, user_logger, task_type, task_names, handler_id)
 
 
-def generate_dld_instances(task_type: TaskType) -> Generator[DaLeDou, None, None]:
-    """生成并发模式的大乐斗实例"""
-    cookies: list = ConfigManager.load_user_cookies()
-    if cookies is None:
-        return
-
-    LogManager.remove_handler()
-    for cookie in cookies:
-        cookie_dict = SessionManager.parse_cookie(cookie)
-        qq = cookie_dict["newuin"]
-
-        user_logger, _ = LogManager.get_user_logger(qq)
-        session = SessionManager.create_verified_session(qq, cookie_dict)
-        if session is None:
-            user_logger.error(f"{qq} | Cookie无效")
-            push(
-                f"{qq} | Cookie无效",
-                "请更换Cookie",
-                user_logger,
-            )
-            continue
-
-        task_names = TaskManager.get_task_func_names(qq, session, task_type)
-        if not task_names:
-            user_logger.warning(f"{qq} | 未找到可用任务，可能官方繁忙或者维护")
-            push(
-                f"{qq} | 未找到可用任务",
-                "可能官方繁忙或者维护",
-                user_logger,
-            )
-            continue
-
-        yield DaLeDou(qq, session, user_logger, task_type, task_names)
-
-
-def run_account_tasks(d: DaLeDou, task_names: list[str], module_type: ModuleType):
-    """执行单个账号的所有任务"""
-    d.start_timing()
-    for task_name in task_names:
-        try:
-            d.current_task_name = task_name
-            d.append(f"\n【{task_name}】")
-
-            task_func = getattr(module_type, task_name, None)
-            if task_func and callable(task_func):
-                task_func(d)
-            else:
-                d.log(f"函数 {task_name} 不存在").append()
-
-            d.complete_task()
-        except Exception:
-            d.log(traceback.format_exc()).append()
-
-
-class TaskExecutor:
-    """线程管理类，用于并发执行多个大乐斗账号"""
-
+class TaskSchedule:
     @staticmethod
-    def run(task_type: TaskType, module_type: ModuleType):
-        """并发执行多个账号"""
-        ds = list(generate_dld_instances(task_type))
-        if not ds:
+    def get_all_qq() -> list[str]:
+        """返回所有QQ"""
+        cookies: list = Config.load_user_cookies()
+        if cookies is None:
             return
 
-        global_start_time = datetime.now()
-        optimal_concurrency = min(CPU_COUNT * 4, len(ds))
-        monitor_event = threading.Event()
+        qq_list = []
+        for cookie in cookies:
+            cookie_dict = SessionManager.parse_cookie(cookie)
+            qq = cookie_dict["newuin"]
+            qq_list.append(qq)
+        return qq_list
 
-        def monitor_status():
+    @staticmethod
+    def run_tasks(d: DaLeDou, task_names: list[str], module_type: ModuleType):
+        """执行单个账号的所有任务"""
+        d.start_timing()
+        for task_name in task_names:
+            try:
+                d.current_task_name = task_name
+                d.append(f"\n【{task_name}】")
+
+                task_func = getattr(module_type, task_name, None)
+                if task_func and callable(task_func):
+                    task_func(d)
+                else:
+                    d.log(f"函数 {task_name} 不存在").append()
+
+                d.complete_task()
+            except Exception:
+                d.log(traceback.format_exc()).append()
+
+    @staticmethod
+    def _print_accounts_status(active_accounts: list[DaLeDou], completed_count: int):
+        """打印活跃账号状态和已完成账号数"""
+        # 清屏并移动光标到左上角
+        os.system("cls" if os.name == "nt" else "clear")
+
+        if not active_accounts:
+            return
+
+        print_separator()
+        for d in active_accounts:
+            print(d.get_display_info())
+        print_separator()
+        print(f"已完成账号数: {completed_count}")
+        print_separator()
+
+    @staticmethod
+    def concurrency(task_type: TaskType, module_type: ModuleType, max_concurrency: int):
+        """并发执行多个账号"""
+        global_start_time = datetime.now()
+        optimal_concurrency = min(CPU_COUNT * 2, max_concurrency)
+        d_gen = DaLeDouInstancesGenerator.concurrency(task_type)
+        active_accounts = []
+        completed_count = 0
+        lock = threading.Lock()
+        account_queue = queue.Queue()
+        executor = None
+
+        def fill_queue():
+            try:
+                for d in d_gen:
+                    account_queue.put(d)
+            finally:
+                for _ in range(optimal_concurrency):
+                    account_queue.put(None)
+
+        filler_thread = threading.Thread(target=fill_queue, daemon=True)
+        filler_thread.start()
+
+        def monitor_status(monitor_event: threading.Event):
             """账号状态监控线程"""
             while not monitor_event.is_set():
-                TaskExecutor._print_accounts_status(ds)
+                with lock:
+                    TaskSchedule._print_accounts_status(
+                        active_accounts, completed_count
+                    )
                 time.sleep(0.5)
 
-        monitor_thread = threading.Thread(target=monitor_status, daemon=True)
+        monitor_event = threading.Event()
+        monitor_thread = threading.Thread(
+            target=monitor_status, args=(monitor_event,), daemon=True
+        )
         monitor_thread.start()
 
         try:
             with ThreadPoolExecutor(max_workers=optimal_concurrency) as executor:
-                futures = [
-                    executor.submit(TaskExecutor._run_account_tasks, d, module_type)
-                    for d in ds
-                ]
-                for future in futures:
+                futures = {}
+
+                def worker():
+                    nonlocal completed_count, active_accounts
+                    while True:
+                        try:
+                            d = account_queue.get(timeout=1)
+                            if d is None:
+                                account_queue.task_done()
+                                return
+
+                            with lock:
+                                active_accounts.append(d)
+
+                            try:
+                                TaskSchedule.run_tasks(d, d.task_names, module_type)
+                                d.pushplus_send()
+                            finally:
+                                d.remove_user_handler()
+                                with lock:
+                                    active_accounts.remove(d)
+                                    completed_count += 1
+
+                            account_queue.task_done()
+                        except queue.Empty:
+                            if not filler_thread.is_alive() and account_queue.empty():
+                                return
+                        except Exception:
+                            traceback.print_exc()
+                            account_queue.task_done()
+
+                for _ in range(optimal_concurrency):
+                    future = executor.submit(worker)
+                    futures[future] = future
+
+                for future in as_completed(futures):
                     future.result()
+
+            filler_thread.join(timeout=5)
         finally:
             monitor_event.set()
             monitor_thread.join(timeout=1)
-            TaskExecutor._print_accounts_status(ds)
+            with lock:
+                TaskSchedule._print_accounts_status(active_accounts, completed_count)
 
         _now = datetime.now()
         total_time = _now - global_start_time
+        print_separator()
+        print(f"总完成账号数: {completed_count}")
         print(f"总运行时间: {formatted_time(total_time)}")
-        print(f"结束时间：{_now.strftime('%Y-%m-%d %H:%M:%S')} 星期{_now.isoweekday()}")
+        print(
+            f"任务完成时间：{_now.strftime('%Y-%m-%d %H:%M:%S')} 星期{_now.isoweekday()}"
+        )
         print_separator()
 
     @staticmethod
-    def _run_account_tasks(d: DaLeDou, module_type: ModuleType):
-        """执行单个账号的所有任务"""
-        run_account_tasks(d, d.task_names, module_type)
-        d.pushplus_send()
+    def debug_run(task_type: TaskType, task_names: list[str], module_type: ModuleType):
+        """
+        适用模式：
+            python main.py --one xx
+            python main.py --two xx
+        """
+        for d in DaLeDouInstancesGenerator.debug(task_type):
+            print_separator()
+            TaskSchedule.run_tasks(d, task_names, module_type)
+            print_separator()
+            print(d.pushplus_content())
+            print_separator()
 
     @staticmethod
-    def _print_accounts_status(accounts: list[DaLeDou]):
-        """打印所有账号状态到控制台"""
-        # 清屏并移动光标到左上角
-        os.system("cls" if os.name == "nt" else "clear")
+    def debug_run_other(module_type: ModuleType):
+        """
+        适用模式：
+            python main.py --other
+        """
+        qq = Input.select("请选择账号：", TaskSchedule.get_all_qq())
+        if qq is None:
+            return
 
         print_separator()
-        for d in accounts:
-            print(d.get_display_info())
+        for d in DaLeDouInstancesGenerator.debug(TaskType.OTHER, qq):
+            print_separator()
+            task_name = Input.select("请选择任务：", d.task_names)
+            if task_name is None:
+                break
+            TaskSchedule.run_tasks(d, [task_name], module_type)
+            print_separator()
+
+    @staticmethod
+    def debug_run_timing():
+        for _ in DaLeDouInstancesGenerator.debug(TaskType.TIMING):
+            pass
         print_separator()
+        print(TIMING_INFO)
+        print_separator()
+
+    @staticmethod
+    def run(task_type: TaskType, module_type: ModuleType):
+        """
+        适用模式：
+            python main.py --one
+            python main.py --two
+            python main.py --timing
+        """
+        MAX_CONCURRENCY: int = Config.load_settings_config("MAX_CONCURRENCY")
+        if MAX_CONCURRENCY <= 0:
+            LogManager.set_console_output_format()
+            for d in DaLeDouInstancesGenerator.sequential(task_type):
+                print_separator()
+                TaskSchedule.run_tasks(d, d.task_names, module_type)
+                print_separator()
+                d.pushplus_send()
+                print_separator()
+        else:
+            LogManager.remove_handler()
+            TaskSchedule.concurrency(task_type, module_type, MAX_CONCURRENCY)
