@@ -206,7 +206,8 @@ def upgrade(upgrader: BaseUpgrader):
 
     print_separator()
     selected = Input.select("请选择强化任务：", upgrade_names)
-    if not selected:
+    if selected is None:
+        print_separator()
         return
 
     upgrader.upgrade(selected)
@@ -2201,7 +2202,7 @@ class QiPo(BaseUpgrader):
             data[name] = {
                 "名称": name,
                 "id": _id,
-                "阶段": level,
+                "等级": level,
                 "消耗": f"{consume_name}*{consume_num}（{possess_num}）",
                 "祝福": f"{now_value}/{total_value}（↑{fail_value}）",
                 "积分": f"{store_points}（{store_exchange_num}）",

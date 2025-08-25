@@ -618,9 +618,9 @@ class DaLeDou:
 
     def log(self, info: str, task_name: str | None = None) -> Self:
         """记录日志信息"""
+        self._last_log = info
         task = task_name or self.current_task_name
         self._user_logger.info(f"{self._qq} | {task} | {info}")
-        self._last_log = info
         return self
 
     def append(self, info: str | None = None) -> None:
@@ -863,10 +863,11 @@ class TaskSchedule:
             return
 
         print_separator()
-        for d in active_accounts:
-            print(d.get_display_info())
-        print_separator()
         print(f"已完成账号数: {completed_count}")
+
+        for d in active_accounts:
+            print_separator()
+            print(d.get_display_info())
         print_separator()
 
     @staticmethod
