@@ -253,7 +253,8 @@ def 商店(d: DaLeDou):
         "cmd=wlmz&op=view_exchange",  # 武林盟主
         "cmd=arena&op=queryexchange",  # 竞技场
         "cmd=ascendheaven&op=viewshop",  # 飞升大作战
-        "cmd=abysstide&op=viewabyssshop",  # 深渊之潮
+        "cmd=abysstide&op=viewabyssshop",  # 深渊之潮-深渊黑商
+        "cmd=abysstide&op=viewwishshop",  # 深渊之潮-许愿帮铺
         "cmd=exchange&subtype=10&costtype=1",  # 踢馆
         "cmd=exchange&subtype=10&costtype=2",  # 掠夺
         "cmd=exchange&subtype=10&costtype=3",  # 矿洞

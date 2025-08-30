@@ -24,14 +24,12 @@ from requests.adapters import HTTPAdapter
 
 
 CPU_COUNT = os.cpu_count() or 1
-
 CONFIG_DIR = Path("./config")
 DEFAULT_CONFIG_PATH = CONFIG_DIR / "default_config.yaml"
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0",
 }
-
+IS_WINDOWS = sys.platform.startswith("win")
 LoguruLogger = type(logger)
 
 
@@ -222,7 +220,7 @@ class LogManager:
             logger.remove(handler_id)
 
     @staticmethod
-    def set_console_output_format() -> None:
+    def set_terminal_output_format() -> None:
         """设置控制台输出格式"""
         LogManager.remove_handler()
         logger.add(
@@ -349,8 +347,8 @@ class TaskManager:
                 "乐斗大笨钟": True,
                 "乐斗激运牌": True,
                 "乐斗能量棒": True,
+                "爱的同心结": True,
                 "乐斗回忆录": week == 4,
-                "爱的同心结": week == 4,
                 "乐斗儿童节": week == 4,
                 "周年生日祝福": week == 4,
                 "重阳太白诗会": True,
@@ -577,51 +575,20 @@ class DaLeDou:
     def _compile_pattern(cls, pattern: str) -> Pattern:
         return cls._pattern_cache(pattern, re.DOTALL)
 
-    def get(self, path: str) -> str | None:
-        """送GET请求获取HTML源码
+    def _get_progress(self) -> str:
+        """获取进度字符串"""
+        return f"{self._current_task_index}/{len(self.task_names)}"
 
-        参数:
-            path: URL路径参数，以cmd开头
-        返回:
-            成功时返回HTML文本，失败时返回None
-        """
-        url = f"https://dld.qzapp.z.qq.com/qpet/cgi-bin/phonepk?{path}"
-        for _ in range(3):
-            response = self._session.get(url, headers=HEADERS, timeout=10)
-            response.encoding = "utf-8"
-            self.html = response.text
-            if "系统繁忙" in self.html:
-                time.sleep(0.2)
-                continue
-            elif "操作频繁" in self.html:
-                time.sleep(1)
-                continue
-            return self.html
+    def _get_running_time(self) -> str:
+        """获取运行时间"""
+        if self._start_time is None:
+            return "未开始"
 
-    def find(self, regex: str | None = None) -> str | None:
-        """返回成功匹配的首个结果"""
-        if not self.html:
-            return None
-
-        pattern = (
-            self._compile_pattern(regex) if regex else self._shared_default_pattern
-        )
-        _match = pattern.search(self.html)
-        return _match.group(1) if _match else None
-
-    def findall(self, regex: str, html: str | None = None) -> list[str]:
-        """返回匹配的所有结果"""
-        content = html or self.html
-        if not content:
-            return []
-        return re.findall(regex, content, re.DOTALL)
-
-    def log(self, info: str, task_name: str | None = None) -> Self:
-        """记录日志信息"""
-        self._last_log = info
-        task = task_name or self.current_task_name
-        self._user_logger.info(f"{self._qq} | {task} | {info}")
-        return self
+        if self._end_time:
+            delta = self._end_time - self._start_time
+        else:
+            delta = datetime.now() - self._start_time
+        return formatted_time(delta)
 
     def append(self, info: str | None = None) -> None:
         """
@@ -643,6 +610,69 @@ class DaLeDou:
         if content:
             self._pushplus_content.append(content)
 
+    def complete_task(self):
+        """记录任务完成"""
+        self._current_task_index += 1
+
+        # 检查是否完成所有任务
+        if self._current_task_index >= len(self.task_names):
+            self._end_time = datetime.now()
+            self.log(f"{self._get_running_time()}", "运行时间")
+
+    def find(self, regex: str | None = None) -> str | None:
+        """返回成功匹配的首个结果"""
+        if not self.html:
+            return None
+
+        pattern = (
+            self._compile_pattern(regex) if regex else self._shared_default_pattern
+        )
+        _match = pattern.search(self.html)
+        return _match.group(1) if _match else None
+
+    def findall(self, regex: str, html: str | None = None) -> list[str]:
+        """返回匹配的所有结果"""
+        content = html or self.html
+        if not content:
+            return []
+        return re.findall(regex, content, re.DOTALL)
+
+    def get(self, path: str) -> str | None:
+        """送GET请求获取HTML源码
+
+        参数:
+            path: URL路径参数，以cmd开头
+        返回:
+            成功时返回HTML文本，失败时返回None
+        """
+        url = f"https://dld.qzapp.z.qq.com/qpet/cgi-bin/phonepk?{path}"
+        for _ in range(3):
+            response = self._session.get(url, headers=HEADERS, timeout=10)
+            response.encoding = "utf-8"
+            self.html = response.text
+            if "系统繁忙" in self.html:
+                time.sleep(0.2)
+                continue
+            elif "操作频繁" in self.html:
+                time.sleep(1)
+                continue
+            return self.html
+
+    def get_display_info(self):
+        """获取终端显示信息"""
+        return (
+            f"{self._qq} | "
+            f"进度: {self._get_progress():>5} | "
+            f"运行时间: {self._get_running_time()}"
+        )
+
+    def log(self, info: str, task_name: str | None = None) -> Self:
+        """记录日志信息"""
+        self._last_log = info
+        task = task_name or self.current_task_name
+        self._user_logger.info(f"{self._qq} | {task} | {info}")
+        return self
+
     def pushplus_content(self) -> str:
         self.append(f"\n【运行时间】{self._get_running_time()}")
         return "\n".join(self._pushplus_content)
@@ -659,41 +689,9 @@ class DaLeDou:
         """移除当前QQ日志处理器"""
         LogManager.remove_handler(self._handler_id)
 
-    def _get_progress(self) -> str:
-        """获取进度字符串"""
-        return f"{self._current_task_index}/{len(self.task_names)}"
-
-    def _get_running_time(self) -> str:
-        """获取运行时间"""
-        if self._start_time is None:
-            return "未开始"
-
-        if self._end_time:
-            delta = self._end_time - self._start_time
-        else:
-            delta = datetime.now() - self._start_time
-        return formatted_time(delta)
-
     def start_timing(self):
         """开始执行任务"""
         self._start_time = datetime.now()
-
-    def complete_task(self):
-        """记录任务完成"""
-        self._current_task_index += 1
-
-        # 检查是否完成所有任务
-        if self._current_task_index >= len(self.task_names):
-            self._end_time = datetime.now()
-            self.log(f"{self._get_running_time()}", "运行时间")
-
-    def get_display_info(self):
-        """获取终端显示信息"""
-        return (
-            f"{self._qq} | "
-            f"进度: {self._get_progress():>5} | "
-            f"运行时间: {self._get_running_time()}"
-        )
 
 
 class DaLeDouInstancesGenerator:
@@ -713,7 +711,7 @@ class DaLeDouInstancesGenerator:
         if cookies is None:
             return
 
-        LogManager.set_console_output_format()
+        LogManager.set_terminal_output_format()
         for cookie in cookies:
             cookie_dict = SessionManager.parse_cookie(cookie)
             qq = cookie_dict["newuin"]
@@ -747,7 +745,7 @@ class DaLeDouInstancesGenerator:
         if cookies is None:
             return
 
-        LogManager.set_console_output_format()
+        LogManager.set_terminal_output_format()
         for cookie in cookies:
             cookie_dict = SessionManager.parse_cookie(cookie)
             qq = cookie_dict["newuin"]
@@ -857,7 +855,11 @@ class TaskSchedule:
     def _print_accounts_status(active_accounts: list[DaLeDou], completed_count: int):
         """打印活跃账号状态和已完成账号数"""
         # 清屏并移动光标到左上角
-        os.system("cls" if os.name == "nt" else "clear")
+        if IS_WINDOWS:
+            os.system("cls")
+        else:
+            sys.stdout.write("\033[2J\033[H")
+            sys.stdout.flush()
 
         if not active_accounts:
             return
@@ -1016,7 +1018,7 @@ class TaskSchedule:
         """
         MAX_CONCURRENCY: int = Config.load_settings_config("MAX_CONCURRENCY")
         if MAX_CONCURRENCY <= 0:
-            LogManager.set_console_output_format()
+            LogManager.set_terminal_output_format()
             for d in DaLeDouInstancesGenerator.sequential(task_type):
                 print_separator()
                 TaskSchedule.run_tasks(d, d.task_names, module_type)

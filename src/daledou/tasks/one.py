@@ -3000,30 +3000,51 @@ def 乐斗能量棒(d: DaLeDou):
             count -= 1
 
 
-def 乐斗回忆录(d: DaLeDou):
-    """周四领取回忆礼包、进阶礼包"""
-    for _id in range(1, 11):
-        # 领取
-        d.get(f"cmd=newAct&subtype=171&op=3&id={_id}")
-        d.log(d.find(r"6点<br />(.*?)<br />")).append()
-
-
 def 爱的同心结(d: DaLeDou):
-    """依次兑换礼包5、4、3、2、1"""
+    """
+    赠送：每天指定好友赠送一个同心结，指定QQ详见配置文件
+    兑换：周四依次兑换礼包5、4、3、2、1
+    """
+    config: list[int] = d.config["爱的同心结"]
+    if config is not None:
+        for uin in config:
+            # 赠送
+            d.get(f"cmd=loveknot&sub=3&uin={uin}")
+            d.log(d.find()).append()
+            if "你当前没有同心结哦" in d.html:
+                break
+    else:
+        d.log("你没有配置赠送QQ").append()
+
+    if d.week != 4:
+        return
+
     data = {
-        4016: 20,
-        4015: 16,
-        4014: 10,
-        4013: 4,
-        4012: 2,
+        "4016": 2,
+        "4015": 4,
+        "4014": 10,
+        "4013": 16,
+        "4012": 20,
     }
     for _id, count in data.items():
         for _ in range(count):
             # 兑换
             d.get(f"cmd=loveknot&sub=2&id={_id}")
-            d.log(d.find()).append()
+            d.log(d.find())
             if "恭喜您兑换成功" not in d.html:
                 break
+            d.append()
+
+
+def 乐斗回忆录(d: DaLeDou):
+    """
+    回忆礼包：周四领取
+    进阶礼包：周四领取
+    """
+    for _id in range(1, 11):
+        # 领取
+        d.get(f"cmd=newAct&subtype=171&op=3&id={_id}")
+        d.log(d.find(r"6点<br />(.*?)<br />")).append()
 
 
 def 乐斗儿童节(d: DaLeDou):
