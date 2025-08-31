@@ -347,7 +347,7 @@ class TaskManager:
                 "乐斗大笨钟": True,
                 "乐斗激运牌": True,
                 "乐斗能量棒": True,
-                "爱的同心结": True,
+                "爱的同心结": week == 4,
                 "乐斗回忆录": week == 4,
                 "乐斗儿童节": week == 4,
                 "周年生日祝福": week == 4,
@@ -637,8 +637,8 @@ class DaLeDou:
             return []
         return re.findall(regex, content, re.DOTALL)
 
-    def get(self, path: str) -> str | None:
-        """送GET请求获取HTML源码
+    def get(self, path: str) -> str:
+        """发送GET请求获取HTML源码
 
         参数:
             path: URL路径参数，以cmd开头
@@ -656,7 +656,8 @@ class DaLeDou:
             elif "操作频繁" in self.html:
                 time.sleep(1)
                 continue
-            return self.html
+            break
+        return self.html
 
     def get_display_info(self):
         """获取终端显示信息"""

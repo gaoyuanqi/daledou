@@ -61,13 +61,14 @@ DALEDOU_COOKIES:
 
 微信接收的消息比日志简略
 
-修改 `config/settings.yaml`：
+`config/settings.yaml`：
 ```yaml
 PUSHPLUS_TOKEN: ""
 ```
 
 ### 5.设置最大并发数
 
+`config/settings.yaml`：
 ```yaml
 MAX_CONCURRENCY: 5
 ```
@@ -85,43 +86,36 @@ python main.py --timing
 
 ## 脚本命令
 
-### timing 模式
-
 启动定时，不支持额外参数：
 ```sh
 python main.py --timing
 ```
 
-### one 模式
-
-运行 `第一轮` 所有任务，建议 `13:01` 后运行：
+执行 `第一轮` 所有任务，建议 `13:01` 后运行：
 ```sh
 python main.py --one
 ```
 
-调用 `one.py` 中的某个函数：
+执行 `one.py` 中的一个或多个函数：
 ```sh
-python main.py --one 邪神秘宝
+python main.py --one 邪神秘宝 矿洞
 ```
 
-### two 模式
-
-运行 `第二轮` 所有任务，建议 `20:01` 后运行：
+执行 `第二轮` 所有任务，建议 `20:01` 后运行：
 ```sh
 python main.py --two
 ```
 
-调用 `two.py` 中的某个函数：
+执行 `two.py` 中的一个或多个函数：
 ```sh
-python main.py --two 邪神秘宝
+python main.py --two 邪神秘宝 商店
 ```
 
-### other 模式
-
-运行其它任务，不支持额外参数：
+执行其它任务，不支持额外参数：
 ```sh
 python main.py --other
 ```
+
 
 ## 安卓使用Termux来运行脚本
 

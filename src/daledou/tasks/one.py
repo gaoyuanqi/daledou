@@ -3002,7 +3002,7 @@ def 乐斗能量棒(d: DaLeDou):
 
 def 爱的同心结(d: DaLeDou):
     """
-    赠送：每天指定好友赠送一个同心结，指定QQ详见配置文件
+    赠送：周四指定好友赠送一个同心结，指定QQ详见配置文件
     兑换：周四依次兑换礼包5、4、3、2、1
     """
     config: list[int] = d.config["爱的同心结"]
@@ -3013,11 +3013,6 @@ def 爱的同心结(d: DaLeDou):
             d.log(d.find()).append()
             if "你当前没有同心结哦" in d.html:
                 break
-    else:
-        d.log("你没有配置赠送QQ").append()
-
-    if d.week != 4:
-        return
 
     data = {
         "4016": 2,
