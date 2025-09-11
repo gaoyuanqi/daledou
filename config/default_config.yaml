@@ -422,8 +422,8 @@
   # - QQ1
   # - QQ2
 
-# 周四选择礼包奖励
-乐斗儿童节: type=1&sub_type=0 # 神兵
+# 周四领取选择奖励
+# 乐斗儿童节: type=1&sub_type=0 # 神兵
 # 乐斗儿童节: type=1&sub_type=1 # 神铠
 # 乐斗儿童节: type=1&sub_type=2 # 神羽
 # 乐斗儿童节: type=1&sub_type=3 # 神兽
@@ -431,7 +431,7 @@
 # 乐斗儿童节: type=1&sub_type=5 # 神履
 # 乐斗儿童节: type=2&sub_type=0 # 坚韧不拔
 # 乐斗儿童节: type=2&sub_type=1 # 嗜血如命
-# 乐斗儿童节: type=2&sub_type=2 # 坚定不移
+乐斗儿童节: type=2&sub_type=2 # 坚定不移
 # 乐斗儿童节: type=2&sub_type=3 # 生存本能
 # 乐斗儿童节: type=2&sub_type=4 # 横扫千军
 # 乐斗儿童节: type=2&sub_type=5 # 三魂之力
@@ -444,3 +444,26 @@
 # 乐斗儿童节: type=3&sub_type=2 # 中型武器专精
 # 乐斗儿童节: type=3&sub_type=3 # 大型武器专精
 # 乐斗儿童节: type=4&sub_type=1 # 强化
+
+# 周四领取选择奖励
+# 乐斗开学季: type=1&sub_type=0 # 神兵
+# 乐斗开学季: type=1&sub_type=1 # 神铠
+# 乐斗开学季: type=1&sub_type=2 # 神羽
+# 乐斗开学季: type=1&sub_type=3 # 神兽
+# 乐斗开学季: type=1&sub_type=4 # 神饰
+# 乐斗开学季: type=1&sub_type=5 # 神履
+# 乐斗开学季: type=2&sub_type=0 # 坚韧不拔
+# 乐斗开学季: type=2&sub_type=1 # 嗜血如命
+乐斗开学季: type=2&sub_type=2 # 坚定不移
+# 乐斗开学季: type=2&sub_type=3 # 生存本能
+# 乐斗开学季: type=2&sub_type=4 # 横扫千军
+# 乐斗开学季: type=2&sub_type=5 # 三魂之力
+# 乐斗开学季: type=2&sub_type=6 # 四魂天功
+# 乐斗开学季: type=2&sub_type=7 # 炙血战魂
+# 乐斗开学季: type=2&sub_type=8 # 百战之躯
+# 乐斗开学季: type=2&sub_type=9 # 攻无不克
+# 乐斗开学季: type=3&sub_type=0 # 投掷武器专精
+# 乐斗开学季: type=3&sub_type=1 # 小型武器专精
+# 乐斗开学季: type=3&sub_type=2 # 中型武器专精
+# 乐斗开学季: type=3&sub_type=3 # 大型武器专精
+# 乐斗开学季: type=4&sub_type=1 # 强化

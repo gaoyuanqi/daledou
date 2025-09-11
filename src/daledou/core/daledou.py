@@ -350,6 +350,7 @@ class TaskManager:
                 "爱的同心结": week == 4,
                 "乐斗回忆录": week == 4,
                 "乐斗儿童节": week == 4,
+                "乐斗开学季": week == 4,
                 "周年生日祝福": week == 4,
                 "重阳太白诗会": True,
                 "5.1预订礼包": True,
