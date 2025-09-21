@@ -277,17 +277,28 @@ def 分享(d: DaLeDou):
 
 def 乐斗(d: DaLeDou):
     """
-    每天开启自动使用体力药水、使用4次贡献药水
-    每天乐斗好友BOSS、帮友BOSS、侠侣页所有
+    体力药水：是否自动使用详见配置文件
+    贡献药水：每天使用，使用次数详见配置文件
+    侠：每天乐斗好友BOSS、帮友BOSS、侠侣BOSS
+    情师徒拜：每天乐斗，是否乐斗详见配置文件
     """
+    config: dict[str, bool] = d.config["乐斗"]
+    use_count: int = config["贡献药水"]
+    is_open_auto_use: bool = config["体力药水"]
+    is_ledou: bool = config["情师徒拜"]
+
     # 乐斗助手
     d.get("cmd=view&type=6")
-    if "开启自动使用体力药水" in d.html:
+    if is_open_auto_use and "开启自动使用体力药水" in d.html:
         # 开启自动使用体力药水
         d.get("cmd=set&type=0")
         d.log("开启自动使用体力药水").append()
+    elif not is_open_auto_use and "取消自动使用体力药水" in d.html:
+        # 取消自动使用体力药水
+        d.get("cmd=set&type=0")
+        d.log("取消自动使用体力药水").append()
 
-    for _ in range(4):
+    for _ in range(use_count):
         # 使用贡献药水*1
         d.get("cmd=use&id=3038&store_type=1&page=1")
         if "使用规则" in d.html:
@@ -295,7 +306,7 @@ def 乐斗(d: DaLeDou):
             break
         d.log(d.find()).append()
 
-    # 好友BOSS
+    # 好友首页
     d.get("cmd=friendlist&page=1")
     for u in d.findall(r"侠：.*?B_UID=(\d+)"):
         # 乐斗
@@ -304,18 +315,20 @@ def 乐斗(d: DaLeDou):
         if "体力值不足" in d.html:
             break
 
-    # 帮友BOSS
+    # 帮友首页
     d.get("cmd=viewmem&page=1")
     for u in d.findall(r"侠：.*?B_UID=(\d+)"):
         # 乐斗
         d.get(f"cmd=fight&B_UID={u}")
         d.log(d.find(r"侠侣</a><br />(.*?)，")).append()
-        if "体力值不足" in d.html:
-            break
 
     # 侠侣
     d.get("cmd=viewxialv&page=1")
-    for u in d.findall(r"</a>\d+.*?B_UID=(\d+)"):
+    if is_ledou:
+        uin = d.findall(r"</a>\d+.*?B_UID=(\d+)")
+    else:
+        uin = d.findall(r"侠：.*?B_UID=(\d+)")
+    for u in uin:
         # 乐斗
         d.get(f"cmd=fight&B_UID={u}")
         if "使用规则" in d.html:
@@ -529,23 +542,21 @@ def 竞技场(d: DaLeDou):
 
 
 def 十二宫(d: DaLeDou):
-    """每天自动选择最高场景请猴王扫荡"""
-    # 十二宫
-    d.get("cmd=zodiacdungeon")
-    if scene_id := d.findall(r"scene_id=(\d+)\">扫荡"):
-        _id = scene_id[-1]
-        # 请猴王扫荡
-        d.get(f"cmd=zodiacdungeon&op=autofight&scene_id={_id}")
-        if "恭喜你" in d.html:
-            d.log(d.find(r"恭喜你，(.*?)！")).append()
-            return
-        elif "是否复活再战" in d.html:
-            d.log(d.find(r"<br.*>(.*?)，")).append()
-            return
-        # 你已经不幸阵亡，请复活再战！
-        # 挑战次数不足
-        # 当前场景进度不足以使用自动挑战功能
-        d.log(d.find(r"<p>(.*?)<br />")).append()
+    """每天请猴王扫荡，选择场景详见配置文件"""
+    _id: int = d.config["十二宫"]
+    # 请猴王扫荡
+    d.get(f"cmd=zodiacdungeon&op=autofight&scene_id={_id}")
+    if "恭喜你" in d.html:
+        d.log(d.find(r"恭喜你，(.*?)！")).append()
+        return
+    elif "是否复活再战" in d.html:
+        d.log(d.find(r"<br.*>(.*?)，")).append()
+        return
+
+    # 你已经不幸阵亡，请复活再战！
+    # 挑战次数不足
+    # 当前场景进度不足以使用自动挑战功能
+    d.log(d.find(r"<p>(.*?)<br />")).append()
 
 
 def 许愿(d: DaLeDou):
@@ -557,7 +568,7 @@ def 许愿(d: DaLeDou):
 
 def 抢地盘(d: DaLeDou):
     """
-    每天无限制区随机攻占一次
+    无限制区：每天随机攻占一次
 
     等级  30级以下 40级以下 ... 120级以下 无限制区
     type  1       2            10        11
@@ -568,6 +579,7 @@ def 抢地盘(d: DaLeDou):
         # 攻占
         d.get(f"cmd=manorfight&fighttype=1&manorid={_id}")
         d.log(d.find(r"</p><p>(.*?)。")).append()
+
     # 兑换武器
     d.get("cmd=manor&sub=0")
     d.log(d.find(r"<br /><br />(.*?)<br /><br />")).append()
@@ -607,8 +619,10 @@ def 镖行天下(d: DaLeDou):
     领取奖励：每天一次
     刷新押镖：当镖师是蔡八斗时刷新，最多免费两次
     启程护送：每天一次
-    拦截：每天3次
+    拦截：每天3次，拦截镖师详见配置文件
     """
+    bodyguard: str = d.config["镖行天下"]
+
     # 镖行天下
     d.get("cmd=cargo")
     if "护送完成" in d.html:
@@ -630,10 +644,10 @@ def 镖行天下(d: DaLeDou):
         d.get("cmd=cargo&op=6")
         d.log(d.find()).append()
 
-    for _ in range(5):
+    while d.find(r"剩余拦截次数：(\d+)") != "0":
         # 刷新
         d.get("cmd=cargo&op=3")
-        for uin in d.findall(r'passerby_uin=(\d+)">拦截'):
+        for uin in d.findall(rf"{bodyguard}.*?passerby_uin=(\d+)"):
             # 拦截
             d.get(f"cmd=cargo&op=14&passerby_uin={uin}")
             d.log(d.find())
@@ -648,32 +662,38 @@ def 镖行天下(d: DaLeDou):
 
 def 幻境(d: DaLeDou):
     """
-    每天自动选择最高场景最多乐斗5次
+    每天最多乐斗5次，选择场景详见配置文件
     领取奖励
     """
     # 幻境
     d.get("cmd=misty")
+    if "挑战次数：0/1" in d.html:
+        d.log(r"您的挑战次数已用完，请明日再战！").append()
+        return
     if "【飘渺幻境】" not in d.html:
         # 返回飘渺幻境
         d.get("cmd=misty&op=return")
-    if stage_id := d.findall(r"op=start&amp;stage_id=(\d+)"):
-        d.get(f"cmd=misty&op=start&stage_id={stage_id[-1]}")
-        if "您的挑战次数已用完" in d.html:
-            d.log(d.find(r"0/1<br />(.*?)<")).append()
-            return
-        for _ in range(5):
-            # 乐斗
-            d.get("cmd=misty&op=fight")
-            d.log(d.find(r"星数.*?<br />(.*?)<br />")).append()
-            if "尔等之才" in d.html:
-                break
 
-        # 领取奖励
-        while _id := d.find(r"box_id=(\d+)"):
-            d.get(f"cmd=misty&op=reward&box_id={_id}")
-            d.log(d.find(r"星数.*?<br />(.*?)<br />")).append()
-        # 返回飘渺幻境
-        d.get("cmd=misty&op=return")
+    _id: int = d.config["幻境"]
+    d.get(f"cmd=misty&op=start&stage_id={_id}")
+    if "副本未开通" in d.html:
+        d.log(f"副本{_id}未开通，请选择其它副本").append()
+        return
+
+    for _ in range(5):
+        # 乐斗
+        d.get("cmd=misty&op=fight")
+        d.log(d.find(r"星数.*?<br />(.*?)<br />")).append()
+        if "尔等之才" in d.html:
+            break
+
+    # 领取奖励
+    while _id := d.find(r"box_id=(\d+)"):
+        d.get(f"cmd=misty&op=reward&box_id={_id}")
+        d.log(d.find(r"星数.*?<br />(.*?)<br />")).append()
+
+    # 返回飘渺幻境
+    d.get("cmd=misty&op=return")
 
 
 def 群雄逐鹿(d: DaLeDou):
