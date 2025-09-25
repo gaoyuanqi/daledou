@@ -2014,7 +2014,7 @@ def 天涯浪子(
                 d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
                 # 是
                 d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
-            if day == 6:
+            elif day == 6:
                 # 锦囊1
                 d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
             d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
