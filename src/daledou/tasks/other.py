@@ -1761,48 +1761,6 @@ def 时空守护者(
     jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
 
 
-def 桃花自古笑春风(
-    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
-):
-    """最高520金币"""
-
-    def event(day: int) -> bool:
-        """战败返回True，否则返回False"""
-        if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
-            _id = _ids[-1]
-            # 战斗
-            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
-            # FIGHT!
-            d.get("cmd=jianghudream&op=doPveFight")
-            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
-            if "战败" in d.html:
-                return True
-        elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
-            # 奇遇
-            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
-            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
-            if day == 1:
-                # 过去看看
-                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
-                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
-                # 以西湖来对
-                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
-            elif day == 5:
-                # 我的
-                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
-            elif day == 7:
-                # 摸黑进入
-                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
-                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
-                # 纯路人
-                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
-            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
-
-        return False
-
-    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
-
-
 def 倚天屠龙归我心(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
@@ -1937,6 +1895,135 @@ def 雪山藏魂(
     jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
 
 
+def 桃花自古笑春风(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    """最高520金币"""
+
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
+            _id = _ids[-1]
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
+            # 奇遇
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            if day == 1:
+                # 过去看看
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 以西湖来对
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 5:
+                # 我的
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 7:
+                # 摸黑进入
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 纯路人
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
+def 战乱襄阳(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    """最高480金币"""
+
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
+            _id = _ids[-1]
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
+            # 奇遇
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            if day == 4:
+                for _ in range(3):
+                    # 向左突围 > 周遭探查 > 捣毁粮仓
+                    d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+                    d.log(
+                        d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天"
+                    )
+
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
+def 天涯浪子(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    """最高355金币"""
+
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _ids := d.findall(r'event_id=(\d+)">战斗'):
+            _id = _ids[-1]
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">奇遇'):
+            # 奇遇
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            if day == 1:
+                # 问其身份
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 锦囊2
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 2:
+                # 重金求见
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 相约明日
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 3:
+                # 阁楼3
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=3")
+            elif day == 4:
+                # 结为姐弟
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 5:
+                # 筹备计划
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 是
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            if day == 6:
+                # 锦囊1
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
 def get_open_copy_data(d: DaLeDou) -> dict:
     """获取开放副本数据"""
     base_data = {
@@ -1949,11 +2036,6 @@ def get_open_copy_data(d: DaLeDou) -> dict:
             "material_name": "拭剑香炉",
             "material_id": "6940",
             "ins_id": "32",
-        },
-        "桃花自古笑春风": {
-            "material_name": "桃花香炉",
-            "material_id": "6825",
-            "ins_id": "51",
         },
         "时空守护者": {
             "material_name": "时空香炉",
@@ -1974,6 +2056,21 @@ def get_open_copy_data(d: DaLeDou) -> dict:
             "material_name": "雪山香炉",
             "material_id": "8121",
             "ins_id": "50",
+        },
+        "桃花自古笑春风": {
+            "material_name": "桃花香炉",
+            "material_id": "6825",
+            "ins_id": "51",
+        },
+        "战乱襄阳": {
+            "material_name": "忠义香炉",
+            "material_id": "6888",
+            "ins_id": "52",
+        },
+        "天涯浪子": {
+            "material_name": "中秋香炉",
+            "material_id": "6547",
+            "ins_id": "53",
         },
     }
 
