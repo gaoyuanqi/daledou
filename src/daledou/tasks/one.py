@@ -35,6 +35,30 @@ from .common import (
 )
 
 
+def get_doushenta_cd(d: DaLeDou) -> int:
+    """返回斗神塔冷却时间"""
+    # 达人等级对应斗神塔CD时间
+    cd = {
+        "1": 7,
+        "2": 6,
+        "3": 5,
+        "4": 4,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+    }
+    # 乐斗达人
+    d.get("cmd=ledouvip")
+    if level := d.find(r"当前级别：(\d+)"):
+        return cd[level]
+    else:
+        # 还未成为达人
+        return 10
+
+
 def get_exchange_config(config: list):
     """返回兑换名称、兑换id和兑换数量"""
     for item in config:
@@ -207,28 +231,9 @@ def 分享(d: DaLeDou):
     每天最多一键分享9次，斗神塔每次挑战10层以增加一次分享次数
     周四领取奖励，若全部已领取则重置分享
     """
-    # 达人等级对应斗神塔CD时间
-    cd = {
-        "1": 7,
-        "2": 6,
-        "3": 5,
-        "4": 4,
-        "5": 3,
-        "6": 2,
-        "7": 1,
-        "8": 1,
-        "9": 1,
-        "10": 1,
-    }
-    # 乐斗达人
-    d.get("cmd=ledouvip")
-    if level := d.find(r"当前级别：(\d+)"):
-        second = cd[level]
-    else:
-        # 还未成为达人
-        second = 10
-
     end = False
+    second = get_doushenta_cd(d)
+
     for _ in range(9):
         # 一键分享
         d.get("cmd=sharegame&subtype=6")
@@ -279,10 +284,11 @@ def 乐斗(d: DaLeDou):
     """
     体力药水：是否自动使用详见配置文件
     贡献药水：每天使用，使用次数详见配置文件
-    侠：每天乐斗好友BOSS、帮友BOSS、侠侣BOSS
+    侠：每天乐斗好友BOSS、帮友BOSS、侠侣BOSS，禁用好友BOSS详见配置文件
     情师徒拜：每天乐斗，是否乐斗详见配置文件
     """
     config: dict[str, bool] = d.config["乐斗"]
+    disable_boss_uin: list[str] = config["disable_boss_uin"] or []
     use_count: int = config["贡献药水"]
     is_open_auto_use: bool = config["体力药水"]
     is_ledou: bool = config["情师徒拜"]
@@ -309,9 +315,11 @@ def 乐斗(d: DaLeDou):
     # 好友首页
     d.get("cmd=friendlist&page=1")
     for u in d.findall(r"侠：.*?B_UID=(\d+)"):
+        if u in disable_boss_uin:
+            continue
         # 乐斗
         d.get(f"cmd=fight&B_UID={u}")
-        d.log(d.find(r"删</a><br />(.*?)，")).append()
+        d.log(d.find(r"<br />(.*?)，")).append()
         if "体力值不足" in d.html:
             break
 
@@ -320,7 +328,7 @@ def 乐斗(d: DaLeDou):
     for u in d.findall(r"侠：.*?B_UID=(\d+)"):
         # 乐斗
         d.get(f"cmd=fight&B_UID={u}")
-        d.log(d.find(r"侠侣</a><br />(.*?)，")).append()
+        d.log(d.find(r"<br />(.*?)，")).append()
 
     # 侠侣
     d.get("cmd=viewxialv&page=1")
@@ -333,8 +341,8 @@ def 乐斗(d: DaLeDou):
         d.get(f"cmd=fight&B_UID={u}")
         if "使用规则" in d.html:
             d.log(d.find(r"】</p><p>(.*?)<br />")).append()
-        elif "查看乐斗过程" in d.html:
-            d.log(d.find(r"删</a><br />(.*?)！")).append()
+        else:
+            d.log(d.find(r"<br />(.*?)！")).append()
         if "体力值不足" in d.html:
             break
 
@@ -651,9 +659,9 @@ def 镖行天下(d: DaLeDou):
             # 拦截
             d.get(f"cmd=cargo&op=14&passerby_uin={uin}")
             d.log(d.find())
-            if "系统繁忙" in d.html:
-                continue
-            elif "这个镖车在保护期内" in d.html:
+            if "系统繁忙" in d.html or "这个镖车" in d.html:
+                # 这个镖车在保护期内
+                # 这个镖车已经到达终点
                 continue
             elif "您今天已达拦截次数上限了" in d.html:
                 return
@@ -717,18 +725,54 @@ def 画卷迷踪(d: DaLeDou):
 
 def 门派(d: DaLeDou):
     """
-    万年寺：每天点燃普通香炉、点燃高香香炉
-    八叶堂：每天一次进入木桩训练、一次进入同门切磋
-    五花堂：每天最多完成任务3次
+    万年寺
+        普通香炉：每天点燃一次
+        高香香炉：每天点燃一次，是否兑换门派高香详见配置文件
+    八叶堂
+        进入木桩训练：每天一次
+        进入同门切磋：每天一次，如果成功兑换门派战书还会切磋一次，是否兑换门派战书详见配置文件
+    金顶：每天挑战所有职位一次
+    五花堂：每天最多完成3次
     """
-    # 点燃普通香炉、点燃高香香炉
+    is_exchange: dict[str, bool] = d.config["门派"]
+    if is_exchange["门派高香"]:
+        d.get("cmd=exchange&subtype=2&type=1248&times=1")
+        d.log(d.find())
+    is_exchange_success = False
+    if is_exchange["门派战书"]:
+        d.get("cmd=exchange&subtype=2&type=1249&times=1")
+        d.log(d.find())
+        if "成功" in d.html:
+            is_exchange_success = True
+
+    # 万年寺
+    # 普通香炉、高香香炉
     for op in ["fumigatefreeincense", "fumigatepaidincense"]:
         d.get(f"cmd=sect&op={op}")
         d.log(d.find(r"修行。<br />(.*?)<br />")).append()
 
+    # 八叶堂
     # 进入木桩训练、进入同门切磋
-    for op in ["trainingwithnpc", "trainingwithmember"]:
+    ops = ["trainingwithnpc", "trainingwithmember"]
+    if is_exchange_success:
+        ops.append("trainingwithmember")
+    for op in ops:
         d.get(f"cmd=sect&op={op}")
+        d.log(d.find()).append()
+
+    # 金顶
+    ranks = [
+        "rank=1&pos=1",  # 掌门
+        "rank=2&pos=1",  # 首座
+        "rank=2&pos=2",  # 首座
+        "rank=3&pos=1",  # 堂主
+        "rank=3&pos=2",  # 堂主
+        "rank=3&pos=3",  # 堂主
+        "rank=3&pos=4",  # 堂主
+    ]
+    for rank in ranks:
+        # 切磋
+        d.get(f"cmd=sect&op=trainingwithcouncil&{rank}")
         d.log(d.find()).append()
 
     # 五花堂
@@ -739,9 +783,6 @@ def 门派(d: DaLeDou):
         "进入金顶看一看": "cmd=sect&op=showcouncil",
         "进入八叶堂看一看": "cmd=sect&op=showtraining",
         "进入万年寺看一看": "cmd=sect&op=showfumigate",
-        "与掌门人进行一次武艺切磋": "cmd=sect&op=trainingwithcouncil&rank=1&pos=1",
-        "与首座进行一次武艺切磋": "cmd=sect&op=trainingwithcouncil&rank=2&pos=1",
-        "与堂主进行一次武艺切磋": "cmd=sect&op=trainingwithcouncil&rank=3&pos=1",
     }
     for name, url in tasks.items():
         if name in wuhuatang:
@@ -885,8 +926,22 @@ def 会武(d: DaLeDou):
             d.log(d.find()).append()
 
 
-def 梦幻旅行(d: DaLeDou):
-    if d.html.count("已去过") < 5:
+def 梦想之旅(d: DaLeDou):
+    """
+    普通旅行：每天一次
+    梦幻旅行：周四消耗梦幻机票完成未去过目的地，消耗数量详见配置文件
+    区域礼包：有就周四领取
+    超级礼包：有就周四领取
+    """
+    # 普通旅行
+    d.get("cmd=dreamtrip&sub=2")
+    d.log(d.find()).append()
+
+    if d.week != 4:
+        return
+
+    consume_number: int = d.config["梦想之旅"]
+    if consume_number < d.html.count("未去过"):
         return
 
     # 获取当前区域所有未去过的目的地
@@ -907,20 +962,6 @@ def 梦幻旅行(d: DaLeDou):
             # 超级礼包 0
             d.get(f"cmd=dreamtrip&sub=4&bmapid={b[0]}")
             d.log(d.find()).append()
-
-
-def 梦想之旅(d: DaLeDou):
-    """
-    普通旅行：每天一次
-    梦幻旅行：周四且需已去过至少5个区域时
-    区域礼包：有就周四领取
-    超级礼包：有就周四领取
-    """
-    # 普通旅行
-    d.get("cmd=dreamtrip&sub=2")
-    d.log(d.find()).append()
-    if d.week == 4:
-        梦幻旅行(d)
 
 
 def 问鼎天下_商店兑换(d: DaLeDou):
@@ -1666,7 +1707,7 @@ def 龙凰之境(d: DaLeDou):
 
 
 def 增强经脉(d: DaLeDou):
-    """每天最多传功12次"""
+    """最多传功12次"""
     # 关闭传功符不足用斗豆代替
     d.get("cmd=intfmerid&sub=21&doudou=0")
     if "关闭" in d.html:
@@ -1794,12 +1835,13 @@ def 挑战陌生人(d: DaLeDou):
 
 
 def 任务(d: DaLeDou):
-    """增强经脉、助阵每天必做"""
-    增强经脉(d)
+    """助阵每天必做"""
     助阵(d)
 
     # 日常任务
     task_html = d.get("cmd=task&sub=1")
+    if "增强经脉" in task_html:
+        增强经脉(d)
     if "查看好友资料" in task_html:
         查看好友资料(d)
     if "徽章进阶" in task_html:
@@ -1996,13 +2038,45 @@ def 仙武修真(d: DaLeDou):
 
 
 def 乐斗黄历(d: DaLeDou):
-    """每天领取、占卜一次"""
+    """
+    领取：每天一次
+    占卜：每天一次
+    斗神塔：如果有双倍则自动挑战（次数耗尽或到不了顶层结束），挑战次数详见配置文件
+    """
     # 领取
     d.get("cmd=calender&op=2")
     d.log(d.find(r"<br /><br />(.*?)<br />")).append()
     # 占卜
     d.get("cmd=calender&op=4")
     d.log(d.find(r"<br /><br />(.*?)<br />")).append()
+
+    # 乐斗黄历
+    d.get("cmd=calender&op=0")
+    if "斗神塔掉落，每日奖励双倍" not in d.html:
+        return
+
+    challenge_count: int = d.config["乐斗黄历"]
+    if challenge_count <= 0:
+        return
+
+    count = 0
+    second = get_doushenta_cd(d)
+    for _ in range(challenge_count):
+        # 自动挑战
+        d.get("cmd=towerfight&type=11")
+        d.log(d.find(), "乐斗黄历-斗神塔")
+        if "扫荡完成" in d.html:
+            count += 1
+        if "结束挑战" in d.html:
+            time.sleep(second)
+            # 结束挑战
+            d.get("cmd=towerfight&type=7")
+            d.log(d.find(), "乐斗黄历-斗神塔")
+        else:
+            d.append()
+            break
+    if count:
+        d.append(f"斗神塔自动挑战*{count}")
 
 
 def 器魂附魔(d: DaLeDou):
@@ -2681,33 +2755,31 @@ def 节日福利_历练(d: DaLeDou):
                 break
 
 
-def 节日福利_斗神塔(d: DaLeDou):
-    # 达人等级对应斗神塔CD时间
-    cd = {
-        "1": 7,
-        "2": 6,
-        "3": 5,
-        "4": 4,
-        "5": 3,
-        "6": 2,
-        "7": 1,
-        "8": 1,
-        "9": 1,
-        "10": 1,
-    }
-    # 乐斗达人
-    d.get("cmd=ledouvip")
-    if level := d.find(r"当前级别：(\d+)"):
-        second = cd[level]
-    else:
-        # 还未成为达人
-        second = 10
+def 节日福利(d: DaLeDou):
+    """
+    历练：每天反向乐斗BOSS（自动使用活力药水），是否乐斗详见配置文件
+    斗神塔：周四自动挑战（次数耗尽或到不了顶层结束），挑战次数详见配置文件
+    """
+    config: dict = d.config["节日福利"]
+
+    if config["历练"]:
+        节日福利_历练(d)
+
+    if d.week != 4:
+        return
+
+    challenge_count: int = config["斗神塔"]
+    if challenge_count <= 0:
+        return
 
     count = 0
-    for _ in range(16):
+    second = get_doushenta_cd(d)
+    for _ in range(challenge_count):
         # 自动挑战
         d.get("cmd=towerfight&type=11")
         d.log(d.find(), "节日福利-斗神塔")
+        if "扫荡完成" in d.html:
+            count += 1
         if "结束挑战" in d.html:
             time.sleep(second)
             # 结束挑战
@@ -2716,18 +2788,8 @@ def 节日福利_斗神塔(d: DaLeDou):
         else:
             d.append()
             break
-        count += 1
-    d.append(f"斗神塔自动挑战*{count}")
-
-
-def 节日福利(d: DaLeDou):
-    """
-    历练：每天从高等级到低等级依次乐斗BOSS（自动使用活力药水）
-    斗神塔：周四自动挑战（次数耗尽或到不了顶层结束）
-    """
-    节日福利_历练(d)
-    if d.week == 4:
-        节日福利_斗神塔(d)
+    if count:
+        d.append(f"斗神塔自动挑战*{count}")
 
 
 def 预热礼包(d: DaLeDou):
