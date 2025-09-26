@@ -648,7 +648,7 @@ def 镖行天下(d: DaLeDou):
     领取奖励：每天一次
     刷新押镖：当镖师是蔡八斗时刷新，最多免费两次
     启程护送：每天一次
-    拦截：每天3次（如果战败则不会再拦截该玩家），拦截镖师详见配置文件
+    拦截：每天3次（如果战败、保护期、已达终点则不会再拦截该玩家；刷新最多20次），拦截镖师详见配置文件
     """
     bodyguard: str = d.config["镖行天下"]
 
@@ -673,26 +673,34 @@ def 镖行天下(d: DaLeDou):
         d.get("cmd=cargo&op=6")
         d.log(d.find()).append()
 
-    defeat_uin = []
-    while d.find(r"剩余拦截次数：(\d+)") != "0":
+    not_interception_uin = []
+    for _ in range(20):
+        if "剩余拦截次数：0" in d.html:
+            return
+
         # 刷新
         d.get("cmd=cargo&op=3")
         d.log(d.find())
         for uin in d.findall(rf"{bodyguard}.*?passerby_uin=(\d+)"):
-            if uin in defeat_uin:
+            if uin in not_interception_uin:
                 continue
+
             # 拦截
             d.get(f"cmd=cargo&op=14&passerby_uin={uin}")
             d.log(d.find())
-            if "系统繁忙" in d.html or "这个镖车" in d.html:
+            if "空手而归" in d.html:
+                not_interception_uin.append(uin)
+            elif "这个镖车" in d.html:
                 # 这个镖车在保护期内
                 # 这个镖车已经到达终点
+                not_interception_uin.append(uin)
                 continue
-            elif "您今天已达拦截次数上限了" in d.html:
-                return
-            elif "空手而归" in d.html:
-                defeat_uin.append(uin)
+            elif "系统繁忙" in d.html:
+                continue
             d.append()
+
+            if "剩余拦截次数：0" in d.html:
+                return
 
 
 def 幻境(d: DaLeDou):
