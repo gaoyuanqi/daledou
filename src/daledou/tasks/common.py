@@ -312,26 +312,6 @@ def c_幸运金蛋(d: DaLeDou):
         d.log("没有砸蛋次数了").append()
 
 
-def c_疯狂许愿(d: DaLeDou, config: str):
-    """乐斗儿童节、乐斗开学季周四领取选择奖励"""
-    # 乐斗儿童节、乐斗开学季
-    d.get("cmd=newAct&subtype=130")
-    if "取消返回" in d.html:
-        # 取消返回
-        d.get("cmd=newAct&subtype=130&op=6")
-
-    if "op=2" not in d.html:
-        d.log("你已经领取过了").append()
-        return
-
-    t, s = d.findall(r"type=(\d+)&sub_type=(\d+)", config)[0]
-    # 选择分类
-    d.get(f"cmd=newAct&subtype=130&op=2&type={t}")
-    # 选择
-    d.get(f"cmd=newAct&subtype=130&op=3&type={t}&sub_type={s}")
-    d.log(d.find(r"】</p>(.*?)<")).append()
-
-
 def c_乐斗大笨钟(d: DaLeDou):
     """领取一次"""
     # 领取

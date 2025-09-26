@@ -30,7 +30,6 @@ from .common import (
     c_龙凰论武,
     c_客栈同福,
     c_幸运金蛋,
-    c_疯狂许愿,
     c_乐斗大笨钟,
 )
 
@@ -57,6 +56,28 @@ def get_doushenta_cd(d: DaLeDou) -> int:
     else:
         # 还未成为达人
         return 10
+
+
+def 斗神塔(d: DaLeDou, name: str, challenge_count: str):
+    """斗神塔自动挑战（次数耗尽或到不了顶层结束）"""
+    count = 0
+    second = get_doushenta_cd(d)
+    for _ in range(challenge_count):
+        # 自动挑战
+        d.get("cmd=towerfight&type=11")
+        d.log(d.find(), name)
+        if "扫荡完成" in d.html:
+            count += 1
+        if "结束挑战" in d.html:
+            time.sleep(second)
+            # 结束挑战
+            d.get("cmd=towerfight&type=7")
+            d.log(d.find(), name)
+        else:
+            d.append()
+            break
+    if count:
+        d.append(f"斗神塔自动挑战*{count}")
 
 
 def get_exchange_config(config: list):
@@ -627,7 +648,7 @@ def 镖行天下(d: DaLeDou):
     领取奖励：每天一次
     刷新押镖：当镖师是蔡八斗时刷新，最多免费两次
     启程护送：每天一次
-    拦截：每天3次，拦截镖师详见配置文件
+    拦截：每天3次（如果战败则不会再拦截该玩家），拦截镖师详见配置文件
     """
     bodyguard: str = d.config["镖行天下"]
 
@@ -652,10 +673,14 @@ def 镖行天下(d: DaLeDou):
         d.get("cmd=cargo&op=6")
         d.log(d.find()).append()
 
+    defeat_uin = []
     while d.find(r"剩余拦截次数：(\d+)") != "0":
         # 刷新
         d.get("cmd=cargo&op=3")
+        d.log(d.find())
         for uin in d.findall(rf"{bodyguard}.*?passerby_uin=(\d+)"):
+            if uin in defeat_uin:
+                continue
             # 拦截
             d.get(f"cmd=cargo&op=14&passerby_uin={uin}")
             d.log(d.find())
@@ -665,6 +690,8 @@ def 镖行天下(d: DaLeDou):
                 continue
             elif "您今天已达拦截次数上限了" in d.html:
                 return
+            elif "空手而归" in d.html:
+                defeat_uin.append(uin)
             d.append()
 
 
@@ -2059,24 +2086,7 @@ def 乐斗黄历(d: DaLeDou):
     if challenge_count <= 0:
         return
 
-    count = 0
-    second = get_doushenta_cd(d)
-    for _ in range(challenge_count):
-        # 自动挑战
-        d.get("cmd=towerfight&type=11")
-        d.log(d.find(), "乐斗黄历-斗神塔")
-        if "扫荡完成" in d.html:
-            count += 1
-        if "结束挑战" in d.html:
-            time.sleep(second)
-            # 结束挑战
-            d.get("cmd=towerfight&type=7")
-            d.log(d.find(), "乐斗黄历-斗神塔")
-        else:
-            d.append()
-            break
-    if count:
-        d.append(f"斗神塔自动挑战*{count}")
+    斗神塔(d, "乐斗黄历-斗神塔", challenge_count)
 
 
 def 器魂附魔(d: DaLeDou):
@@ -2730,7 +2740,8 @@ def 喜从天降(d: DaLeDou):
             break
 
 
-def 节日福利_历练(d: DaLeDou):
+def 福利_历练(d: DaLeDou, name: str):
+    """节日福利、金秋福利每天反向乐斗BOSS"""
     # 乐斗助手
     d.get("cmd=view&type=6")
     if "开启自动使用活力药水" in d.html:
@@ -2742,12 +2753,10 @@ def 节日福利_历练(d: DaLeDou):
         for _ in range(3):
             d.get(f"cmd=mappush&subtype=3&mapid=6&npcid={_id}&pageid=2")
             if "您还没有打到该历练场景" in d.html:
-                d.log(d.find(r"介绍</a><br />(.*?)<br />"), "节日福利-历练").append()
+                d.log(d.find(r"介绍</a><br />(.*?)<br />"), name).append()
                 break
-            d.log(d.find(r"阅历值：\d+<br />(.*?)<br />"), "节日福利-历练").append()
-            if "活力不足" in d.html:
-                return
-            elif "活力药水使用次数已达到每日上限" in d.html:
+            d.log(d.find(r"阅历值：\d+<br />(.*?)<br />"), name).append()
+            if "活力不足" in d.html or "活力药水使用次数已达到每日上限" in d.html:
                 return
             elif "BOSS" not in d.html:
                 # 你今天和xx挑战次数已经达到上限了，请明天再来挑战吧
@@ -2763,7 +2772,7 @@ def 节日福利(d: DaLeDou):
     config: dict = d.config["节日福利"]
 
     if config["历练"]:
-        节日福利_历练(d)
+        福利_历练(d, "节日福利-历练")
 
     if d.week != 4:
         return
@@ -2772,24 +2781,27 @@ def 节日福利(d: DaLeDou):
     if challenge_count <= 0:
         return
 
-    count = 0
-    second = get_doushenta_cd(d)
-    for _ in range(challenge_count):
-        # 自动挑战
-        d.get("cmd=towerfight&type=11")
-        d.log(d.find(), "节日福利-斗神塔")
-        if "扫荡完成" in d.html:
-            count += 1
-        if "结束挑战" in d.html:
-            time.sleep(second)
-            # 结束挑战
-            d.get("cmd=towerfight&type=7")
-            d.log(d.find(), "节日福利-斗神塔")
-        else:
-            d.append()
-            break
-    if count:
-        d.append(f"斗神塔自动挑战*{count}")
+    斗神塔(d, "节日福利-斗神塔", challenge_count)
+
+
+def 金秋福利(d: DaLeDou):
+    """
+    历练：每天反向乐斗BOSS（自动使用活力药水），是否乐斗详见配置文件
+    斗神塔：周四自动挑战（次数耗尽或到不了顶层结束），挑战次数详见配置文件
+    """
+    config: dict = d.config["金秋福利"]
+
+    if config["历练"]:
+        福利_历练(d, "金秋福利-历练")
+
+    if d.week != 4:
+        return
+
+    challenge_count: int = config["斗神塔"]
+    if challenge_count <= 0:
+        return
+
+    斗神塔(d, "金秋福利-斗神塔", challenge_count)
 
 
 def 预热礼包(d: DaLeDou):
@@ -2797,6 +2809,16 @@ def 预热礼包(d: DaLeDou):
     # 领取
     d.get("cmd=newAct&subtype=117&op=1")
     d.log(d.find(r"<br /><br />(.*?)<")).append()
+
+
+def 微信兑换(d: DaLeDou):
+    """周四微信兑换，在settings.yaml配置兑换码"""
+    from ..core.daledou import Config
+
+    code: str = Config.load_settings_config("WX_CODE")
+    # 兑换
+    d.get(f"cmd=weixin&cdkey={code}&sub=2&zapp_sid=&style=0&channel=0&i_p_w=cdkey|")
+    d.log(d.find()).append()
 
 
 def 五一礼包(d: DaLeDou):
@@ -3047,7 +3069,10 @@ def 乐斗激运牌(d: DaLeDou):
 
 
 def 乐斗能量棒(d: DaLeDou):
-    """最多领取3次能量棒，获得的活力将乐斗历练BOSS"""
+    """
+    能量棒：每天最多领取3次
+    历练：每天反向乐斗BOSS（关闭自动使用活力药水）
+    """
     # 乐斗能量棒
     d.get("cmd=newAct&subtype=108&op=0")
     data = d.findall(r"id=(\d+)")
@@ -3061,6 +3086,7 @@ def 乐斗能量棒(d: DaLeDou):
         # 取消自动使用活力药水
         d.get("cmd=set&type=11")
         d.log("取消自动使用活力药水")
+
     for _id in get_boss_id():
         count = 3
         while count:
@@ -3125,14 +3151,34 @@ def 乐斗回忆录(d: DaLeDou):
         d.log(d.find(r"6点<br />(.*?)<br />")).append()
 
 
+def 疯狂许愿(d: DaLeDou, config: str):
+    """乐斗儿童节、乐斗开学季周四领取选择奖励"""
+    # 乐斗儿童节、乐斗开学季
+    d.get("cmd=newAct&subtype=130")
+    if "取消返回" in d.html:
+        # 取消返回
+        d.get("cmd=newAct&subtype=130&op=6")
+
+    if "op=2" not in d.html:
+        d.log("你已经领取过了").append()
+        return
+
+    t, s = d.findall(r"type=(\d+)&sub_type=(\d+)", config)[0]
+    # 选择分类
+    d.get(f"cmd=newAct&subtype=130&op=2&type={t}")
+    # 选择
+    d.get(f"cmd=newAct&subtype=130&op=3&type={t}&sub_type={s}")
+    d.log(d.find(r"】</p>(.*?)<")).append()
+
+
 def 乐斗儿童节(d: DaLeDou):
     """周四领取选择奖励，详见配置文件"""
-    c_疯狂许愿(d, d.config["乐斗儿童节"])
+    疯狂许愿(d, d.config["乐斗儿童节"])
 
 
 def 乐斗开学季(d: DaLeDou):
     """周四领取选择奖励，详见配置文件"""
-    c_疯狂许愿(d, d.config["乐斗开学季"])
+    疯狂许愿(d, d.config["乐斗开学季"])
 
 
 def 周年生日祝福(d: DaLeDou):
