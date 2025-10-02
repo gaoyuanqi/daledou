@@ -49,6 +49,15 @@ def get_blessing_value(d: DaLeDou) -> tuple[int, int]:
     return now_value, total_value
 
 
+def get_blessing_event(d: DaLeDou) -> str:
+    """请求祝福活动"""
+    d.get("cmd=index&channel=0")
+    if "祝福合集宝库" in d.html:
+        d.get("cmd=newAct&subtype=143")
+    elif "远方祝福" in d.html:
+        d.get("cmd=newAct&subtype=153")
+
+
 def get_consume(d: DaLeDou, backpack_id: str = None) -> tuple[str, int, int]:
     """返回材料消耗名称、消耗数量、拥有数量"""
     consume_name = d.find(r"消耗：(.*?)\*")
@@ -128,7 +137,7 @@ class Exchange:
             self.d.log(self.d.find(self.regex), self.store_name)
             if "成功" in self.d.html:
                 count -= 1
-            elif "不足" in self.d.html:
+            elif "不足" in self.d.html or "达到当日兑换上限" in self.d.html:
                 print_separator()
                 return False
         return True
@@ -232,9 +241,8 @@ class AoYi(BaseUpgrader):
 
     def get_data(self) -> dict:
         """获取奥义数据"""
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=技能奥义=" in self.d.html:
+        get_blessing_event(self.d)
+        if "奥义" in self.d.html:
             fail_value = int(self.d.find(r"奥义五阶5星.*?获得(\d+)"))
         else:
             fail_value = 2
@@ -309,9 +317,8 @@ class JiNengLan(BaseUpgrader):
 
     def get_data(self) -> dict:
         """获取奥义技能栏数据"""
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=技能奥义=" in self.d.html:
+        get_blessing_event(self.d)
+        if "奥义" in self.d.html:
             fail_value = int(self.d.find(r"技能栏7星.*?失败(\d+)"))
         else:
             fail_value = 2
@@ -740,9 +747,8 @@ class ShenZhuang(BaseUpgrader):
 
     def get_data(self) -> dict:
         """获取神装数据，不包含满阶和必成数据"""
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=神装=" in self.d.html:
+        get_blessing_event(self.d)
+        if "神装" in self.d.html:
             fail_value = 2 * int(self.d.find(r"神装进阶失败获得(\d+)"))
         else:
             fail_value = 2
@@ -1236,10 +1242,10 @@ class WuQiZhuanJing(BaseUpgrader):
 
     def get_fail_value(self, level: str) -> int:
         """返回专精失败祝福值"""
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=专精=" not in self.d.html:
+        get_blessing_event(self.d)
+        if "专精" not in self.d.html:
             return 2
+
         if "五阶" in level:
             return int(self.d.find(r"专精.*?五阶5星.*?(\d+)"))
         return int(self.d.find(r"专精.*?四阶5星.*?(\d+)"))
@@ -1326,9 +1332,8 @@ class WuQiLan(BaseUpgrader):
         store_points = get_store_points(self.d, "cmd=exchange&subtype=10&costtype=4")
         store_exchange_num = store_points // 40
 
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=专精=" in self.d.html:
+        get_blessing_event(self.d)
+        if "专精" in self.d.html:
             fail_value = int(self.d.find(r"武器栏失败获得(\d+)"))
         else:
             fail_value = 2
@@ -1417,9 +1422,8 @@ class LingShouPian(BaseUpgrader):
 
     def get_data(self) -> dict:
         """获取灵兽篇数据"""
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=神魔录=" in self.d.html:
+        get_blessing_event(self.d)
+        if "神魔录" in self.d.html:
             fail_value = int(self.d.find(r"灵兽经五阶5星.*?获得(\d+)"))
         else:
             fail_value = 2
@@ -2376,10 +2380,10 @@ class XianWuXiuZhen(BaseUpgrader):
             "传说残片": "传说级法宝",
             "神话残片": "神话级法宝",
         }
-        # 祝福合集宝库
-        self.d.get("cmd=newAct&subtype=143")
-        if "=仙武修真=" not in self.d.html:
+        get_blessing_event(self.d)
+        if "仙武修真" not in self.d.html:
             return 2
+
         level, fail_value = self.d.findall(
             rf"{blessing_data[consume_name]}(\d+)级.*?(\d+)点"
         )[0]

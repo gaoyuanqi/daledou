@@ -673,7 +673,7 @@ def 镖行天下(d: DaLeDou):
         d.get("cmd=cargo&op=6")
         d.log(d.find()).append()
 
-    not_interception_uin = []
+    not_interception_uin = set()
     for _ in range(20):
         if "剩余拦截次数：0" in d.html:
             return
@@ -681,7 +681,11 @@ def 镖行天下(d: DaLeDou):
         # 刷新
         d.get("cmd=cargo&op=3")
         d.log(d.find())
-        for uin in d.findall(rf"{bodyguard}.*?passerby_uin=(\d+)"):
+        uins = d.findall(rf'{bodyguard}.*?passerby_uin=(\d+)">拦截')
+        if not uins or set(uins).issubset(not_interception_uin):
+            time.sleep(3)
+
+        for uin in uins:
             if uin in not_interception_uin:
                 continue
 
@@ -689,11 +693,11 @@ def 镖行天下(d: DaLeDou):
             d.get(f"cmd=cargo&op=14&passerby_uin={uin}")
             d.log(d.find())
             if "空手而归" in d.html:
-                not_interception_uin.append(uin)
+                not_interception_uin.add(uin)
             elif "这个镖车" in d.html:
                 # 这个镖车在保护期内
                 # 这个镖车已经到达终点
-                not_interception_uin.append(uin)
+                not_interception_uin.add(uin)
                 continue
             elif "系统繁忙" in d.html:
                 continue

@@ -57,7 +57,7 @@ wheels = [
 
 [[package]]
 name = "daledou"
-version = "12.10.1"
+version = "12.10.2"
 source = { virtual = "." }
 dependencies = [
     { name = "loguru" },

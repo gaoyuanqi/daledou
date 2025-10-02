@@ -95,7 +95,7 @@ def c_任务派遣中心(d: DaLeDou):
         d.get(f"cmd=missionassign&subtype=5&mission_id={_id}")
         d.log(d.find(r"\[任务派遣中心\](.*?)<br />"), task_name).append()
 
-    fail_ids = []
+    fail_ids = set()
     is_maximums = False
     is_has_free_refresh_count = True
     for _ in range(5):
@@ -121,7 +121,7 @@ def c_任务派遣中心(d: DaLeDou):
             d.get(f"cmd=missionassign&subtype=7&mission_id={_id}")
             if "设置佣兵成功" not in d.html:
                 d.log(d.find(r"】<br /><br />(.*?)<"), task_name)
-                fail_ids.append(_id)
+                fail_ids.add(_id)
                 continue
             d.log(d.find(r"】</p>(.*?)<"), task_name)
 
