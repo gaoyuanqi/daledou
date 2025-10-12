@@ -73,8 +73,8 @@ def 龙凰之境(d: DaLeDou):
 
 def 背包(d: DaLeDou):
     """使用背包物品"""
-    config: list[str] = d.config["背包"]
-    if config is None:
+    use: list[str] = d.config["背包"]["use"]
+    if use is None:
         d.log("你没有配置背包").append()
         return
 
@@ -94,7 +94,7 @@ def 背包(d: DaLeDou):
             continue
         d.html = d.find(r"清理(.*?)商店")
         for _id, name, number in d.findall(r'id=(\d+)">(.*?)</a>数量：(\d+)'):
-            for item in config:
+            for item in use:
                 if item not in name:
                     continue
                 data.append((_id, name, int(number)))
@@ -184,7 +184,7 @@ def 普通合成(d: DaLeDou):
 
 
 def 符石分解(d: DaLeDou):
-    config: list[int] = d.config["神匠坊"]
+    config: list[int] = d.config["神匠坊"]["符石分解"]
     if config is None:
         d.log("你没有配置神匠坊符石分解").append()
         return
@@ -222,7 +222,11 @@ def 符石打造(d: DaLeDou):
 
 
 def 神匠坊(d: DaLeDou):
-    """每月20号普通合成、符石分解（默认仅I类）、符石打造"""
+    """
+    普通合成：每月20号合成
+    符石分解：每月20号分解，分解类型详见配置文件
+    符石打造：每月20号打造
+    """
     普通合成(d)
     符石分解(d)
     符石打造(d)

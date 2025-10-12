@@ -80,7 +80,7 @@ def 斗神塔(d: DaLeDou, name: str, challenge_count: str):
         d.append(f"斗神塔自动挑战*{count}")
 
 
-def get_exchange_config(config: list):
+def get_exchange_config(config: list[dict]):
     """返回兑换名称、兑换id和兑换数量"""
     for item in config:
         name: str = item["name"]
@@ -174,7 +174,7 @@ def 战阵调整(d: DaLeDou) -> bool:
 
 
 def 荣誉兑换(d: DaLeDou):
-    config: list[dict] = d.config["华山论剑"]
+    config: list[dict] = d.config["华山论剑"]["exchange"]
     if config is None:
         return
 
@@ -309,8 +309,8 @@ def 乐斗(d: DaLeDou):
     情师徒拜：每天乐斗，是否乐斗详见配置文件
     """
     config: dict[str, bool] = d.config["乐斗"]
-    disable_boss_uin: list[str] = config["disable_boss_uin"] or []
     use_count: int = config["贡献药水"]
+    disable_boss_uin: list[str] = config["disable_boss_uin"] or []
     is_open_auto_use: bool = config["体力药水"]
     is_ledou: bool = config["情师徒拜"]
 
@@ -418,7 +418,7 @@ def 巅峰之战进行中(d: DaLeDou):
         d.get("cmd=gvg&sub=1")
         d.log(d.find(r"】</p>(.*?)<br />")).append()
 
-        config: int = d.config["巅峰之战进行中"]
+        config: int = d.config["巅峰之战进行中"]["group"]
         if config is None:
             return
         # 报名
@@ -448,7 +448,7 @@ def 矿洞(d: DaLeDou):
     通关奖励：有就领取
     开启副本：详见配置文件
     """
-    config: str = d.config["矿洞"]
+    config: str = d.config["矿洞"]["floor_mode"]
 
     # 矿洞
     d.get("cmd=factionmine")
@@ -552,8 +552,8 @@ def 竞技场(d: DaLeDou):
     挑战：每月1~25号每天最多10次
     领取奖励：每月1~25号每天领取
     """
-    config: bool = d.config["竞技场"]
-    if config:
+    is_exchange: bool = d.config["竞技场"]["河图洛书"]
+    if is_exchange:
         # 兑换10个河图洛书
         d.get("cmd=arena&op=exchange&id=5435&times=10")
         d.log(d.find()).append()
@@ -572,7 +572,7 @@ def 竞技场(d: DaLeDou):
 
 def 十二宫(d: DaLeDou):
     """每天请猴王扫荡，选择场景详见配置文件"""
-    _id: int = d.config["十二宫"]
+    _id: int = d.config["十二宫"]["scene_id"]
     # 请猴王扫荡
     d.get(f"cmd=zodiacdungeon&op=autofight&scene_id={_id}")
     if "恭喜你" in d.html:
@@ -616,7 +616,7 @@ def 抢地盘(d: DaLeDou):
 
 def 历练(d: DaLeDou):
     """每天乐斗BOSS一次，最多乐斗5个BOSS"""
-    config: list = d.config["历练"]
+    config: list = d.config["历练"]["npc_ids"]
     if config is None:
         d.log("你没有配置历练BOSS").append()
         return
@@ -650,7 +650,7 @@ def 镖行天下(d: DaLeDou):
     启程护送：每天一次
     拦截：每天3次（如果战败、保护期、已达终点则不会再拦截该玩家；刷新最多20次），拦截镖师详见配置文件
     """
-    bodyguard: str = d.config["镖行天下"]
+    bodyguard: str = d.config["镖行天下"]["interception_bodyguard"]
 
     # 镖行天下
     d.get("cmd=cargo")
@@ -721,7 +721,7 @@ def 幻境(d: DaLeDou):
         # 返回飘渺幻境
         d.get("cmd=misty&op=return")
 
-    _id: int = d.config["幻境"]
+    _id: int = d.config["幻境"]["stage_id"]
     d.get(f"cmd=misty&op=start&stage_id={_id}")
     if "副本未开通" in d.html:
         d.log(f"副本{_id}未开通，请选择其它副本").append()
@@ -853,7 +853,7 @@ def 门派(d: DaLeDou):
 
 
 def 门派邀请赛_商店兑换(d: DaLeDou):
-    config: list[dict] = d.config["门派邀请赛"]
+    config: list[dict] = d.config["门派邀请赛"]["exchange"]
     if config is None:
         return
 
@@ -904,7 +904,7 @@ def 门派邀请赛(d: DaLeDou):
 
 
 def 会武_商店兑换(d: DaLeDou):
-    config: list[dict] = d.config["会武"]
+    config: list[dict] = d.config["会武"]["exchange"]
     if config is None:
         return
 
@@ -979,8 +979,8 @@ def 梦想之旅(d: DaLeDou):
     if d.week != 4:
         return
 
-    consume_number: int = d.config["梦想之旅"]
-    if consume_number < d.html.count("未去过"):
+    max_consume_quantity: int = d.config["梦想之旅"]["max_consume_quantity"]
+    if max_consume_quantity < d.html.count("未去过"):
         return
 
     # 获取当前区域所有未去过的目的地
@@ -1254,10 +1254,16 @@ def 帮派黄金联赛_参战(d: DaLeDou):
             d.log(d.find())
             if "不幸战败" in d.html:
                 d.append()
-                break
+                return
         elif "您已阵亡" in d.html:
             d.log(d.find(r"<br /><br />(.*?)</p>")).append()
-            break
+            return
+
+    # 参战
+    d.get("cmd=factionleague&op=2")
+    if "opp_uin" not in d.html:
+        d.log("敌人已全部阵亡").append()
+        return
 
 
 def 帮派黄金联赛(d: DaLeDou):
@@ -1304,7 +1310,7 @@ def 武林盟主(d: DaLeDou):
             d.log("没有奖励领取").append()
 
     if d.week in [1, 3, 5]:
-        _id: int = d.config["武林盟主"]
+        _id: int = d.config["武林盟主"]["ground_id"]
         if _id is None:
             d.log("你没有配置报名赛场id").append()
             return
@@ -1356,23 +1362,73 @@ def 大侠回归三重好礼(d: DaLeDou):
 
 def 飞升大作战(d: DaLeDou):
     """
-    每天兑换玄铁令*1、优先报名单排模式，玄铁令不足或者休赛期时选择匹配模式
-    周四领取赛季结束奖励
+    玄铁令：报名排位模式时兑换，是否兑换详见配置文件
+    报名：报名模式详见配置文件
+    备战天赋：报名排位模式时激活，是否激活详见配置文件
+    赛季结束奖励：周四且休赛期时领取
     """
-    # 兑换 玄铁令*1
-    d.get("cmd=ascendheaven&op=exchange&id=2&times=1")
-    d.log(d.find()).append()
+    config = d.config["飞升大作战"]
+    is_exchange: bool = config["玄铁令"]
+    t: int = config["type"]
+    _id: int | None = config["id"]
 
-    # 报名单排模式
-    d.get("cmd=ascendheaven&op=signup&type=1")
+    if is_exchange and t == 1:  # 报名单排模式之前兑换
+        # 兑换玄铁令*1
+        d.get("cmd=ascendheaven&op=exchange&id=2&times=1")
+        d.log(d.find()).append()
+    elif is_exchange and t == 3:  # 报名双排模式之前兑换
+        # 兑换玄铁令*1
+        d.get("cmd=ascendheaven&op=exchange&id=2&times=1")
+        d.log(d.find()).append()
+        # 兑换玄铁令*1
+        d.get("cmd=ascendheaven&op=exchange&id=2&times=1")
+        d.log(d.find()).append()
+
+    # 报名
+    d.get(f"cmd=ascendheaven&op=signup&type={t}")
     d.log(d.find()).append()
-    if "时势造英雄" not in d.html:
-        # 当前为休赛期，不在报名时间、还没有入场券玄铁令、你已经报名参赛
+    if "你报名参加了" in d.html or "你已经报名参赛" in d.html:
+        if t in {1, 3}:
+            is_activate = True
+        else:
+            is_activate = False
+    else:
+        # 当前为休赛期，不在报名时间、还没有入场券玄铁令
         # 报名匹配模式
         d.get("cmd=ascendheaven&op=signup&type=2")
         d.log(d.find()).append()
+        is_activate = False
 
-    if (d.week != 4) or ("赛季结算中" not in d.html):
+    # 备战天赋
+    if is_activate and _id is not None:
+        # 备战天赋
+        d.get("cmd=ascendheaven&op=viewprepare")
+        if start_id := d.find(r"id=(\d+)"):
+            start = int(start_id)
+        else:
+            start = 5
+
+        is_break = False
+        for i in range(start, _id + 1):
+            if is_break:
+                break
+            while True:
+                # 激活
+                d.get(f"cmd=ascendheaven&op=activeskill&id={i}")
+                d.log(d.find())
+                if "激活心法失败" in d.html:
+                    continue
+                elif "激活心法成功" in d.html:
+                    d.append()
+                is_break = True
+                break
+
+    if d.week != 4:
+        return
+
+    # 飞升大作战
+    d.get("cmd=ascendheaven")
+    if "赛季结算中" not in d.html:
         return
 
     # 境界修为
@@ -1384,7 +1440,7 @@ def 飞升大作战(d: DaLeDou):
 
 
 def 许愿帮铺(d: DaLeDou):
-    config: list[dict] = d.config["深渊之潮"]["许愿帮铺"]
+    config: list[dict] = d.config["深渊之潮"]["exchange"]
     if config is None:
         return
 
@@ -1510,7 +1566,7 @@ def 八卦迷阵(d: DaLeDou):
 
 
 def 遗迹商店(d: DaLeDou):
-    config: dict = d.config["时空遗迹"]["遗迹商店"]
+    config: dict = d.config["时空遗迹"]["exchange"]
     if config is None:
         return
 
@@ -1669,7 +1725,7 @@ def 世界树(d: DaLeDou):
 
 def 龙凰论武(d: DaLeDou):
     if d.day == 1:
-        zone: int = d.config["龙凰之境"]["龙凰论武"]["zone"]
+        zone: int = d.config["龙凰之境"]["zone"]
         # 报名
         d.get(f"cmd=dragonphoenix&op=sign&zone={zone}")
         d.log(d.find()).append()
@@ -1697,7 +1753,7 @@ def 龙凰云集(d: DaLeDou):
         if "当前无可领取奖励" in d.html:
             break
 
-    config: list[dict] = d.config["龙凰之境"]["龙凰云集"]
+    config: list[dict] = d.config["龙凰之境"]["exchange"]
     if config is None:
         return
 
@@ -1897,7 +1953,7 @@ def 任务(d: DaLeDou):
 
 
 def 帮派供奉(d: DaLeDou):
-    _ids: list = d.config["我的帮派"]
+    _ids: list = d.config["我的帮派"]["帮派供奉"]
     if _ids is None:
         d.log("你没有配置帮派供奉物品id").append()
         return
@@ -2094,7 +2150,7 @@ def 乐斗黄历(d: DaLeDou):
     if "斗神塔掉落，每日奖励双倍" not in d.html:
         return
 
-    challenge_count: int = d.config["乐斗黄历"]
+    challenge_count: int = d.config["乐斗黄历"]["challenge_count"]
     if challenge_count <= 0:
         return
 
@@ -2409,7 +2465,7 @@ def 生肖福卡_好友赠卡(d: DaLeDou):
 
 
 def 生肖福卡_分享福卡(d: DaLeDou):
-    qq: int = d.config["生肖福卡"]
+    qq: int = d.config["生肖福卡"]["qq"]
     if qq is None:
         return
 
@@ -2475,9 +2531,9 @@ def 生肖福卡_抽奖(d: DaLeDou):
 def 生肖福卡(d: DaLeDou):
     """
     集卡：
-        好友赠卡：领取好友赠卡
-        分享福卡：向指定好友分享一次福卡（单类福卡数量至少为2）
-        领取福卡：领取
+        好友赠卡：每天领取好友赠卡
+        分享福卡：每天向指定好友分享一个数量不低于2的单类福卡，详见配置文件
+        领取福卡：每天领取
     合卡：
         合卡时间内每天一次合成周年福卡
     抽奖：
@@ -2824,10 +2880,8 @@ def 预热礼包(d: DaLeDou):
 
 
 def 微信兑换(d: DaLeDou):
-    """周四微信兑换，在settings.yaml配置兑换码"""
-    from ..core.daledou import Config
-
-    code: str = Config.load_settings_config("WX_CODE")
+    """周四微信兑换，兑换码详见配置文件"""
+    code: str = d.config["微信兑换"]["code"]
     # 兑换
     d.get(f"cmd=weixin&cdkey={code}&sub=2&zapp_sid=&style=0&channel=0&i_p_w=cdkey|")
     d.log(d.find()).append()
@@ -2902,7 +2956,7 @@ def 新春礼包(d: DaLeDou):
 
 def 登录商店(d: DaLeDou):
     """周四兑换"""
-    t: int = d.config["登录商店"]
+    t: int = d.config["登录商店"]["type"]
     if t is None:
         d.log("你没有配置兑换物品id").append()
         return
@@ -3020,7 +3074,7 @@ def 好礼步步升(d: DaLeDou):
 
 
 def 企鹅吉利兑_兑换(d: DaLeDou):
-    config: list[dict] = d.config["企鹅吉利兑"]
+    config: list[dict] = d.config["企鹅吉利兑"]["exchange"]
     if config is None:
         d.log("你没有配置兑换物品").append()
         return
@@ -3126,7 +3180,7 @@ def 爱的同心结(d: DaLeDou):
     赠送：周四指定好友赠送一个同心结，指定QQ详见配置文件
     兑换：周四依次兑换礼包5、4、3、2、1
     """
-    config: list[int] = d.config["爱的同心结"]
+    config: list[int] = d.config["爱的同心结"]["qq"]
     if config is not None:
         for uin in config:
             # 赠送
@@ -3185,12 +3239,12 @@ def 疯狂许愿(d: DaLeDou, config: str):
 
 def 乐斗儿童节(d: DaLeDou):
     """周四领取选择奖励，详见配置文件"""
-    疯狂许愿(d, d.config["乐斗儿童节"])
+    疯狂许愿(d, d.config["乐斗儿童节"]["type"])
 
 
 def 乐斗开学季(d: DaLeDou):
     """周四领取选择奖励，详见配置文件"""
-    疯狂许愿(d, d.config["乐斗开学季"])
+    疯狂许愿(d, d.config["乐斗开学季"]["type"])
 
 
 def 周年生日祝福(d: DaLeDou):

@@ -78,6 +78,18 @@ def get_store_points(d: DaLeDou, params: str) -> int:
     return int(store_points)
 
 
+def is_close_auto_buy(d: DaLeDou, name: str, close_url: str) -> bool:
+    """是否关闭自动斗豆兑换"""
+    # 关闭自动斗豆兑换
+    d.get(close_url)
+    if "关闭自动" in d.html or "关闭斗豆" in d.html:
+        d.log("存在没有关闭自动斗豆兑换，请手动关闭", name)
+        return False
+    d.log("关闭自动斗豆兑换", name)
+    print_separator()
+    return True
+
+
 class Exchange:
     """积分商店兑换"""
 
@@ -108,7 +120,6 @@ class Exchange:
             成功兑换差值则返回True
             不足兑换差值则返回False
         """
-        print_separator()
         if self.possess_num >= self.consume_num:
             return True
 
@@ -138,7 +149,6 @@ class Exchange:
             if "成功" in self.d.html:
                 count -= 1
             elif "不足" in self.d.html or "达到当日兑换上限" in self.d.html:
-                print_separator()
                 return False
         return True
 
@@ -146,6 +156,7 @@ class Exchange:
         """更新材料拥有数量"""
         if self.possess_num >= self.consume_num:
             self.possess_num -= self.consume_num
+        print_separator()
 
 
 class BaseUpgrader(ABC):
@@ -169,17 +180,6 @@ class BaseUpgrader(ABC):
             regex,
         )
 
-    def is_close_auto_buy(self, name: str, close_url: str) -> bool:
-        """是否关闭自动斗豆兑换"""
-        print_separator()
-        # 关闭自动斗豆兑换
-        self.d.get(close_url)
-        if "关闭自动" in self.d.html or "关闭斗豆" in self.d.html:
-            self.d.log("存在没有关闭自动斗豆兑换，请手动关闭", name)
-            return False
-        self.d.log("关闭自动斗豆兑换", name)
-        return True
-
     @abstractmethod
     def get_data(self) -> dict[str, dict]:
         pass
@@ -192,14 +192,12 @@ class BaseUpgrader(ABC):
 def upgrade(upgrader: BaseUpgrader):
     """执行升级流程"""
     if not upgrader.data:
-        print_separator()
-        print("没有可强化的任务")
+        print("没有可强化的任务\n")
         print_separator()
         return
 
     upgrade_names = []
     for name, data in upgrader.data.items():
-        print_separator()
         if data.get("是否强化", False):
             upgrade_names.append(name)
         for k, v in data.items():
@@ -212,8 +210,8 @@ def upgrade(upgrader: BaseUpgrader):
             }:
                 continue
             print(f"{k}：{v}")
+        print_separator()
 
-    print_separator()
     selected = Input.select("请选择强化任务：", upgrade_names)
     if selected is None:
         print_separator()
@@ -284,7 +282,7 @@ class AoYi(BaseUpgrader):
     def upgrade(self, name: str):
         """奥义升级"""
         close_url = "cmd=skillEnhance&op=9&autoBuy=0"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -367,7 +365,7 @@ class JiNengLan(BaseUpgrader):
         """奥义技能栏升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=skillEnhance&op=10&storage_id={_id}&auto_buy=0"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -426,7 +424,6 @@ def 背包(d: DaLeDou):
         return results
 
     while True:
-        print_separator()
         text = Input.text("请输入物品ID或名称:")
         if text is None:
             break
@@ -440,6 +437,7 @@ def 背包(d: DaLeDou):
             print()
         else:
             print("\n⚠️ 未找到匹配物品")
+        print_separator()
 
 
 class JiTanShouHuShou(BaseUpgrader):
@@ -531,7 +529,7 @@ class JiTanShouHuShou(BaseUpgrader):
         """祭坛守护兽升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=weapon_seal&op=9&type_id={_id}&auto_buy=0"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP, self.REGEX)
@@ -611,7 +609,7 @@ class FengYinJiTan(BaseUpgrader):
         """祭坛守护兽升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=weapon_seal&op=10&sacrificial_id={_id}&auto_buy=0"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP, self.REGEX)
@@ -796,7 +794,7 @@ class ShenZhuang(BaseUpgrader):
         """神装进阶"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=outfit&op=4&auto_buy=2&magic_outfit_id={_id}"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -887,7 +885,7 @@ class ShenJi(BaseUpgrader):
         """神技升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=outfit&op=8&auto_buy=2&magic_outfit_id={_id}"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -1145,11 +1143,12 @@ class YongBing(BaseUpgrader):
             # 提升
             self.d.get(f"cmd=newmercenary&sub=4&id={_id}&count=10&tfl=1")
             self.d.log(self.d.find(), name)
+            if "突飞成功" not in self.d.html:
+                break
+
             self.d.log(self.d.find(r"等级：(\d+)"), "等级")
             self.d.log(self.d.find(r"经验：(.*?)<"), "经验")
             self.d.log(self.d.find(r"消耗阅历（(\d+)"), "阅历")
-            if "突飞成功" not in self.d.html:
-                break
 
     def get_data(self) -> dict:
         """获取佣兵数据"""
@@ -1294,7 +1293,7 @@ class WuQiZhuanJing(BaseUpgrader):
         """武器专精升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=weapon_specialize&op=9&type_id={_id}&auto_buy=0"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -1374,7 +1373,7 @@ class WuQiLan(BaseUpgrader):
         """专精武器栏升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=weapon_specialize&op=10&storage_id={_id}&auto_buy=0"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -1467,7 +1466,7 @@ class LingShouPian(BaseUpgrader):
         """灵兽篇提升"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=ancient_gods&op=5&autoBuy=0&id={_id}"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -2078,7 +2077,6 @@ def get_open_copy_data(d: DaLeDou) -> dict:
         },
     }
 
-    print_separator()
     copy_data = {}
     for k, v in base_data.items():
         material_name = v["material_name"]
@@ -2110,8 +2108,11 @@ def get_open_copy_data(d: DaLeDou) -> dict:
         else:
             print(f"{k}（未开启）")
 
-    if len(base_data) != len(copy_data):
+    if not len(copy_data):
         print_separator()
+    else:
+        print()
+
     return copy_data
 
 
@@ -2127,10 +2128,10 @@ def 江湖长梦(d: DaLeDou):
         ins_id = data[category]["ins_id"]
         incense_burner_number = data[category]["incense_burner_number"]
         copy_duration = data[category]["copy_duration"]
-        print_separator()
         print(f"{material_name}数量：{incense_burner_number}")
 
         globals()[category](d, category, ins_id, incense_burner_number, copy_duration)
+        print_separator()
 
 
 class SanHun(BaseUpgrader):
@@ -2196,7 +2197,7 @@ class SanHun(BaseUpgrader):
         """三魂进阶"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=abysstide&op=setauto&value=0&soul_id={_id}"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         e = super().exchange_instances(name, self.EXCHANGE_URL_MAP)
@@ -2351,10 +2352,11 @@ def 深渊之潮(d: DaLeDou):
 
 
 def 问道(d: DaLeDou):
-    print_separator()
-    # 关闭自动斗豆
-    d.get("cmd=immortals&op=setauto&type=0&status=0")
-    d.log("问道关闭自动斗豆")
+    name = "问道"
+    close_url = "cmd=immortals&op=setauto&type=0&status=0"
+    if not is_close_auto_buy(d, name, close_url):
+        return
+
     while True:
         # 问道10次
         d.get("cmd=immortals&op=asktao&times=10")
@@ -2433,7 +2435,7 @@ class XianWuXiuZhen(BaseUpgrader):
         """法宝升级"""
         _id: str = self.data[name]["id"]
         close_url = f"cmd=immortals&op=setauto&type=1&status=0&treasureid={_id}"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         while True:
@@ -2546,7 +2548,7 @@ class XinYuanYingShenQi(BaseUpgrader):
         _id: str = self.data[name]["id"]
         t = self.CATRGORY_TYPE[self.category]
         close_url = f"cmd=newAct&subtype=104&op=4&autoBuy=0&type={t}"
-        if not super().is_close_auto_buy(name, close_url):
+        if not is_close_auto_buy(self.d, name, close_url):
             return
 
         while True:
@@ -2590,15 +2592,16 @@ class 巅峰之战进行中:
 
         while True:
             self.current_exploits = self.get_exploits()
-            print_separator()
             print(f"当前战功：{self.current_exploits}")
             print_separator()
             self.retain_exploits = Input.number("请输入要保留的战功：")
             if self.retain_exploits is None:
                 break
+            print_separator()
             if self.retain_exploits > self.current_exploits:
                 continue
             self.pelted()
+            print_separator()
 
     def get_exploits(self) -> int:
         """获取五行战功"""
@@ -2608,7 +2611,6 @@ class 巅峰之战进行中:
 
     def pelted(self):
         """太空探宝16倍场景投掷"""
-        print_separator()
         while self.retain_exploits < self.current_exploits:
             # 投掷
             self.d.get("cmd=element&subtype=7")
@@ -2623,4 +2625,3 @@ class 巅峰之战进行中:
                     self.d.log(self.d.find(r"】<br />(.*?)<br />"), "夺宝奇兵")
                 # 选择太空探宝
                 self.d.get("cmd=element&subtype=15&gameType=3")
-                print_separator()
