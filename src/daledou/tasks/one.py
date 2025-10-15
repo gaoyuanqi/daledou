@@ -1,17 +1,5 @@
 """
 本模块为大乐斗第一轮任务
-
-默认每天 13:01 定时运行
-
-使用以下命令运行本模块任务：
-    >>> # 立即运行第一轮任务
-    >>> python main.py --one
-
-    >>> # 立即运行某个函数
-    >>> python main.py --one 邪神秘宝
-
-    >>> # 立即运行多个函数
-    >>> python main.py --one 邪神秘宝 矿洞
 """
 
 import random
@@ -615,8 +603,10 @@ def 抢地盘(d: DaLeDou):
 
 
 def 历练(d: DaLeDou):
-    """每天乐斗BOSS一次，最多乐斗5个BOSS"""
-    config: list = d.config["历练"]["npc_ids"]
+    """
+    乐斗：每个BOSS最多乐斗3次，每天最多5次（关闭自动使用活力药水），乐斗次数详见配置文件
+    """
+    config: dict[int, int] = d.config["历练"]
     if config is None:
         d.log("你没有配置历练BOSS").append()
         return
@@ -628,19 +618,22 @@ def 历练(d: DaLeDou):
         d.get("cmd=set&type=11")
         d.log("取消自动使用活力药水").append()
 
-    for _id in config:
-        d.get(f"cmd=mappush&subtype=3&mapid=6&npcid={_id}&pageid=2")
-        if "您还没有打到该历练场景" in d.html:
-            d.log(d.find(r"介绍</a><br />(.*?)<br />")).append()
+    for _id, count in config.items():
+        if not count:
             continue
+        for _ in range(count):
+            d.get(f"cmd=mappush&subtype=3&mapid=6&npcid={_id}&pageid=2")
+            if "您还没有打到该历练场景" in d.html:
+                d.log(d.find(r"介绍</a><br />(.*?)<br />")).append()
+                break
 
-        d.log(d.find(r"阅历值：\d+<br />(.*?)<br />")).append()
-        if "活力不足" in d.html:
-            break
-        elif "BOSS" not in d.html:
-            # 你今天和xx挑战次数已经达到上限了，请明天再来挑战吧
-            # 还不能挑战
-            continue
+            d.log(d.find(r"阅历值：\d+<br />(.*?)<br />")).append()
+            if "活力不足" in d.html:
+                return
+            elif "BOSS" not in d.html:
+                # 你今天和xx挑战次数已经达到上限了，请明天再来挑战吧
+                # 还不能挑战
+                break
 
 
 def 镖行天下(d: DaLeDou):
@@ -1347,6 +1340,25 @@ def 侠士客栈(d: DaLeDou):
     c_侠士客栈(d)
 
 
+def 江湖长梦(d: DaLeDou):
+    """每月20号商店兑换"""
+    config: list[dict] = d.config["江湖长梦"]["exchange"]
+    if config is None:
+        return
+
+    for name, _id, exchange_quantity in get_exchange_config(config):
+        count = 0
+        for _ in range(exchange_quantity):
+            d.get(f"cmd=longdreamexchange&op=exchange&key_id={_id}")
+            if "成功" not in d.html:
+                d.log(d.find(), f"{name}*1")
+                break
+            d.log(d.find(r"</a><br />(.*?)<"), f"{name}*1")
+            count += 1
+        if count:
+            d.append(f"兑换{name}*{count}")
+
+
 def 大侠回归三重好礼(d: DaLeDou):
     """周四领取奖励"""
     # 大侠回归三重好礼
@@ -1358,6 +1370,28 @@ def 大侠回归三重好礼(d: DaLeDou):
             d.log(d.find(r"】<br /><br />(.*?)<br />")).append()
     else:
         d.log("没有礼包领取").append()
+
+
+def 备战天赋(d: DaLeDou, _id: int):
+    # 备战天赋
+    d.get("cmd=ascendheaven&op=viewprepare")
+    start_id = d.find(r"id=(\d+)")
+    if start_id is None:
+        return
+
+    for i in range(int(start_id), _id + 1):
+        while True:
+            # 激活
+            d.get(f"cmd=ascendheaven&op=activeskill&id={i}")
+            d.log(d.find())
+            if "激活心法失败" in d.html:
+                continue
+            d.append()
+            if "激活心法成功" in d.html:
+                break
+            # 您尚未点击上一级天赋，无法点击该天赋
+            # 您报名的不是排位赛，无法修改备战天赋
+            return
 
 
 def 飞升大作战(d: DaLeDou):
@@ -1388,40 +1422,13 @@ def 飞升大作战(d: DaLeDou):
     d.get(f"cmd=ascendheaven&op=signup&type={t}")
     d.log(d.find()).append()
     if "你报名参加了" in d.html or "你已经报名参赛" in d.html:
-        if t in {1, 3}:
-            is_activate = True
-        else:
-            is_activate = False
+        if t in {1, 3} and _id is not None:
+            备战天赋(d, _id)
     else:
         # 当前为休赛期，不在报名时间、还没有入场券玄铁令
         # 报名匹配模式
         d.get("cmd=ascendheaven&op=signup&type=2")
         d.log(d.find()).append()
-        is_activate = False
-
-    # 备战天赋
-    if is_activate and _id is not None:
-        # 备战天赋
-        d.get("cmd=ascendheaven&op=viewprepare")
-        if start_id := d.find(r"id=(\d+)"):
-            start = int(start_id)
-        else:
-            start = 5
-
-        is_break = False
-        for i in range(start, _id + 1):
-            if is_break:
-                break
-            while True:
-                # 激活
-                d.get(f"cmd=ascendheaven&op=activeskill&id={i}")
-                d.log(d.find())
-                if "激活心法失败" in d.html:
-                    continue
-                elif "激活心法成功" in d.html:
-                    d.append()
-                is_break = True
-                break
 
     if d.week != 4:
         return
@@ -1467,10 +1474,10 @@ def 许愿帮铺(d: DaLeDou):
 
 
 def 深渊之潮(d: DaLeDou):
-    """每月26号许愿帮铺兑换，详见配置文件"""
+    """每月20号许愿帮铺兑换，详见配置文件"""
     c_帮派巡礼(d)
     c_深渊秘境(d)
-    if d.day == 26:
+    if d.day == 20:
         许愿帮铺(d)
 
 

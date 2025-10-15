@@ -1,6 +1,6 @@
 [project]
 name = "daledou"
-version = "13.0.0"
+version = "13.1.0"
 description = "Q宠大乐斗脚本辅助"
 readme = "README.md"
 requires-python = ">=3.12"

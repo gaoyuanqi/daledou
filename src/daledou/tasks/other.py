@@ -1,8 +1,5 @@
 """
-本模块为大乐斗其它任务，只能命令行手动运行
-
-使用以下命令运行本模块任务：
-    >>> python main.py --other
+本模块为大乐斗其它任务
 """
 
 import time
@@ -645,7 +642,6 @@ def 封印(d: DaLeDou):
 def 掠夺(d: DaLeDou):
     """自动掠夺不高于最大战力的成员"""
     while True:
-        print_separator()
         max_combat_power = Input.number("请输入掠夺最大战力：")
         if max_combat_power is None:
             return
@@ -669,6 +665,7 @@ def 掠夺(d: DaLeDou):
                 if "你已经没有足够的复活次数" in d.html:
                     return
                 time.sleep(1)
+        print_separator()
 
 
 class ShenZhuang(BaseUpgrader):

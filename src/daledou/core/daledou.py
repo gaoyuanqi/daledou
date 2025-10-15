@@ -8,7 +8,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from functools import lru_cache
-from types import ModuleType
+from importlib import import_module
 from typing import Generator, Pattern, Self
 
 from requests import Session
@@ -18,6 +18,9 @@ from .log import LogManager, LoguruLogger
 from .session import SessionManager
 from .utils import (
     HEADERS,
+    MODULE_PATH_COMMON,
+    TASK_TYPE_ONE,
+    TASK_TYPE_TWO,
     Input,
     TaskType,
     get_execution_mode,
@@ -54,6 +57,7 @@ class DaLeDou:
         self._config = task_config
         self._push_token = push_token
         self._task_names: list[str] = list(task_config)
+        self._task_len: int = len(self.task_names)
 
         self._start_time = None
         self._end_time = None
@@ -87,6 +91,12 @@ class DaLeDou:
         return self._config
 
     @property
+    def pushplus_content(self) -> str:
+        """返回pushplus内容"""
+        self.append(f"\n【运行时间】{self._get_running_time()}")
+        return "\n".join(self._pushplus_content)
+
+    @property
     def task_names(self) -> list[str]:
         return self._task_names
 
@@ -96,7 +106,7 @@ class DaLeDou:
 
     def _get_progress(self) -> str:
         """获取进度字符串"""
-        return f"{self._current_task_index}/{len(self.task_names)}"
+        return f"{self._current_task_index}/{self._task_len}"
 
     def _get_running_time(self) -> str:
         """获取运行时间"""
@@ -133,10 +143,9 @@ class DaLeDou:
         self._current_task_index += 1
 
         # 检查是否完成所有任务
-        if self._current_task_index >= len(self.task_names):
+        if self._current_task_index >= self._task_len:
             self._end_time = datetime.now()
             self.log(f"{self._get_running_time()}", "运行时间")
-            self.append(f"\n【运行时间】{self._get_running_time()}")
 
     def find(self, regex: str | None = None) -> str | None:
         """返回成功匹配的首个结果"""
@@ -199,7 +208,7 @@ class DaLeDou:
         push(
             token=self._push_token,
             title=f"{self._qq} {task_type}",
-            content="\n".join(self._pushplus_content),
+            content=self.pushplus_content,
             qq_logger=self._qq_logger,
         )
 
@@ -269,12 +278,12 @@ def _generate_daledou_instances(
         task_config = Config.filter_active_tasks(user_config, task_type, html)
         if not task_config:
             qq_logger.warning(
-                f"{qq} | 无可用任务，可能{task_type}类型任务不在执行时间、未找到、未配置"
+                f"{qq} | 无可用任务，可能{task_type}类型任务不在执行时间、未找到或者未配置"
             )
             push(
                 push_token,
                 f"{qq} | 无可用任务",
-                f"可能{task_type}类型任务不在执行时间、未找到、未配置",
+                f"可能{task_type}类型任务不在执行时间、未找到或者未配置",
                 qq_logger,
             )
             continue
@@ -289,8 +298,9 @@ def _generate_daledou_instances(
         )
 
 
-def _run_tasks(d: DaLeDou, task_names: list[str], module_type: ModuleType):
+def _run_tasks(d: DaLeDou, task_names: list[str], module_path: str):
     """执行单个账号的所有任务"""
+    module_type = import_module(module_path)
     d.start_timing()
     for task_name in task_names:
         try:
@@ -333,7 +343,7 @@ class Concurrency:
         print_separator()
 
     @staticmethod
-    def execute_accounts(task_type: TaskType, module_type: ModuleType):
+    def execute_accounts(task_type: TaskType, module_path: str):
         """并发执行多个账号"""
         global_start_time = datetime.now()
         optimal_concurrency = min(_CPU_COUNT * 2, _MAX_CONCURRENCY)
@@ -387,7 +397,7 @@ class Concurrency:
                                 active_accounts.append(d)
 
                             try:
-                                _run_tasks(d, d.task_names, module_type)
+                                _run_tasks(d, d.task_names, module_path)
                                 d.pushplus_send(task_type)
                             finally:
                                 d.remove_qq_handler()
@@ -430,53 +440,67 @@ class Concurrency:
 
 class TaskSchedule:
     @staticmethod
-    def _execute_sequential(task_type: TaskType, module_type: ModuleType):
+    def _execute_sequential(task_type: TaskType, module_path: str):
         """顺序执行所有账号"""
         # 日志同时输出终端和文件
         LogManager.set_terminal_output_format()
 
         for d in _generate_daledou_instances(task_type):
-            _run_tasks(d, d.task_names, module_type)
+            _run_tasks(d, d.task_names, module_path)
             d.pushplus_send(task_type)
             d.remove_qq_handler()
             print_separator()
 
     @staticmethod
-    def _execute_concurrent(task_type: TaskType, module_type: ModuleType):
+    def _execute_concurrent(task_type: TaskType, module_path: str):
         """并发执行所有账号"""
         # 仅写入日志文件，不输出到终端
         LogManager.remove_handler()
 
-        Concurrency.execute_accounts(task_type, module_type)
+        Concurrency.execute_accounts(task_type, module_path)
 
     @staticmethod
-    def execute(task_type: TaskType, module_type: ModuleType):
+    def execute(task_type: TaskType, module_path: str):
         """执行任务（根据环境变量选择模式）"""
         mode = get_execution_mode()
         if mode == "sequential":
-            TaskSchedule._execute_sequential(task_type, module_type)
+            TaskSchedule._execute_sequential(task_type, module_path)
         else:
-            TaskSchedule._execute_concurrent(task_type, module_type)
+            TaskSchedule._execute_concurrent(task_type, module_path)
 
     @staticmethod
-    def execute_debug(task_type: TaskType, module_type: ModuleType):
+    def execute_debug(task_type: TaskType, module_path: str):
         """调试模式 - 选择特定账号和任务执行"""
         qq_list = Config.list_all_qq_numbers()
         if not qq_list:
             return
+
+        from importlib import reload
+
+        # 日志同时输出终端和文件
+        LogManager.set_terminal_output_format()
 
         while True:
             qq = Input.select("请选择账号：", qq_list)
             if qq is None:
                 return
 
-            # 日志同时输出终端和文件
-            LogManager.set_terminal_output_format()
+            if task_type in {TASK_TYPE_ONE, TASK_TYPE_TWO}:
+                reload(import_module(MODULE_PATH_COMMON))
+            reload(import_module(module_path))
 
             for d in _generate_daledou_instances(task_type, qq):
                 task_name = Input.select("请选择任务：", d.task_names)
                 if task_name is None:
                     break
-                _run_tasks(d, [task_name], module_type)
+
+                if task_type in {TASK_TYPE_ONE, TASK_TYPE_TWO}:
+                    d._task_len = 1
+
+                _run_tasks(d, [task_name], module_path)
+
+                if task_type in {TASK_TYPE_ONE, TASK_TYPE_TWO}:
+                    print_separator()
+                    print(d.pushplus_content)
                 d.remove_qq_handler()
                 print_separator()

@@ -1,6 +1,5 @@
 import os
 import time
-from importlib import import_module
 
 from schedule import every, repeat, run_pending
 
@@ -74,14 +73,12 @@ def _add_account():
 
 def _execute_one():
     """执行第一轮任务"""
-    module_type = import_module(MODULE_PATH_ONE)
-    TaskSchedule.execute(TASK_TYPE_ONE, module_type)
+    TaskSchedule.execute(TASK_TYPE_ONE, MODULE_PATH_ONE)
 
 
 def _execute_two():
     """执行第二轮任务"""
-    module_type = import_module(MODULE_PATH_TWO)
-    TaskSchedule.execute(TASK_TYPE_TWO, module_type)
+    TaskSchedule.execute(TASK_TYPE_TWO, MODULE_PATH_TWO)
 
 
 def _execute_timing():
@@ -133,19 +130,20 @@ def _execute_tasks():
 def _execute_debug():
     """调试任务 - 单账号单任务执行，不受执行模式影响"""
     _map = {
-        "其它任务": (TASK_TYPE_OTHER, MODULE_PATH_OTHER),
         "第一轮任务": (TASK_TYPE_ONE, MODULE_PATH_ONE),
         "第二轮任务": (TASK_TYPE_TWO, MODULE_PATH_TWO),
+        "其它任务": (TASK_TYPE_OTHER, MODULE_PATH_OTHER),
     }
 
-    print("💡 调试模式：每次仅执行单个账号的单个任务\n")
-    task = Input.select("请选择任务类型：", list(_map))
+    print("💡 调试模式：每次仅执行单个账号的单个任务")
+    print("💡 支持热重载：修改任务代码后无需重启程序（需回退到选择账号菜单）")
+    print("💡 重载模块：common、one、two、other\n")
+    task = Input.select("请选择调试任务：", list(_map))
     if task is None:
         return
 
     task_type, module_path = _map[task]
-    module_type = import_module(module_path)
-    TaskSchedule.execute_debug(task_type, module_type)
+    TaskSchedule.execute_debug(task_type, module_path)
 
 
 def run_serve():
@@ -159,7 +157,7 @@ def run_serve():
     if not config_files:
         print_separator()
         print("❌ 没有找到账号配置文件")
-        print("💡 请先使用 添加账号 功能，添加成功请重启脚本\n")
+        print("💡 请先使用 添加账号 功能，添加成功后再重启程序\n")
         tasks = {
             "添加账号": _add_account,
         }

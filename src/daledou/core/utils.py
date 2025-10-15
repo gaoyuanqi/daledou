@@ -15,6 +15,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
 }
 
+MODULE_PATH_COMMON = "src.daledou.tasks.common"
 MODULE_PATH_ONE = "src.daledou.tasks.one"
 MODULE_PATH_OTHER = "src.daledou.tasks.other"
 MODULE_PATH_TWO = "src.daledou.tasks.two"

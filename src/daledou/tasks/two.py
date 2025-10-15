@@ -1,17 +1,5 @@
 """
 本模块为大乐斗第二轮任务
-
-默认每天 20:01 定时运行
-
-使用以下命令运行本模块任务：
-    >>> # 立即运行第二轮任务
-    >>> python main.py --two
-
-    >>> # 立即运行某个函数
-    >>> python main.py --two 邪神秘宝
-
-    >>> # 立即运行多个函数
-    >>> python main.py --two 邪神秘宝 侠士客栈
 """
 
 from collections import Counter

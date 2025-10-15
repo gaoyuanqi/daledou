@@ -285,17 +285,17 @@ one:
 
   历练:
     weeks: *default_all_weeks
-    # 每个BOSS乐斗一次，因为取消自动使用活力药水，所以最多乐斗前5个BOSS
-    npc_ids:
-      - 6114 # 摩云山 韦小宝碎片
-      - 6134 # 洞庭湖 扫地僧碎片
-      - 6154 # 苍莽山 鹤笔翁碎片
-      - 6034 # 林松郊外 令狐冲碎片
-      - 6054 # 林松城 丁春秋碎片
-      - 6074 # 东海龙宫 丘处机碎片
-      - 6094 # 踏云镇 小龙女碎片
-      - 6174 # 玉龙湿地 韦一笑碎片
-      - 6194 # 玉龙雪山 赵敏碎片
+
+    # 每个BOSS最多乐斗3次，每天最多5次（关闭自动使用活力药水）
+    6114: 3 # 摩云山-宋姜 韦小宝碎片
+    6134: 2 # 洞庭湖-大鹏 扫地僧碎片
+    6154: 0 # 苍莽山-马大王 鹤笔翁碎片
+    6034: 0 # 林松郊外-凶尸 令狐冲碎片
+    6054: 0 # 林松城-虾兵头目 丁春秋碎片
+    6074: 0 # 东海龙宫-夜叉元帅 丘处机碎片
+    6094: 0 # 踏云镇-霹雳头领 小龙女碎片
+    6174: 0 # 玉龙湿地-嗜血鬼王 韦一笑碎片
+    6194: 0 # 玉龙雪山-象仙 赵敏碎片
 
   镖行天下:
     weeks: *default_all_weeks
@@ -425,6 +425,43 @@ one:
   侠士客栈:
     weeks: *default_all_weeks
     黑市商人: *black_market_merchant
+
+  江湖长梦:
+    days:
+      - start: 20
+        end: 20
+    exchange: # 每月20号商店兑换
+      - name: 侠士修身录
+        id: 0
+        exchange_quantity: 0
+      - name: 侠士手记
+        id: 1
+        exchange_quantity: 0
+      - name: 玄铁令
+        id: 5
+        exchange_quantity: 0
+      - name: 淬火结晶
+        id: 6
+        exchange_quantity: 0
+      - name: 真黄金卷轴
+        id: 10
+        exchange_quantity: 0
+      - name: 石中剑
+        id: 18
+        exchange_quantity: 0
+      - name: 大型武器符咒
+        id: 19
+        exchange_quantity: 0
+      - name: 中型武器符咒
+        id: 20
+        exchange_quantity: 0
+      - name: 小型武器符咒
+        id: 21
+        exchange_quantity: 0
+      - name: 投掷武器符咒
+        id: 22
+        exchange_quantity: 0
+
   大侠回归三重好礼:
     weeks: *default_thursday
 
@@ -452,7 +489,7 @@ one:
   深渊之潮:
     weeks: *default_all_weeks
     <<: *abyss_secret_realm
-    exchange: # 每月26号许愿帮铺商店兑换
+    exchange: # 每月20号许愿帮铺商店兑换
       - name: 气魄之书
         id: 5
         exchange_quantity: 0
@@ -612,7 +649,6 @@ one:
       - 3074 # 追魂锁链
       - 3089 # 还魂丹
       - 3100 # 还童卷轴
-      - 5391 # 佣兵天赋丹
 
   帮派祭坛:
     weeks: *default_all_weeks
