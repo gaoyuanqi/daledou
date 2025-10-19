@@ -58,6 +58,11 @@ def _add_account():
             break
 
         ck = parse_cookie(cookie)
+        if not ck:
+            print("\n❌ Cookie格式不正确")
+            print_separator()
+            continue
+
         session = SessionManager.create_verified_session(ck)
         if session is None:
             print("\n❌ Cookie无效或验证失败")
@@ -65,7 +70,7 @@ def _add_account():
             continue
 
         qq = parse_qq_from_cookie(ck)
-        Config.create_user_config(f"{qq}.yaml", cookie)
+        Config.create_account_config(f"{qq}.yaml", cookie)
         print(f"\n✅ 账号 {qq} 添加成功！")
         print(f"📁 配置文件：config/{qq}.yaml")
         print_separator()
@@ -157,7 +162,7 @@ def run_serve():
     if not config_files:
         print_separator()
         print("❌ 没有找到账号配置文件")
-        print("💡 请先使用 添加账号 功能，添加成功后再重启程序\n")
+        print("💡 请先使用「添加账号」功能，添加成功后再重启程序\n")
         tasks = {
             "添加账号": _add_account,
         }

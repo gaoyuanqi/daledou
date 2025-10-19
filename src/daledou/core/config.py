@@ -7,31 +7,77 @@ import yaml
 from .utils import parse_cookie, parse_qq_from_cookie, TaskType
 
 
+_TASK_CONFIG_KEY = "TASK_CONFIG"
+
 _CONFIG_DIR = Path("./config")
+_ACCOUNT_CONFIG_PATH = _CONFIG_DIR / Path("account_config.yaml").name
 _DEFAULT_CONFIG_PATH = _CONFIG_DIR / Path("default_config.yaml").name
+_GLOBAL_CONFIG_PATH = _CONFIG_DIR / Path("global_config.yaml").name
 
 
 class Config:
     """配置管理类 - 负责配置文件的创建、加载和解析"""
 
     @staticmethod
-    def create_user_config(config_file: str, cookie: str):
-        """创建用户配置文件
+    def _merge_global_config(account_config: dict) -> dict:
+        """将全局配置合并到账号配置中
 
-        基于模板创建新的用户配置文件，包含基础配置和任务配置模板
+        将全局配置中的 GLOBAL_CONFIG 合并到账号配置的 TASK_CONFIG 中，
+        账号配置具有更高优先级。
+
+        Args:
+            account_config: 账号配置字典
+
+        Returns:
+            dict: 合并后的配置字典
+        """
+        if not _GLOBAL_CONFIG_PATH.exists():
+            raise FileNotFoundError(f"配置文件 {_GLOBAL_CONFIG_PATH} 不存在")
+
+        try:
+            with _GLOBAL_CONFIG_PATH.open("r", encoding="utf-8") as fp:
+                global_config = yaml.safe_load(fp)
+        except yaml.YAMLError as e:
+            raise ValueError(f"配置文件解析错误：{e}")
+
+        merged_config = account_config.copy()
+        global_task_config = global_config.get(_TASK_CONFIG_KEY, {})
+
+        # 深度合并配置，账号配置优先级更高
+        def deep_merge(user_dict, global_dict):
+            for key, value in global_dict.items():
+                if key not in user_dict:
+                    user_dict[key] = value
+                elif isinstance(value, dict) and isinstance(user_dict[key], dict):
+                    deep_merge(user_dict[key], value)
+            return user_dict
+
+        # 合并全局配置到账号配置的 TASK_CONFIG 中
+        if global_task_config:
+            merged_config[_TASK_CONFIG_KEY] = deep_merge(
+                merged_config[_TASK_CONFIG_KEY].copy(), global_task_config
+            )
+
+        return merged_config
+
+    @staticmethod
+    def create_account_config(config_file: str, cookie: str):
+        """创建账号配置文件
+
+        基于模板创建新的账号配置文件，包含基础配置和任务配置模板
 
         Args:
             config_file: 配置文件名（通常为QQ号）
-            cookie: 用户Cookie字符串
+            cookie: 大乐斗Cookie字符串
         """
         config_path = _CONFIG_DIR / Path(config_file).name
         user_config_template = textwrap.dedent(f"""\
             # =============================================
-            # 用户配置
+            # 账号配置
             # =============================================
 
             # 大乐斗cookie - 从浏览器复制完整的Cookie字符串
-            COOKIE: {cookie}
+            COOKIE: "{cookie}"
 
             # 账号激活状态
             IS_ACTIVATE_ACCOUNT: true # 激活账号，参与任务执行
@@ -49,7 +95,7 @@ class Config:
 
     @staticmethod
     def filter_active_tasks(
-        config_data: dict, task_type: TaskType, html_content: str
+        account_config: dict, task_type: TaskType, html_content: str
     ) -> dict[str, dict]:
         """根据当前日期和页面内容筛选活跃任务
 
@@ -57,7 +103,7 @@ class Config:
         同时检查任务在页面中是否存在。
 
         Args:
-            config_data: 加载的配置数据字典
+            account_config: 账号配置字典
             task_type: 任务类型枚举
             html_content: 大乐斗首页HTML内容，用于检查任务是否存在
 
@@ -65,35 +111,43 @@ class Config:
             dict[str, dict]: 过滤后的任务配置字典，键为函数名，值为任务配置
                              如果没有配置该类型的任务或没有符合条件的任务，返回空字典
         """
-        tasks = {}
-        task_configs: dict[str, dict | None] = config_data.get(task_type)
-        if not task_configs:
-            return tasks
+        active_tasks = {}
+        task_definitions: dict[str, dict] = account_config.get(task_type, {})
+        if not task_definitions:
+            return active_tasks
 
-        now = datetime.now()
-        current_day = now.day
-        current_weekday = now.isoweekday()
+        current_time = datetime.now()
+        current_day_of_month = current_time.day
+        current_day_of_week = current_time.isoweekday()
 
-        for task_name, task_config in task_configs.items():
-            if task_name not in html_content or task_config is None:
+        task_config = account_config.get(_TASK_CONFIG_KEY, {})
+
+        for task_name, task_schedule_config in task_definitions.items():
+            if task_schedule_config is None:
                 continue
 
-            task_item = task_config.copy()
-            func_name = task_item.pop("func_name", task_name)
+            # 检查任务是否在页面中存在
+            if task_name not in html_content:
+                continue
 
-            # 按星期筛选
-            if weeks := task_item.pop("weeks", None):
-                if current_weekday in weeks:
-                    tasks[func_name] = task_item
-            # 按日期筛选
-            elif days := task_item.pop("days", None):
-                for date_range in days:
-                    start: int = date_range["start"]
-                    end: int = date_range["end"]
-                    if start <= current_day <= end:
-                        tasks[func_name] = task_item
+            func_name = task_schedule_config.get("func_name", task_name)
+
+            # 检查星期条件
+            if scheduled_weekdays := task_schedule_config.get("weeks"):
+                if current_day_of_week in scheduled_weekdays:
+                    active_tasks[func_name] = task_config.get(task_name, {})
+                    continue
+
+            # 检查日期条件
+            if scheduled_days := task_schedule_config.get("days"):
+                for day_range in scheduled_days:
+                    start_day = day_range["start"]
+                    end_day = day_range["end"]
+                    if start_day <= current_day_of_month <= end_day:
+                        active_tasks[func_name] = task_config.get(task_name, {})
                         break
-        return tasks
+
+        return active_tasks
 
     @staticmethod
     def list_all_qq_numbers() -> list[str]:
@@ -137,14 +191,14 @@ class Config:
         ]
 
     @staticmethod
-    def load_user_config(config_file: str) -> dict[str, dict]:
-        """加载并解析用户配置文件
+    def load_account_config(config_file: str) -> dict[str, dict]:
+        """加载并解析账号配置文件，并与全局配置合并
 
         Args:
             config_file: 配置文件名
 
         Returns:
-            dict: 解析后的配置字典
+            dict: 解析后的配置字典（已合并全局配置）
 
         Raises:
             FileNotFoundError: 配置文件不存在时抛出
@@ -156,22 +210,24 @@ class Config:
 
         try:
             with config_path.open("r", encoding="utf-8") as fp:
-                return yaml.safe_load(fp)
+                account_config = yaml.safe_load(fp)
         except yaml.YAMLError as e:
             raise ValueError(f"配置文件解析错误：{e}")
 
+        return Config._merge_global_config(account_config)
+
     @staticmethod
-    def parse_user_credentials(config_data: dict) -> tuple[str, dict, str, bool]:
+    def parse_account_credentials(account_config: dict) -> tuple[str, dict, str, bool]:
         """从配置数据中解析用户凭证和激活状态
 
         Args:
-            config_data: 加载的配置数据字典
+            account_config: 账号配置字典
 
         Returns:
             tuple: 包含QQ号、Cookie字典、推送token、账号激活状态的元组
         """
-        cookie: dict = parse_cookie(config_data["COOKIE"])
+        cookie: dict = parse_cookie(account_config["COOKIE"])
         qq: str = parse_qq_from_cookie(cookie)
-        push_token: str = config_data["PUSH_TOKEN"]
-        is_activate_account: bool = config_data["IS_ACTIVATE_ACCOUNT"]
+        push_token: str = account_config["PUSH_TOKEN"]
+        is_activate_account: bool = account_config["IS_ACTIVATE_ACCOUNT"]
         return qq, cookie, push_token, is_activate_account

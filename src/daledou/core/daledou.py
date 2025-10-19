@@ -230,9 +230,9 @@ def _generate_daledou_instances(
         return
 
     for config_file in config_files:
-        user_config = Config.load_user_config(config_file)
-        qq, cookie, push_token, is_activate_account = Config.parse_user_credentials(
-            user_config
+        account_config = Config.load_account_config(config_file)
+        qq, cookie, push_token, is_activate_account = Config.parse_account_credentials(
+            account_config
         )
 
         if select_qq is not None and select_qq != qq:
@@ -275,7 +275,7 @@ def _generate_daledou_instances(
             )
             continue
 
-        task_config = Config.filter_active_tasks(user_config, task_type, html)
+        task_config = Config.filter_active_tasks(account_config, task_type, html)
         if not task_config:
             qq_logger.warning(
                 f"{qq} | 无可用任务，可能{task_type}类型任务不在执行时间、未找到或者未配置"

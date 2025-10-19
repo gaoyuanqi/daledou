@@ -178,7 +178,7 @@ def c_侠士客栈(d: DaLeDou):
         d.get(f"cmd=warriorinn&op=exceptadventure&pos={p}")
         d.log(d.find(r"侠士客栈<br />(.*?)<")).append()
 
-    config: list[str] = d.config["侠士客栈"]["黑市商人"]
+    config: list[str] = d.config["侠士客栈"]
     if config is None:
         return
     for p in d.findall(r'pos=(\d+)">黑市商人'):
@@ -205,12 +205,8 @@ def c_深渊秘境(d: DaLeDou):
     每天通关副本，副本次数有多少就通关多少次，副本详见配置文件
     """
     config: dict = d.config["深渊之潮"]
-    _id: int = config["id"]
     exchange_count: int = config["exchange_count"]
-
-    if _id is None:
-        d.log("你没有配置深渊秘境副本").append()
-        return
+    _id: int = config["id"]
 
     for _ in range(exchange_count):
         # 兑换
@@ -270,7 +266,7 @@ def c_客栈同福(d: DaLeDou):
     """
     献酒：每天当有匹配项时献酒，详见配置文件
     """
-    config: list = d.config["客栈同福"]["appear"]
+    config: list = d.config["客栈同福"]
     if config is None:
         d.log("你没有配置匹配").append()
         return

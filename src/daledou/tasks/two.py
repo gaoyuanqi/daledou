@@ -61,7 +61,7 @@ def 龙凰之境(d: DaLeDou):
 
 def 背包(d: DaLeDou):
     """使用背包物品"""
-    use: list[str] = d.config["背包"]["use"]
+    use: list[str] = d.config["背包"]
     if use is None:
         d.log("你没有配置背包").append()
         return
@@ -172,7 +172,7 @@ def 普通合成(d: DaLeDou):
 
 
 def 符石分解(d: DaLeDou):
-    config: list[int] = d.config["神匠坊"]["符石分解"]
+    config: list[int] = d.config["神匠坊"]
     if config is None:
         d.log("你没有配置神匠坊符石分解").append()
         return
