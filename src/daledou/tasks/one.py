@@ -1809,17 +1809,30 @@ def 龙凰之境(d: DaLeDou):
 
 
 def 增强经脉(d: DaLeDou):
-    """最多传功12次"""
-    # 关闭传功符不足用斗豆代替
-    d.get("cmd=intfmerid&sub=21&doudou=0")
+    """
+    传功：传功符数量不低于200时最多传功、一键拾取、一键合成12次，
+    其它：关闭合成两次确认和取消传功符不足用斗豆代替
+    """
+    # 经脉
+    d.get("cmd=intfmerid&sub=1")
     if "关闭" in d.html:
         # 关闭合成两次确认
         d.get("cmd=intfmerid&sub=19")
+        d.log(r"关闭合成两次确认", "任务-增强经脉")
+    if "取消" in d.html and "doudou=0" in d.html:
+        # 取消传功符不足用斗豆代替
+        d.get("cmd=intfmerid&sub=21&doudou=0")
+        d.log("取消传功符不足用斗豆代替", "任务-增强经脉")
+
+    if int(d.find(r"传功符</a>:(\d+)")) < 200:
+        d.log("传功符数量不足200", "任务-增强经脉")
+        return
 
     for _ in range(12):
-        # 增强经脉
+        # 经脉
         d.get("cmd=intfmerid&sub=1")
         _id = d.find(r'master_id=(\d+)">传功</a>')
+
         # 传功
         d.get(f"cmd=intfmerid&sub=2&master_id={_id}")
         d.log(d.find(r"</p>(.*?)<p>"), "任务-增强经脉")

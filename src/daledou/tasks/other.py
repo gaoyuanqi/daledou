@@ -420,6 +420,24 @@ def 背包(d: DaLeDou):
                 results.append(item)
         return results
 
+    def get_display_width(text):
+        """计算字符串的显示宽度（中文算2个字符，英文算1个）"""
+        width = 0
+        for char in text:
+            # 中文、日文、韩文等全角字符算2个宽度
+            if "\u4e00" <= char <= "\u9fff" or char in "：；，。！？（）【】「」":
+                width += 2
+            else:
+                width += 1
+        return width
+
+    def pad_to_width(text, target_width):
+        """将文本填充到目标宽度"""
+        current_width = get_display_width(text)
+        if current_width >= target_width:
+            return text
+        return text + " " * (target_width - current_width)
+
     while True:
         text = Input.text("请输入物品ID或名称:")
         if text is None:
@@ -427,10 +445,29 @@ def 背包(d: DaLeDou):
 
         search_term = text.strip()
         if results := search_backpack(search_term):
-            print(f"\n{'ID':<5}{'物品名称':<10}{'数量':<8}")
+            # 计算每列的最大显示宽度
+            id_width = max(
+                get_display_width("ID"),
+                max(get_display_width(item["id"]) for item in results),
+            )
+            name_width = max(
+                get_display_width("物品名称"),
+                max(get_display_width(item["name"]) for item in results),
+            )
+            number_width = max(
+                get_display_width("数量"),
+                max(get_display_width(item["number"]) for item in results),
+            )
+
+            # 打印表头
+            header = f"{pad_to_width('ID', id_width)} {pad_to_width('物品名称', name_width)} {pad_to_width('数量', number_width)}"
+            print(f"\n{header}")
             print_separator()
+
+            # 打印数据行
             for item in results:
-                print(f"{item['id']:<5}{item['name']:<10}{item['number']:<8}")
+                row = f"{pad_to_width(item['id'], id_width)} {pad_to_width(item['name'], name_width)} {pad_to_width(item['number'], number_width)}"
+                print(row)
             print()
         else:
             print("\n⚠️ 未找到匹配物品")

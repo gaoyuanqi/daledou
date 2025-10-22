@@ -225,12 +225,8 @@ def _generate_daledou_instances(
     task_type: TaskType, select_qq: str | None = None
 ) -> Generator[DaLeDou, None, None]:
     """生成大乐斗账号实例的生成器"""
-    config_files = Config.list_numeric_config_files()
-    if not config_files:
-        return
-
-    for config_file in config_files:
-        account_config = Config.load_account_config(config_file)
+    for config_file in Config.list_numeric_config_files():
+        account_config = Config.load_and_merge_account_config(config_file)
         qq, cookie, push_token, is_activate_account = Config.parse_account_credentials(
             account_config
         )
@@ -321,8 +317,10 @@ def _run_tasks(d: DaLeDou, task_names: list[str], module_path: str):
 class Concurrency:
     """并发执行所有账号"""
 
-    @staticmethod
-    def _display_accounts_status(active_accounts: list[DaLeDou], completed_count: int):
+    @classmethod
+    def _display_accounts_status(
+        cls, active_accounts: list[DaLeDou], completed_count: int
+    ):
         """打印活跃账号状态和已完成账号数"""
         # 清屏并移动光标到左上角
         if _IS_WINDOWS:
@@ -342,8 +340,8 @@ class Concurrency:
             print(d.get_display_info())
         print_separator()
 
-    @staticmethod
-    def execute_accounts(task_type: TaskType, module_path: str):
+    @classmethod
+    def execute_accounts(cls, task_type: TaskType, module_path: str):
         """并发执行多个账号"""
         global_start_time = datetime.now()
         optimal_concurrency = min(_CPU_COUNT * 2, _MAX_CONCURRENCY)
@@ -369,9 +367,7 @@ class Concurrency:
             """账号状态监控线程"""
             while not monitor_event.is_set():
                 with lock:
-                    Concurrency._display_accounts_status(
-                        active_accounts, completed_count
-                    )
+                    cls._display_accounts_status(active_accounts, completed_count)
                 time.sleep(0.5)
 
         monitor_event = threading.Event()
@@ -425,7 +421,7 @@ class Concurrency:
             monitor_event.set()
             monitor_thread.join(timeout=1)
             with lock:
-                Concurrency._display_accounts_status(active_accounts, completed_count)
+                cls._display_accounts_status(active_accounts, completed_count)
 
         end_time = datetime.now()
         total_time = end_time - global_start_time
