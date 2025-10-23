@@ -8,6 +8,7 @@ import questionary
 
 from .log import LoguruLogger
 
+
 # 执行模式环境变量名
 EXECUTION_MODE_ENV = "DLD_EXECUTION_MODE"
 

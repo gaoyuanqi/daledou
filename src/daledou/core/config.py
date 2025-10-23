@@ -81,7 +81,7 @@ class ConfigManager:
         global_config = cls._load_yaml_file(cls.GLOBAL_CONFIG_PATH)
         merged_config = account_config.copy()
 
-        task_types = [TASK_TYPE_ONE, TASK_TYPE_OTHER, TASK_TYPE_TWO]
+        task_types = [TASK_TYPE_ONE, TASK_TYPE_TWO, TASK_TYPE_OTHER]
 
         for task_type in task_types:
             if task_type not in global_config:
@@ -89,8 +89,10 @@ class ConfigManager:
 
             global_tasks = global_config[task_type]
 
-            # 如果账号配置中没有该任务类型，直接继承全局配置
-            if task_type not in account_config:
+            # 如果账号配置中没有该任务类型或者任务类型值为非字典，直接继承全局配置
+            if task_type not in account_config or not isinstance(
+                account_config[task_type], dict
+            ):
                 merged_config[task_type] = global_tasks
             else:
                 # 如果账号配置中有该任务类型，进行任务级别的合并
@@ -117,6 +119,9 @@ class ConfigManager:
         global_config = cls._load_yaml_file(cls.GLOBAL_CONFIG_PATH)
         global_task_config = global_config.get(cls.TASK_CONFIG_KEY, {})
 
+        if not global_task_config:
+            return account_config
+
         def deep_merge(account_dict: dict, global_dict: dict) -> dict:
             """深度合并字典"""
             for key, value in global_dict.items():
@@ -127,12 +132,14 @@ class ConfigManager:
             return account_dict
 
         # 合并全局配置到账号配置的 TASK_CONFIG 中
-        if global_task_config:
-            if cls.TASK_CONFIG_KEY not in account_config:
-                account_config[cls.TASK_CONFIG_KEY] = {}
-            account_config[cls.TASK_CONFIG_KEY] = deep_merge(
-                account_config[cls.TASK_CONFIG_KEY].copy(), global_task_config
-            )
+        if cls.TASK_CONFIG_KEY not in account_config or not isinstance(
+            account_config[cls.TASK_CONFIG_KEY], dict
+        ):
+            account_config[cls.TASK_CONFIG_KEY] = {}
+
+        account_config[cls.TASK_CONFIG_KEY] = deep_merge(
+            account_config[cls.TASK_CONFIG_KEY].copy(), global_task_config
+        )
 
         return account_config
 

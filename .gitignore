@@ -1,8 +1,8 @@
+__pycache__/
+*.py[oc]
+
 .venv
 .vscode
 
-__pycache__/
-
-log
-config/accounts
-config/merged
+log/
+config/merged/

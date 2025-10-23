@@ -226,13 +226,13 @@ def _generate_daledou_instances(
 ) -> Generator[DaLeDou, None, None]:
     """生成大乐斗账号实例的生成器"""
     for config_file in Config.list_numeric_config_files():
+        if select_qq is not None and select_qq not in config_file:
+            continue
+
         account_config = Config.load_and_merge_account_config(config_file)
         qq, cookie, push_token, is_activate_account = Config.parse_account_credentials(
             account_config
         )
-
-        if select_qq is not None and select_qq != qq:
-            continue
 
         qq_logger, handler_id = LogManager.get_qq_logger(qq)
         if not is_activate_account:

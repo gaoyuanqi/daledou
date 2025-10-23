@@ -119,9 +119,9 @@ class CLIHandler:
     def execute_debug(self) -> None:
         """调试任务 - 单账号单任务执行"""
         task_map = {
+            "其它任务": (TASK_TYPE_OTHER, MODULE_PATH_OTHER),
             "第一轮任务": (TASK_TYPE_ONE, MODULE_PATH_ONE),
             "第二轮任务": (TASK_TYPE_TWO, MODULE_PATH_TWO),
-            "其它任务": (TASK_TYPE_OTHER, MODULE_PATH_OTHER),
         }
 
         print("💡 调试模式：每次仅执行单个账号的单个任务")

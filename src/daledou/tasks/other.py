@@ -2061,6 +2061,104 @@ def 天涯浪子(
     jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
 
 
+def 全真古墓意难平(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    """最高561金币"""
+
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _id := d.find(r'event_id=(\d+)">战斗\(等级2\)'):
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">战斗\(等级1\)'):
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif day == 1:
+            # 奇遇1
+            d.get("cmd=jianghudream&op=chooseEvent&event_id=1")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            # 宅家乐斗
+            d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        elif day == 2:
+            if _id := d.find(r'event_id=(\d+)">奇遇\(等级1\)'):
+                # 奇遇1
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 全真剑法
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=3")
+            elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
+                # 奇遇2
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 同意约战
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            elif _id := d.find(r'event_id=(\d+)">商店'):
+                # 商店
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        elif day == 3:
+            # 奇遇2
+            d.get("cmd=jianghudream&op=chooseEvent&event_id=1")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            # 环顾四周
+            d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        elif day == 5:
+            if _id := d.find(r'event_id=(\d+)">奇遇\(等级1\)'):
+                # 奇遇1
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 暂且撤退
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
+                # 奇遇2
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 切磋武功
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            elif _id := d.find(r'event_id=(\d+)">商店'):
+                # 商店
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        elif day == 6:
+            if _id := d.find(r'event_id=(\d+)">奇遇\(等级1\)'):
+                # 奇遇1
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 暂且撤退
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif _id := d.find(r'event_id=(\d+)">商店'):
+                # 商店
+                d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        elif day == 7:
+            # 奇遇2
+            d.get("cmd=jianghudream&op=chooseEvent&event_id=1")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            # 坚持本心
+            d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            # 李莫愁
+            d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
 def get_open_copy_data(d: DaLeDou) -> dict:
     """获取开放副本数据"""
     base_data = {
@@ -2108,6 +2206,11 @@ def get_open_copy_data(d: DaLeDou) -> dict:
             "material_name": "中秋香炉",
             "material_id": "6547",
             "ins_id": "53",
+        },
+        "全真古墓意难平": {
+            "material_name": "全真香炉",
+            "material_id": "6662",
+            "ins_id": "54",
         },
     }
 
@@ -2473,13 +2576,13 @@ class XianWuXiuZhen(BaseUpgrader):
             return
 
         while True:
-            print_separator()
             # 升级
             self.d.get(f"cmd=immortals&op=upgrade&treasureid={_id}&times=1")
             self.d.log(self.d.find(r'id">(.*?)<'), name)
             self.d.log(self.d.find(r"祝福值：(.*?)&"), name)
             if "升级失败" not in self.d.html:
                 break
+            print_separator()
 
 
 def 仙武修真(d: DaLeDou):
@@ -2586,7 +2689,6 @@ class XinYuanYingShenQi(BaseUpgrader):
             return
 
         while True:
-            print_separator()
             # 升级一次
             self.d.get(
                 f"cmd=newAct&subtype=104&op=3&one_click=0&item_id={_id}&type={t}"
@@ -2597,6 +2699,7 @@ class XinYuanYingShenQi(BaseUpgrader):
             )
             if "恭喜您" in self.d.html:
                 break
+            print_separator()
 
 
 def 新元婴神器(d: DaLeDou):
