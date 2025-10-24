@@ -16,18 +16,22 @@ def c_邪神秘宝(d: DaLeDou):
 
 
 def 帮派宝库(d: DaLeDou):
-    # 帮派宝库
-    d.get("cmd=fac_corp&op=0")
-    data = d.findall(r'gift_id=(\d+)&amp;type=(\d+)">点击领取')
-    if not data:
-        d.log("帮派宝库没有礼包领取", "帮派商会-帮派宝库").append()
-        return
+    for _ in range(20):
+        # 帮派宝库
+        d.get("cmd=fac_corp&op=0")
+        data = d.findall(r'gift_id=(\d+)&amp;type=(\d+)">点击领取')
+        if not data:
+            d.log("帮派宝库没有礼包领取", "帮派商会-帮派宝库").append()
+            return
 
-    for _id, t in data:
-        d.get(f"cmd=fac_corp&op=3&gift_id={_id}&type={t}")
-        d.log(d.find(r"</p>(.*?)<br />"), "帮派商会-帮派宝库").append()
-        if "入帮24小时才能领取商会礼包" in d.html:
-            break
+        for _id, t in data:
+            d.get(f"cmd=fac_corp&op=3&gift_id={_id}&type={t}")
+            d.log(d.find(r"</p>(.*?)<br />"), "帮派商会-帮派宝库").append()
+            if "恭喜您领取了" in d.html:
+                continue
+            # 领取上限
+            # 入帮24小时才能领取商会礼包
+            return
 
 
 def 交易会所(d: DaLeDou):

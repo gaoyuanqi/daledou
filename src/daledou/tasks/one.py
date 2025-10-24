@@ -1396,7 +1396,7 @@ def 备战天赋(d: DaLeDou, _id: int):
 
 def 飞升大作战(d: DaLeDou):
     """
-    玄铁令：报名排位模式时兑换，是否兑换详见配置文件
+    玄铁令：报名排位模式且处于赛季进行中时兑换，是否兑换详见配置文件
     报名：报名模式详见配置文件
     备战天赋：报名排位模式时激活，是否激活详见配置文件
     赛季结束奖励：周四且休赛期时领取
@@ -1405,6 +1405,11 @@ def 飞升大作战(d: DaLeDou):
     is_exchange: bool = config["玄铁令"]
     t: int = config["type"]
     _id: int | None = config["id"]
+
+    # 飞升大作战
+    d.get("cmd=ascendheaven")
+    if "赛季结算中" in d.html:
+        is_exchange = False
 
     if is_exchange and t == 1:  # 报名单排模式之前兑换
         # 兑换玄铁令*1
