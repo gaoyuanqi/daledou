@@ -17,13 +17,12 @@ from .config import Config
 from .log import LogManager, LoguruLogger
 from .session import SessionManager
 from .utils import (
+    DLD_EXECUTION_MODE_ENV,
     HEADERS,
-    MODULE_PATH_COMMON,
-    TASK_TYPE_ONE,
-    TASK_TYPE_TWO,
+    ExecutionMode,
     Input,
+    ModulePath,
     TaskType,
-    get_execution_mode,
     formatted_time,
     print_separator,
     push,
@@ -177,7 +176,6 @@ class DaLeDou:
         url = f"https://dld.qzapp.z.qq.com/qpet/cgi-bin/phonepk?{path}"
         for _ in range(3):
             response = self._session.get(url, headers=HEADERS, timeout=10)
-            response.encoding = "utf-8"
             self.html = response.text
             if "系统繁忙" in self.html:
                 time.sleep(0.2)
@@ -294,7 +292,7 @@ def _generate_daledou_instances(
         )
 
 
-def _run_tasks(d: DaLeDou, task_names: list[str], module_path: str):
+def _run_tasks(d: DaLeDou, task_names: list[str], module_path: ModulePath):
     """执行单个账号的所有任务"""
     module_type = import_module(module_path)
     d.start_timing()
@@ -341,7 +339,7 @@ class Concurrency:
         print_separator()
 
     @classmethod
-    def execute_accounts(cls, task_type: TaskType, module_path: str):
+    def execute_accounts(cls, task_type: TaskType, module_path: ModulePath):
         """并发执行多个账号"""
         global_start_time = datetime.now()
         optimal_concurrency = min(_CPU_COUNT * 2, _MAX_CONCURRENCY)
@@ -435,8 +433,8 @@ class Concurrency:
 
 
 class TaskSchedule:
-    @staticmethod
-    def _execute_sequential(task_type: TaskType, module_path: str):
+    @classmethod
+    def _execute_sequential(cls, task_type: TaskType, module_path: ModulePath):
         """顺序执行所有账号"""
         # 日志同时输出终端和文件
         LogManager.set_terminal_output_format()
@@ -447,25 +445,25 @@ class TaskSchedule:
             d.remove_qq_handler()
             print_separator()
 
-    @staticmethod
-    def _execute_concurrent(task_type: TaskType, module_path: str):
+    @classmethod
+    def _execute_concurrent(cls, task_type: TaskType, module_path: ModulePath):
         """并发执行所有账号"""
         # 仅写入日志文件，不输出到终端
         LogManager.remove_handler()
 
         Concurrency.execute_accounts(task_type, module_path)
 
-    @staticmethod
-    def execute(task_type: TaskType, module_path: str):
+    @classmethod
+    def execute(cls, task_type: TaskType, module_path: ModulePath):
         """执行任务（根据环境变量选择模式）"""
-        mode = get_execution_mode()
-        if mode == "sequential":
-            TaskSchedule._execute_sequential(task_type, module_path)
+        mode = os.environ.get(DLD_EXECUTION_MODE_ENV, ExecutionMode.SEQUENTIAL)
+        if mode == ExecutionMode.SEQUENTIAL:
+            cls._execute_sequential(task_type, module_path)
         else:
-            TaskSchedule._execute_concurrent(task_type, module_path)
+            cls._execute_concurrent(task_type, module_path)
 
     @staticmethod
-    def execute_debug(task_type: TaskType, module_path: str):
+    def execute_debug(task_type: TaskType, module_path: ModulePath):
         """调试模式 - 选择特定账号和任务执行"""
         qq_list = Config.list_all_qq_numbers()
         if not qq_list:
@@ -476,13 +474,16 @@ class TaskSchedule:
         # 日志同时输出终端和文件
         LogManager.set_terminal_output_format()
 
+        common_module = "src.daledou.tasks.common"
+        task_types = {TaskType.ONE, TaskType.TWO}
+
         while True:
             qq = Input.select("请选择账号：", qq_list)
             if qq is None:
                 return
 
-            if task_type in {TASK_TYPE_ONE, TASK_TYPE_TWO}:
-                reload(import_module(MODULE_PATH_COMMON))
+            if task_type in task_types:
+                reload(import_module(common_module))
             reload(import_module(module_path))
 
             for d in _generate_daledou_instances(task_type, qq):
@@ -490,12 +491,12 @@ class TaskSchedule:
                 if task_name is None:
                     break
 
-                if task_type in {TASK_TYPE_ONE, TASK_TYPE_TWO}:
+                if task_type in task_types:
                     d._task_len = 1
 
                 _run_tasks(d, [task_name], module_path)
 
-                if task_type in {TASK_TYPE_ONE, TASK_TYPE_TWO}:
+                if task_type in task_types:
                     print_separator()
                     print(d.pushplus_content)
                 d.remove_qq_handler()

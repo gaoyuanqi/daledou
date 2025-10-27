@@ -4,9 +4,6 @@ from pathlib import Path
 import yaml
 
 from .utils import (
-    TASK_TYPE_ONE,
-    TASK_TYPE_OTHER,
-    TASK_TYPE_TWO,
     TaskType,
     parse_cookie,
     parse_qq_from_cookie,
@@ -81,8 +78,7 @@ class ConfigManager:
         global_config = cls._load_yaml_file(cls.GLOBAL_CONFIG_PATH)
         merged_config = account_config.copy()
 
-        task_types = [TASK_TYPE_ONE, TASK_TYPE_TWO, TASK_TYPE_OTHER]
-
+        task_types = [str(task_type) for task_type in TaskType]
         for task_type in task_types:
             if task_type not in global_config:
                 continue

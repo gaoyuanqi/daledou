@@ -1,5 +1,6 @@
 import os
 import time
+import textwrap
 
 from schedule import every, repeat, run_pending
 
@@ -7,48 +8,60 @@ from .config import Config
 from .daledou import TaskSchedule
 from .session import SessionManager
 from .utils import (
-    EXECUTION_MODE_ENV,
-    MODULE_PATH_ONE,
-    MODULE_PATH_OTHER,
-    MODULE_PATH_TWO,
-    TASK_TYPE_ONE,
-    TASK_TYPE_OTHER,
-    TASK_TYPE_TWO,
-    TIMING_INFO,
-    TIMING_ONE,
-    TIMING_TWO,
+    DLD_EXECUTION_MODE_ENV,
+    ExecutionMode,
     Input,
-    get_execution_mode,
+    ModulePath,
+    TaskType,
     parse_cookie,
     parse_qq_from_cookie,
     print_separator,
 )
 
 
-@repeat(every().day.at(TIMING_ONE))
-def job_one() -> None:
-    """每天定时执行第一轮任务"""
-    _execute_one()
-    print(TIMING_INFO)
-    print_separator()
+class TimingConfig:
+    """定时配置常量类"""
 
+    ONE_EXECUTION_TIME: str = "13:01"
+    TWO_EXECUTION_TIME: str = "20:01"
 
-@repeat(every().day.at(TIMING_TWO))
-def job_two() -> None:
-    """每天定时执行第二轮任务"""
-    _execute_two()
-    print(TIMING_INFO)
-    print_separator()
+    @classmethod
+    def get_schedule_info(cls) -> str:
+        """获取定时任务信息"""
+        return textwrap.dedent(f"""
+            定时任务守护进程已启动：
+            日常任务默认 {cls.ONE_EXECUTION_TIME} 定时运行
+            晚间任务默认 {cls.TWO_EXECUTION_TIME} 定时运行
+
+            任务配置目录：config
+            任务日志目录：log
+        """)
 
 
 def _execute_one() -> None:
     """执行第一轮任务"""
-    TaskSchedule.execute(TASK_TYPE_ONE, MODULE_PATH_ONE)
+    TaskSchedule.execute(TaskType.ONE, ModulePath.ONE)
 
 
 def _execute_two() -> None:
     """执行第二轮任务"""
-    TaskSchedule.execute(TASK_TYPE_TWO, MODULE_PATH_TWO)
+    TaskSchedule.execute(TaskType.TWO, ModulePath.TWO)
+
+
+@repeat(every().day.at(TimingConfig.ONE_EXECUTION_TIME))
+def job_one() -> None:
+    """每天定时执行第一轮任务"""
+    _execute_one()
+    print(TimingConfig.get_schedule_info())
+    print_separator()
+
+
+@repeat(every().day.at(TimingConfig.TWO_EXECUTION_TIME))
+def job_two() -> None:
+    """每天定时执行第二轮任务"""
+    _execute_two()
+    print(TimingConfig.get_schedule_info())
+    print_separator()
 
 
 def _execute_timing() -> None:
@@ -56,7 +69,7 @@ def _execute_timing() -> None:
     if not Config.list_all_qq_numbers():
         return
 
-    print(TIMING_INFO)
+    print(TimingConfig.get_schedule_info())
     print_separator()
 
     while True:
@@ -82,11 +95,12 @@ class CLIHandler:
 
     def execute_tasks(self) -> None:
         """运行任务 - 包含所有任务类型和执行模式选择"""
-        modes = {"顺序执行": "sequential", "并发执行": "concurrent"}
-        current_mode = get_execution_mode()
-        current_mode_name = "顺序执行" if current_mode == "sequential" else "并发执行"
+        modes = {
+            "顺序执行": ExecutionMode.SEQUENTIAL,
+            "并发执行": ExecutionMode.CONCURRENT,
+        }
 
-        print(f"💡 当前执行模式: {current_mode_name}")
+        print("💡 执行模式说明：")
         print("• 顺序执行：账号依次执行")
         print("• 并发执行：多账号同时执行（最多5个）\n")
 
@@ -94,7 +108,7 @@ class CLIHandler:
         if mode is None:
             return
 
-        os.environ[EXECUTION_MODE_ENV] = modes[mode]
+        os.environ[DLD_EXECUTION_MODE_ENV] = modes[mode]
         print(f"已设置为{mode}")
         print_separator()
 
@@ -119,9 +133,9 @@ class CLIHandler:
     def execute_debug(self) -> None:
         """调试任务 - 单账号单任务执行"""
         task_map = {
-            "其它任务": (TASK_TYPE_OTHER, MODULE_PATH_OTHER),
-            "第一轮任务": (TASK_TYPE_ONE, MODULE_PATH_ONE),
-            "第二轮任务": (TASK_TYPE_TWO, MODULE_PATH_TWO),
+            "其它任务": (TaskType.OTHER, ModulePath.OTHER),
+            "第一轮任务": (TaskType.ONE, ModulePath.ONE),
+            "第二轮任务": (TaskType.TWO, ModulePath.TWO),
         }
 
         print("💡 调试模式：每次仅执行单个账号的单个任务")
