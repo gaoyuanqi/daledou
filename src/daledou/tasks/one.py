@@ -2315,18 +2315,17 @@ def 点亮南瓜灯(d: DaLeDou):
 
 def 万圣节(d: DaLeDou):
     """
-    点亮南瓜灯，获得的活力将乐斗历练BOSS
-    活动截止日的前一天优先兑换礼包B，最后兑换礼包A
+    点亮南瓜灯：随机点击南瓜
+    历练：如果获得活力则反向乐斗BOSS
+    兑换奖励：活动截止日的前一天优先兑换礼包B，最后兑换礼包A
     """
     点亮南瓜灯(d)
 
     # 万圣节
     d.get("cmd=hallowmas")
-    year = d.year
-    month = int(d.find(r"~(\d+)月"))
-    day = int(d.find(r"~\d+月(\d+)日"))
+    month, day = d.findall(r"(\d+)月(\d+)日6点")[0]
     # 判断当前日期是否到达结束日期的前一天
-    if not is_target_date_reached(1, (year, month, day)):
+    if not is_target_date_reached(1, (d.year, int(month), int(day))):
         return
 
     number = int(d.find(r"南瓜灯：(\d+)个"))
