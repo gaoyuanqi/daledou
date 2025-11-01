@@ -2317,7 +2317,7 @@ def 万圣节(d: DaLeDou):
     """
     点亮南瓜灯：随机点击南瓜
     历练：如果获得活力则反向乐斗BOSS
-    兑换奖励：活动截止日的前一天优先兑换礼包B，最后兑换礼包A
+    兑换奖励：活动截止日的前一天依次兑换一次礼包B、礼包A
     """
     点亮南瓜灯(d)
 
@@ -2328,17 +2328,12 @@ def 万圣节(d: DaLeDou):
     if not is_target_date_reached(1, (d.year, int(month), int(day))):
         return
 
-    number = int(d.find(r"南瓜灯：(\d+)个"))
-    b = number // 40
-    a = (number - b * 40) // 20
-    for _ in range(b):
-        # 兑换礼包B 消耗40个南瓜灯
-        d.get("cmd=hallowmas&gb_id=6")
-        d.log(d.find()).append()
-    for _ in range(a):
-        # 兑换礼包A 消耗20个南瓜灯
-        d.get("cmd=hallowmas&gb_id=5")
-        d.log(d.find()).append()
+    # 兑换礼包B 消耗40个南瓜灯
+    d.get("cmd=hallowmas&gb_id=6")
+    d.log(d.find()).append()
+    # 兑换礼包A 消耗20个南瓜灯
+    d.get("cmd=hallowmas&gb_id=5")
+    d.log(d.find()).append()
 
 
 def 元宵节(d: DaLeDou):
