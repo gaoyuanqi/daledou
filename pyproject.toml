@@ -1,6 +1,6 @@
 [project]
 name = "daledou"
-version = "13.4.2"
+version = "13.4.3"
 description = "Q宠大乐斗脚本辅助"
 authors = [{ name = "雨园"}]
 readme = "README.md"
