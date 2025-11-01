@@ -2,6 +2,7 @@
 name = "daledou"
 version = "13.4.2"
 description = "Q宠大乐斗脚本辅助"
+authors = [{ name = "雨园"}]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -11,3 +12,11 @@ dependencies = [
     "requests>=2.32.3",
     "schedule>=1.2.2",
 ]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "V$version"
+version_scheme = "pep440"
+version_provider = "uv"
+update_changelog_on_bump = true
+major_version_zero = false
