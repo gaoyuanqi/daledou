@@ -222,8 +222,6 @@ def upgrade(upgrader: BaseUpgrader):
 
 
 class AoYi(BaseUpgrader):
-    """奥义自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "奥秘元素": {
             "ten": "cmd=exchange&subtype=2&type=1261&times=10&costtype=12",
@@ -298,8 +296,6 @@ class AoYi(BaseUpgrader):
 
 
 class JiNengLan(BaseUpgrader):
-    """奥义技能栏自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "四灵魂石": {
             "ten": "cmd=exchange&subtype=2&type=1262&times=10&costtype=12",
@@ -381,10 +377,6 @@ class JiNengLan(BaseUpgrader):
 
 
 def 奥义(d: DaLeDou):
-    """
-    奥义：自动兑换强化
-    技能栏：自动兑换强化
-    """
     while True:
         category = Input.select("请选择分类：", ["奥义", "技能栏"])
         if category is None:
@@ -396,7 +388,6 @@ def 奥义(d: DaLeDou):
 
 
 def 背包(d: DaLeDou):
-    """背包搜索工具"""
     data = []
     d.get("cmd=store")
     page = int(d.find(r"第1/(\d+)"))
@@ -475,8 +466,6 @@ def 背包(d: DaLeDou):
 
 
 class JiTanShouHuShou(BaseUpgrader):
-    """祭坛守护兽自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "大型武器符咒": {
             "ten": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
@@ -582,8 +571,6 @@ class JiTanShouHuShou(BaseUpgrader):
 
 
 class FengYinJiTan(BaseUpgrader):
-    """封印祭坛自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "石中剑": {
             "ten": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
@@ -662,10 +649,6 @@ class FengYinJiTan(BaseUpgrader):
 
 
 def 封印(d: DaLeDou):
-    """
-    祭坛守护兽：自动兑换强化
-    封印祭坛：自动兑换强化
-    """
     while True:
         category = Input.select("请选择分类：", ["祭坛守护兽", "封印祭坛"])
         if category is None:
@@ -677,7 +660,6 @@ def 封印(d: DaLeDou):
 
 
 def 掠夺(d: DaLeDou):
-    """自动掠夺不高于最大战力的成员"""
     while True:
         max_combat_power = Input.number("请输入掠夺最大战力：")
         if max_combat_power is None:
@@ -706,8 +688,6 @@ def 掠夺(d: DaLeDou):
 
 
 class ShenZhuang(BaseUpgrader):
-    """神装自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "凤凰羽毛": {
             "ten": "cmd=exchange&subtype=2&type=1100&times=10&costtype=1",
@@ -847,8 +827,6 @@ class ShenZhuang(BaseUpgrader):
 
 
 class ShenJi(BaseUpgrader):
-    """神技自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "矿洞": {
             "ten": "cmd=exchange&subtype=2&type=1206&times=10&costtype=3",
@@ -937,10 +915,6 @@ class ShenJi(BaseUpgrader):
 
 
 def 神装(d: DaLeDou):
-    """
-    神装：自动兑换强化
-    神技：自动兑换强化
-    """
     while True:
         category = Input.select("请选择分类：", ["神装", "神技"])
         if category is None:
@@ -966,8 +940,6 @@ def 神装(d: DaLeDou):
 
 
 class XingPan(BaseUpgrader):
-    """星石自动兑换合成"""
-
     EXCHANGE_URL_MAP = {
         "翡翠石": {
             "ten": "cmd=exchange&subtype=2&type=1233&times=10&costtype=9",
@@ -1125,7 +1097,6 @@ class XingPan(BaseUpgrader):
 
 
 def 星盘(d: DaLeDou):
-    """星石自动兑换合成"""
     level_list = ["2", "3", "4", "5", "6", "7"]
     while True:
         synth_level = Input.select("请选择合成星石等级：", level_list)
@@ -1135,8 +1106,6 @@ def 星盘(d: DaLeDou):
 
 
 class YongBing(BaseUpgrader):
-    """佣兵自动资质还童、悟性提升、阅历突飞"""
-
     def __init__(self, d: DaLeDou, category: str):
         self.category = category
         super().__init__(d)
@@ -1240,7 +1209,6 @@ class YongBing(BaseUpgrader):
 
 
 def 佣兵(d: DaLeDou):
-    """佣兵自动资质还童、悟性提升、阅历突飞"""
     while True:
         category = Input.select("请选择分类：", ["资质还童", "悟性提升", "阅历突飞"])
         if category is None:
@@ -1249,8 +1217,6 @@ def 佣兵(d: DaLeDou):
 
 
 class WuQiZhuanJing(BaseUpgrader):
-    """武器专精自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "投掷武器符文石": {
             "ten": "cmd=exchange&subtype=2&type=1208&times=10&costtype=4",
@@ -1346,8 +1312,6 @@ class WuQiZhuanJing(BaseUpgrader):
 
 
 class WuQiLan(BaseUpgrader):
-    """专精武器栏自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "千年寒铁": {
             "ten": "cmd=exchange&subtype=2&type=1209&times=10&costtype=4",
@@ -1426,10 +1390,6 @@ class WuQiLan(BaseUpgrader):
 
 
 def 专精(d: DaLeDou):
-    """
-    武器专精：自动兑换强化
-    武器栏：自动兑换强化
-    """
     while True:
         category = Input.select("请选择分类：", ["武器专精", "武器栏"])
         if category is None:
@@ -1441,8 +1401,6 @@ def 专精(d: DaLeDou):
 
 
 class LingShouPian(BaseUpgrader):
-    """神魔录灵兽篇自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "神魔残卷": {
             "ten": "cmd=exchange&subtype=2&type=1267&times=10&costtype=14",
@@ -1519,8 +1477,6 @@ class LingShouPian(BaseUpgrader):
 
 
 class GuZhenPian(BaseUpgrader):
-    """古阵篇自动兑换突破"""
-
     EXCHANGE_URL_MAP = {
         "突破石": {
             "ten": "cmd=exchange&subtype=2&type=1266&times=10&costtype=14",
@@ -1600,10 +1556,6 @@ class GuZhenPian(BaseUpgrader):
 
 
 def 神魔录(d: DaLeDou):
-    """
-    灵兽篇：自动兑换强化
-    古阵篇：自动兑换突破（仅兑换突破石）
-    """
     while True:
         category = Input.select("请选择分类：", ["灵兽篇", "古阵篇"])
         if category is None:
@@ -1673,8 +1625,6 @@ def jiang_hu_chang_meng(
 def 柒承的忙碌日常(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高550金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _id := d.find(r'event_id=(\d+)">战斗'):
@@ -1704,8 +1654,6 @@ def 柒承的忙碌日常(
 def 群英拭剑谁为峰(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高550金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _id := d.find(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -1724,8 +1672,6 @@ def 群英拭剑谁为峰(
 def 时空守护者(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高450金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _id := d.find(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -1801,8 +1747,6 @@ def 时空守护者(
 def 倚天屠龙归我心(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高558金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _id := d.find(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -1844,8 +1788,6 @@ def 倚天屠龙归我心(
 def 神雕侠侣(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高500金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _id := d.find(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -1875,8 +1817,6 @@ def 神雕侠侣(
 def 雪山藏魂(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高490金币"""
-
     is_conversation = False
 
     def event(day: int) -> bool:
@@ -1935,8 +1875,6 @@ def 雪山藏魂(
 def 桃花自古笑春风(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高520金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -1977,8 +1915,6 @@ def 桃花自古笑春风(
 def 战乱襄阳(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高480金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -2010,8 +1946,6 @@ def 战乱襄阳(
 def 天涯浪子(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高355金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _ids := d.findall(r'event_id=(\d+)">战斗'):
@@ -2064,8 +1998,6 @@ def 天涯浪子(
 def 全真古墓意难平(
     d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
 ):
-    """最高561金币"""
-
     def event(day: int) -> bool:
         """战败返回True，否则返回False"""
         if _id := d.find(r'event_id=(\d+)">战斗\(等级2\)'):
@@ -2254,7 +2186,6 @@ def get_open_copy_data(d: DaLeDou) -> dict:
 
 
 def 江湖长梦(d: DaLeDou):
-    """江湖长梦副本挑战次数即香炉数量，战败则提前结束"""
     while True:
         data = get_open_copy_data(d)
         category = Input.select("请选择分类：", list(data))
@@ -2272,8 +2203,6 @@ def 江湖长梦(d: DaLeDou):
 
 
 class SanHun(BaseUpgrader):
-    """深渊之潮灵枢精魄三魂自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "御魂丹-天": {
             "ten": "cmd=abysstide&op=abyssexchange&id=1&times=10",
@@ -2354,8 +2283,6 @@ class SanHun(BaseUpgrader):
 
 
 class QiPo(BaseUpgrader):
-    """深渊之潮灵枢精魄七魄自动兑换强化"""
-
     EXCHANGE_URL_MAP = {
         "气魄之书": {
             "ten": "cmd=abysstide&op=wishexchange&id=5",
@@ -2474,10 +2401,6 @@ class QiPo(BaseUpgrader):
 
 
 def 深渊之潮(d: DaLeDou):
-    """
-    灵枢精魄三魂：自动兑换强化
-    灵枢精魄七魄：自动兑换强化
-    """
     while True:
         category = Input.select("请选择分类：", ["三魂", "七魄"])
         if category is None:
@@ -2507,8 +2430,6 @@ def 问道(d: DaLeDou):
 
 
 class XianWuXiuZhen(BaseUpgrader):
-    """仙武修真宝物自动强化"""
-
     def __init__(self, d: DaLeDou):
         super().__init__(d)
 
@@ -2586,10 +2507,6 @@ class XianWuXiuZhen(BaseUpgrader):
 
 
 def 仙武修真(d: DaLeDou):
-    """
-    问道：问道并一键炼化制作书
-    宝物：自动强化
-    """
     while True:
         category = Input.select("请选择分类：", ["问道", "宝物"])
         if category is None:
@@ -2601,8 +2518,6 @@ def 仙武修真(d: DaLeDou):
 
 
 class XinYuanYingShenQi(BaseUpgrader):
-    """新元婴神器自动强化"""
-
     CATRGORY_URL = {
         "投掷武器": "op=1&type=0",
         "小型武器": "op=1&type=1",
@@ -2703,7 +2618,6 @@ class XinYuanYingShenQi(BaseUpgrader):
 
 
 def 新元婴神器(d: DaLeDou):
-    """新元婴神器自动强化"""
     category_list = [
         "投掷武器",
         "小型武器",
@@ -2722,8 +2636,6 @@ def 新元婴神器(d: DaLeDou):
 
 
 class 巅峰之战进行中:
-    """夺宝奇兵太空探宝场景自动投掷"""
-
     def __init__(self, d: DaLeDou):
         self.d = d
 

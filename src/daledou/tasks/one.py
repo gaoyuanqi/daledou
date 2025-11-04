@@ -195,12 +195,6 @@ def 侠士招募(d: DaLeDou):
 
 
 def 华山论剑(d: DaLeDou):
-    """
-    免费挑战：每月1~25号每天挑战8次，耐久不足或者侠士未上阵时自动战阵调整
-    赛季段位奖励：每月26号领取
-    荣誉兑换：每月26号兑换，详见配置文件
-    侠士招募：每月26号招募
-    """
     if d.day == 26:
         # 领取赛季段位奖励
         d.get(r"cmd=knightarena&op=drawranking")
@@ -229,20 +223,17 @@ def 华山论剑(d: DaLeDou):
 
 
 def 斗豆月卡(d: DaLeDou):
-    """每天领取150斗豆"""
     # 领取150斗豆
     d.get("cmd=monthcard&sub=1")
     d.log(d.find(r"<p>(.*?)<br />")).append()
 
 
 def 分享(d: DaLeDou):
-    """
-    每天最多一键分享9次，斗神塔每次挑战10层以增加一次分享次数
-    周四领取奖励，若全部已领取则重置分享
-    """
     end = False
     second = get_doushenta_cd(d)
 
+    # 分享
+    d.get("cmd=sharegame&subtype=1")
     for _ in range(9):
         # 一键分享
         d.get("cmd=sharegame&subtype=6")
@@ -290,12 +281,6 @@ def 分享(d: DaLeDou):
 
 
 def 乐斗(d: DaLeDou):
-    """
-    体力药水：是否自动使用详见配置文件
-    贡献药水：每天使用，使用次数详见配置文件
-    侠：每天乐斗好友BOSS、帮友BOSS、侠侣BOSS，禁用好友BOSS详见配置文件
-    情师徒拜：每天乐斗，是否乐斗详见配置文件
-    """
     config: dict[str, bool] = d.config["乐斗"]
     use_count: int = config["贡献药水"]
     disable_boss_uin: list[str] = config["disable_boss_uin"] or []
@@ -357,7 +342,6 @@ def 乐斗(d: DaLeDou):
 
 
 def 武林(d: DaLeDou):
-    """每天报名武林大会"""
     # 报名
     d.get("cmd=fastSignWulin&ifFirstSign=1")
     if "使用规则" in d.html:
@@ -367,14 +351,12 @@ def 武林(d: DaLeDou):
 
 
 def 群侠(d: DaLeDou):
-    """每天报名笑傲群侠"""
     # 报名
     d.get("cmd=knightfight&op=signup")
     d.log(d.find(r"侠士侠号.*?<br />(.*?)<br />")).append()
 
 
 def 侠侣(d: DaLeDou):
-    """周二、周五、周日报名侠侣争霸"""
     # 报名
     d.get("cmd=cfight&subtype=9")
     if "使用规则" in d.html:
@@ -384,7 +366,6 @@ def 侠侣(d: DaLeDou):
 
 
 def 结拜(d: DaLeDou):
-    """周一报名结拜（从低等级到高等级依次报名）"""
     for _id in [1, 2, 3, 5, 4]:
         # 报名
         d.get(f"cmd=brofight&subtype=1&gidIdx={_id}")
@@ -396,11 +377,6 @@ def 结拜(d: DaLeDou):
 
 
 def 巅峰之战进行中(d: DaLeDou):
-    """
-    领奖：周一领奖
-    报名：周一报名，选择派别详见配置文件
-    征战：周三~周日每天最多14次
-    """
     if d.week == 1:
         # 领奖
         d.get("cmd=gvg&sub=1")
@@ -431,11 +407,6 @@ def 巅峰之战进行中(d: DaLeDou):
 
 
 def 矿洞(d: DaLeDou):
-    """
-    挑战：每天3次
-    通关奖励：有就领取
-    开启副本：详见配置文件
-    """
     config: str = d.config["矿洞"]
 
     # 矿洞
@@ -462,10 +433,6 @@ def 矿洞(d: DaLeDou):
 
 
 def 掠夺(d: DaLeDou):
-    """
-    周二掠夺一次战力最低的成员、领奖
-    周三领取胜负奖励、报名
-    """
     if d.week == 3:
         # 领取胜负奖励
         d.get("cmd=forage_war&subtype=6")
@@ -502,10 +469,6 @@ def 掠夺(d: DaLeDou):
 
 
 def 踢馆(d: DaLeDou):
-    """
-    周五试炼5次、高倍转盘一次、最多挑战30次
-    周六报名、领奖
-    """
     if d.week == 6:
         # 报名
         d.get("cmd=facchallenge&subtype=1")
@@ -535,11 +498,6 @@ def 踢馆(d: DaLeDou):
 
 
 def 竞技场(d: DaLeDou):
-    """
-    兑换10个河图洛书：每月1~25号每天兑换，详见配置文件
-    挑战：每月1~25号每天最多10次
-    领取奖励：每月1~25号每天领取
-    """
     is_exchange: bool = d.config["竞技场"]
     if is_exchange:
         # 兑换10个河图洛书
@@ -559,7 +517,6 @@ def 竞技场(d: DaLeDou):
 
 
 def 十二宫(d: DaLeDou):
-    """每天请猴王扫荡，选择场景详见配置文件"""
     _id: int = d.config["十二宫"]
     # 请猴王扫荡
     d.get(f"cmd=zodiacdungeon&op=autofight&scene_id={_id}")
@@ -577,7 +534,6 @@ def 十二宫(d: DaLeDou):
 
 
 def 许愿(d: DaLeDou):
-    """每天领取许愿奖励、上香许愿、领取魂珠碎片宝箱"""
     for sub in [5, 1, 6]:
         d.get(f"cmd=wish&sub={sub}")
         d.log(d.find()).append()
@@ -585,8 +541,6 @@ def 许愿(d: DaLeDou):
 
 def 抢地盘(d: DaLeDou):
     """
-    无限制区：每天随机攻占一次
-
     等级  30级以下 40级以下 ... 120级以下 无限制区
     type  1       2            10        11
     """
@@ -603,9 +557,6 @@ def 抢地盘(d: DaLeDou):
 
 
 def 历练(d: DaLeDou):
-    """
-    乐斗：每个BOSS最多乐斗3次，每天最多5次（关闭自动使用活力药水），乐斗次数详见配置文件
-    """
     config: dict[int, int] = d.config["历练"]
     if config is None:
         d.log("你没有配置历练BOSS").append()
@@ -637,12 +588,6 @@ def 历练(d: DaLeDou):
 
 
 def 镖行天下(d: DaLeDou):
-    """
-    领取奖励：每天一次
-    刷新押镖：当镖师是蔡八斗时刷新，最多免费两次
-    启程护送：每天一次
-    拦截：每天3次（如果战败、保护期、已达终点则不会再拦截该玩家；刷新最多20次），拦截镖师详见配置文件
-    """
     bodyguard: str = d.config["镖行天下"]
 
     # 镖行天下
@@ -701,10 +646,6 @@ def 镖行天下(d: DaLeDou):
 
 
 def 幻境(d: DaLeDou):
-    """
-    每天最多乐斗5次，选择场景详见配置文件
-    领取奖励
-    """
     # 幻境
     d.get("cmd=misty")
     if "挑战次数：0/1" in d.html:
@@ -737,14 +678,12 @@ def 幻境(d: DaLeDou):
 
 
 def 群雄逐鹿(d: DaLeDou):
-    """周六报名、领奖"""
     for op in ["signup", "drawreward"]:
         d.get(f"cmd=thronesbattle&op={op}")
         d.log(d.find(r"届群雄逐鹿<br />(.*?)<br />")).append()
 
 
 def 画卷迷踪(d: DaLeDou):
-    """每天最多挑战20次"""
     for _ in range(20):
         # 准备完成进入战斗
         d.get("cmd=scroll_dungeon&op=fight&buff=0")
@@ -756,16 +695,6 @@ def 画卷迷踪(d: DaLeDou):
 
 
 def 门派(d: DaLeDou):
-    """
-    万年寺
-        普通香炉：每天点燃一次
-        高香香炉：每天点燃一次，是否兑换门派高香详见配置文件
-    八叶堂
-        进入木桩训练：每天一次
-        进入同门切磋：每天一次，如果成功兑换门派战书还会切磋一次，是否兑换门派战书详见配置文件
-    金顶：每天挑战所有职位一次
-    五花堂：每天最多完成3次
-    """
     is_exchange: dict[str, bool] = d.config["门派"]
     if is_exchange["门派高香"]:
         d.get("cmd=exchange&subtype=2&type=1248&times=1")
@@ -869,12 +798,6 @@ def 门派邀请赛_商店兑换(d: DaLeDou):
 
 
 def 门派邀请赛(d: DaLeDou):
-    """
-    报名：周一报名
-    领取奖励：周一领取
-    商店兑换：周一兑换
-    开始挑战：周三~周日每天最多10次
-    """
     if d.week == 1:
         # 组队报名
         d.get("cmd=secttournament&op=signup")
@@ -920,12 +843,6 @@ def 会武_商店兑换(d: DaLeDou):
 
 
 def 会武(d: DaLeDou):
-    """
-    初、中、高级试炼场：周一、周二、周三挑战
-    助威：周四助威丐帮
-    商店兑换：周四兑换
-    领奖：周六领奖
-    """
     if d.week in [1, 2, 3]:
         for _ in range(21):
             # 挑战
@@ -959,12 +876,6 @@ def 会武(d: DaLeDou):
 
 
 def 梦想之旅(d: DaLeDou):
-    """
-    普通旅行：每天一次
-    梦幻旅行：周四消耗梦幻机票完成未去过目的地，消耗数量详见配置文件
-    区域礼包：有就周四领取
-    超级礼包：有就周四领取
-    """
     # 普通旅行
     d.get("cmd=dreamtrip&sub=2")
     d.log(d.find()).append()
@@ -1072,14 +983,6 @@ def 问鼎天下_商店兑换(d: DaLeDou):
 
 
 def 问鼎天下(d: DaLeDou):
-    """
-    领取奖励：周一领取
-    商店兑换：周一仅兑换碎片（仅当神魔录古阵篇中的宝物可升级且碎片数量不足时兑换）
-    领取帮资：周一~周五领取
-    攻占：周一~周五每天攻占1级最多4次（占领成功则放弃），3级必定攻占一次，详见配置文件
-    淘汰赛：周六助威，详见全局配置文件
-    排名赛：周日助威，详见全局配置文件
-    """
     if d.week == 1:
         # 领取奖励
         d.get("cmd=tbattle&op=drawreward")
@@ -1194,10 +1097,6 @@ def 帮派远征军_领取(d: DaLeDou):
 
 
 def 帮派远征军(d: DaLeDou):
-    """
-    攻击：周一~周日按战力从低到高攻击
-    领取奖励：阵亡或者全部通关则领取
-    """
     while True:
         # 帮派远征军
         d.get("cmd=factionarmy&op=viewIndex&island_id=-1")
@@ -1260,7 +1159,6 @@ def 帮派黄金联赛_参战(d: DaLeDou):
 
 
 def 帮派黄金联赛(d: DaLeDou):
-    """每天领取奖励、领取帮派赛季奖励、参与防守、参战攻击"""
     # 帮派黄金联赛
     d.get("cmd=factionleague&op=0")
     if "领取奖励" in d.html:
@@ -1287,11 +1185,6 @@ def 任务派遣中心(d: DaLeDou):
 
 
 def 武林盟主(d: DaLeDou):
-    """
-    周三、五、日领取排行奖励和竞猜奖励
-    周一、三、五分站赛报名
-    周二、四、六竞猜所有
-    """
     if d.week in [3, 5, 7]:
         # 武林盟主
         d.get("cmd=wlmz&op=view_index")
@@ -1323,7 +1216,6 @@ def 武林盟主(d: DaLeDou):
 
 
 def 全民乱斗(d: DaLeDou):
-    """每天乱斗竞技任务列表领取、乱斗任务领取"""
     collect_status = False
     for t in [2, 3, 4]:
         d.get(f"cmd=luandou&op=0&acttype={t}")
@@ -1341,7 +1233,6 @@ def 侠士客栈(d: DaLeDou):
 
 
 def 江湖长梦(d: DaLeDou):
-    """每月20号商店兑换"""
     config: list[dict] = d.config["江湖长梦"]["exchange"]
     if config is None:
         return
@@ -1360,7 +1251,6 @@ def 江湖长梦(d: DaLeDou):
 
 
 def 大侠回归三重好礼(d: DaLeDou):
-    """周四领取奖励"""
     # 大侠回归三重好礼
     d.get("cmd=newAct&subtype=173&op=1")
     if data := d.findall(r"subtype=(\d+).*?taskid=(\d+)"):
@@ -1395,12 +1285,6 @@ def 备战天赋(d: DaLeDou, _id: int):
 
 
 def 飞升大作战(d: DaLeDou):
-    """
-    玄铁令：报名排位模式且处于赛季进行中时兑换，是否兑换详见配置文件
-    报名：报名模式详见配置文件
-    备战天赋：报名排位模式时激活，是否激活详见配置文件
-    赛季结束奖励：周四且休赛期时领取
-    """
     config = d.config["飞升大作战"]
     is_exchange: bool = config["玄铁令"]
     t: int = config["type"]
@@ -1479,7 +1363,6 @@ def 许愿帮铺(d: DaLeDou):
 
 
 def 深渊之潮(d: DaLeDou):
-    """每月20号许愿帮铺兑换，详见配置文件"""
     c_帮派巡礼(d)
     c_深渊秘境(d)
     if d.day == 20:
@@ -1487,7 +1370,6 @@ def 深渊之潮(d: DaLeDou):
 
 
 def 侠客岛(d: DaLeDou):
-    """侠客行每天最多接受3次，免费次数最多刷新4次，刷新任务详见配置文件"""
     d.get("cmd=knight_island&op=viewmissionindex")
     pos = d.findall(r"viewmissiondetail&amp;pos=(\d+)")
     if not pos:
@@ -1680,26 +1562,11 @@ def 遗迹征伐(d: DaLeDou):
 
 
 def 时空遗迹(d: DaLeDou):
-    """
-    八卦迷阵：
-        八卦门：每天点击，首通没有八卦则选择配置文件八卦，配置八卦详见全局配置文件
-        领取通关奖励：通关领取
-    遗迹征伐：
-        第七周的最后一个周三（含）之前执行：
-            异兽洞窟：优先扫荡，否则挑战
-            联合征伐：每天挑战一次
-            悬赏任务：每天领取
-        赛季结束日期的前一天执行：
-            领取悬赏任务登录奖励
-            领取赛季排行奖励
-            悬赏商店兑换
-    """
     八卦迷阵(d)
     遗迹征伐(d)
 
 
 def 世界树(d: DaLeDou):
-    """每天一键领取经验奖励、免费温养（无武器时自动选择武器）"""
     # 世界树
     d.get("cmd=worldtree")
     # 一键领取经验奖励
@@ -1796,28 +1663,12 @@ def 龙吟破阵(d: DaLeDou):
 
 
 def 龙凰之境(d: DaLeDou):
-    """
-    龙凰论武：
-        报名：每月1号报名，选择赛区详见配置文件
-        挑战：每月4~25号每天随机挑战，挑战次数详见配置文件
-        每日领奖：每月4~25号每天一次
-        排行奖励：每月27号领取
-    龙凰云集：
-        领奖：每月27号领取赛季论武次数奖励
-        商店兑换：每月27号兑换，兑换次数详见配置文件
-    龙吟破阵：
-        领取：每月1号阵法库领取
-    """
     龙凰论武(d)
     龙凰云集(d)
     龙吟破阵(d)
 
 
 def 增强经脉(d: DaLeDou):
-    """
-    传功：传功符数量不低于200时最多传功、一键拾取、一键合成12次，
-    其它：关闭合成两次确认和取消传功符不足用斗豆代替
-    """
     # 经脉
     d.get("cmd=intfmerid&sub=1")
     if "关闭" in d.html:
@@ -1905,7 +1756,6 @@ def 助阵(d: DaLeDou):
 
 
 def 查看好友资料(d: DaLeDou):
-    """查看第2页所有好友"""
     # 乐斗助手
     d.get("cmd=view&type=6")
     if "开启查看好友信息和收徒" in d.html:
@@ -1919,7 +1769,6 @@ def 查看好友资料(d: DaLeDou):
 
 
 def 徽章进阶(d: DaLeDou):
-    """进阶一次"""
     # 关闭道具不足自动购买
     d.get("cmd=achievement&op=setautobuy&enable=0&achievement_id=12")
     for _id in range(1, 41):
@@ -1946,7 +1795,6 @@ def 兵法研习(d: DaLeDou):
 
 
 def 挑战陌生人(d: DaLeDou):
-    """乐斗陌生人4次"""
     # 斗友
     d.get("cmd=friendlist&type=1")
     for u in d.findall(r"</a>\d+.*?B_UID=(\d+)")[:4]:
@@ -2038,10 +1886,6 @@ def 帮派任务(d: DaLeDou):
 
 
 def 我的帮派(d: DaLeDou):
-    """
-    每天供奉5次、帮派任务最多领取奖励3次
-    周日领取奖励、报名帮战、激活祝福
-    """
     # 我的帮派
     d.get("cmd=factionop&subtype=3&facid=0")
     if "你的职位" not in d.html:
@@ -2061,10 +1905,6 @@ def 我的帮派(d: DaLeDou):
 
 
 def 帮派祭坛(d: DaLeDou):
-    """
-    转动轮盘：每天最多30次
-    领取奖励：有就领取
-    """
     # 帮派祭坛
     d.get("cmd=altar")
     for _ in range(30):
@@ -2100,7 +1940,6 @@ def 帮派祭坛(d: DaLeDou):
 
 
 def 每日奖励(d: DaLeDou):
-    """每天领取每日礼包、传功符礼包、达人礼包、无字天书礼包"""
     for key in ["login", "meridian", "daren", "wuzitianshu"]:
         # 每日奖励
         d.get(f"cmd=dailygift&op=draw&key={key}")
@@ -2108,14 +1947,12 @@ def 每日奖励(d: DaLeDou):
 
 
 def 领取徒弟经验(d: DaLeDou):
-    """每天领取一次"""
     # 领取徒弟经验
     d.get("cmd=exp")
     d.log(d.find(r"每日奖励</a><br />(.*?)<br />")).append()
 
 
 def 今日活跃度(d: DaLeDou):
-    """每天领取活跃度礼包、帮派总活跃礼包"""
     # 今日活跃度
     d.get("cmd=liveness")
     d.log(d.find(r"【(.*?)】")).append()
@@ -2136,10 +1973,6 @@ def 今日活跃度(d: DaLeDou):
 
 
 def 仙武修真(d: DaLeDou):
-    """
-    领取：每天3次
-    寻访：每天随机寻访挑战，最多5次
-    """
     for task_id in range(1, 4):
         # 领取
         d.get(f"cmd=immortals&op=getreward&taskid={task_id}")
@@ -2158,11 +1991,6 @@ def 仙武修真(d: DaLeDou):
 
 
 def 乐斗黄历(d: DaLeDou):
-    """
-    领取：每天一次
-    占卜：每天一次
-    斗神塔：如果有双倍则自动挑战（次数耗尽或到不了顶层结束），挑战次数详见配置文件
-    """
     # 领取
     d.get("cmd=calender&op=2")
     d.log(d.find(r"<br /><br />(.*?)<br />")).append()
@@ -2183,7 +2011,6 @@ def 乐斗黄历(d: DaLeDou):
 
 
 def 器魂附魔(d: DaLeDou):
-    """附魔任务领取3次"""
     for _id in range(1, 4):
         # 领取
         d.get(f"cmd=enchant&op=gettaskreward&task_id={_id}")
@@ -2191,10 +2018,6 @@ def 器魂附魔(d: DaLeDou):
 
 
 def 兵法(d: DaLeDou):
-    """
-    周四随机助威
-    周六领奖、领取斗币（需要活跃度满50）
-    """
     if d.week == 4:
         # 助威
         d.get("cmd=brofight&subtype=13")
@@ -2232,7 +2055,6 @@ def get_boss_id():
 
 
 def 猜单双(d: DaLeDou):
-    """随机单数、双数"""
     # 猜单双
     d.get("cmd=oddeven")
     for _ in range(5):
@@ -2248,7 +2070,6 @@ def 猜单双(d: DaLeDou):
 
 
 def 煮元宵(d: DaLeDou):
-    """成熟度>=96时赶紧出锅"""
     # 煮元宵
     d.get("cmd=yuanxiao2014")
     for _ in range(4):
@@ -2287,7 +2108,6 @@ def 点亮(d: DaLeDou) -> bool:
 
 
 def 点亮南瓜灯(d: DaLeDou):
-    """万圣节-点亮南瓜灯"""
     # 乐斗助手
     d.get("cmd=view&type=6")
     if "取消自动使用活力药水" in d.html:
@@ -2314,11 +2134,6 @@ def 点亮南瓜灯(d: DaLeDou):
 
 
 def 万圣节(d: DaLeDou):
-    """
-    点亮南瓜灯：随机点击南瓜
-    历练：如果获得活力则反向乐斗BOSS
-    兑换奖励：活动截止日的前一天依次兑换一次礼包B、礼包A
-    """
     点亮南瓜灯(d)
 
     # 万圣节
@@ -2337,7 +2152,6 @@ def 万圣节(d: DaLeDou):
 
 
 def 元宵节(d: DaLeDou):
-    """周四领取、领取生肖限定形象卡"""
     # 领取
     d.get("cmd=newAct&subtype=101&op=1")
     d.log(d.find(r"】</p>(.*?)<br />")).append()
@@ -2347,7 +2161,6 @@ def 元宵节(d: DaLeDou):
 
 
 def 神魔转盘(d: DaLeDou):
-    """幸运抽奖免费抽奖一次"""
     # 神魔转盘
     d.get("cmd=newAct&subtype=88&op=0")
     if "免费抽奖一次" not in d.html:
@@ -2360,19 +2173,17 @@ def 神魔转盘(d: DaLeDou):
 
 
 def 乐斗驿站(d: DaLeDou):
-    """免费领取淬火结晶*1"""
+    # 领取
     d.get("cmd=newAct&subtype=167&op=2")
     d.log(d.find()).append()
 
 
 def 幸运转盘(d: DaLeDou):
-    """转动轮盘一次"""
     d.get("cmd=newAct&subtype=57&op=roll")
     d.log(d.find(r"0<br /><br />(.*?)<br />")).append()
 
 
 def 冰雪企缘(d: DaLeDou):
-    """最多领取两次"""
     # 冰雪企缘
     d.get("cmd=newAct&subtype=158&op=0")
     gift = d.findall(r"gift_type=(\d+)")
@@ -2387,10 +2198,6 @@ def 冰雪企缘(d: DaLeDou):
 
 
 def 甜蜜夫妻(d: DaLeDou):
-    """
-    夫妻甜蜜好礼   最多领取3次
-    单身鹅鼓励好礼 最多领取3次
-    """
     # 甜蜜夫妻
     d.get("cmd=newAct&subtype=129")
     flag = d.findall(r"flag=(\d+)")
@@ -2405,7 +2212,6 @@ def 甜蜜夫妻(d: DaLeDou):
 
 
 def 乐斗菜单(d: DaLeDou):
-    """点单一次"""
     # 乐斗菜单
     d.get("cmd=menuact")
     if gift := d.find(r"套餐.*?gift=(\d+).*?点单</a>"):
@@ -2421,7 +2227,6 @@ def 客栈同福(d: DaLeDou):
 
 
 def 周周礼包(d: DaLeDou):
-    """领取一次"""
     # 周周礼包
     d.get("cmd=weekgiftbag&sub=0")
     if _id := d.find(r';id=(\d+)">领取'):
@@ -2433,10 +2238,6 @@ def 周周礼包(d: DaLeDou):
 
 
 def 登录有礼(d: DaLeDou):
-    """
-    登录奖励：每天领取一次
-    额外奖励：每天领取一次
-    """
     # 登录有礼
     d.get("cmd=newAct&subtype=56")
     if g := d.find(r"gift_type=1.*?gift_index=(\d+)"):
@@ -2450,14 +2251,12 @@ def 登录有礼(d: DaLeDou):
 
 
 def 活跃礼包(d: DaLeDou):
-    """领取50活跃礼包、80活跃礼包"""
     for p in ["1", "2"]:
         d.get(f"cmd=newAct&subtype=94&op={p}")
         d.log(d.find(r"】.*?<br />(.*?)<br />")).append()
 
 
 def 上香活动(d: DaLeDou):
-    """领取檀木香、龙涎香各两次"""
     for _ in range(2):
         # 檀木香
         d.get("cmd=newAct&subtype=142&op=1&id=1")
@@ -2468,8 +2267,7 @@ def 上香活动(d: DaLeDou):
 
 
 def 徽章战令(d: DaLeDou):
-    """领取每日礼包"""
-    # 每日礼包
+    # 领取每日礼包
     d.get("cmd=badge&op=1")
     d.log(d.find()).append()
 
@@ -2548,16 +2346,6 @@ def 生肖福卡_抽奖(d: DaLeDou):
 
 
 def 生肖福卡(d: DaLeDou):
-    """
-    集卡：
-        好友赠卡：每天领取好友赠卡
-        分享福卡：每天向指定好友分享一个数量不低于2的单类福卡，详见配置文件
-        领取福卡：每天领取
-    合卡：
-        合卡时间内每天一次合成周年福卡
-    抽奖：
-        兑奖时间内周四分斗豆、抽奖（未合成周年福卡则继续抽奖）
-    """
     生肖福卡_好友赠卡(d)
     生肖福卡_分享福卡(d)
     生肖福卡_领取福卡(d)
@@ -2591,10 +2379,6 @@ def 长安盛会(d: DaLeDou):
 
 
 def 深渊秘宝(d: DaLeDou):
-    """
-    三魂秘宝：免费抽奖
-    七魄秘宝：免费抽奖
-    """
     # 深渊秘宝
     d.get("cmd=newAct&subtype=175")
     t_list = d.findall(r'type=(\d+)&amp;times=1">免费抽奖')
@@ -2609,7 +2393,6 @@ def 深渊秘宝(d: DaLeDou):
 
 
 def 中秋礼盒(d: DaLeDou):
-    """领取"""
     # 中秋礼盒
     d.get("cmd=midautumngiftbag&sub=0")
     _ids = d.findall(r"amp;id=(\d+)")
@@ -2626,10 +2409,6 @@ def 中秋礼盒(d: DaLeDou):
 
 
 def 双节签到(d: DaLeDou):
-    """
-    签到奖励：每天领取
-    奖励金：活动截止日的前一天领取
-    """
     # 领取签到奖励
     d.get("cmd=newAct&subtype=144&op=1")
     d.log(d.find()).append()
@@ -2642,10 +2421,6 @@ def 双节签到(d: DaLeDou):
 
 
 def 乐斗游记(d: DaLeDou):
-    """
-    每天领取积分
-    周四一键领取、兑换
-    """
     # 乐斗游记
     d.get("cmd=newAct&subtype=176")
     # 今日游记任务
@@ -2677,7 +2452,6 @@ def 乐斗游记(d: DaLeDou):
 
 
 def 斗境探秘(d: DaLeDou):
-    """领取每日探秘奖励、累计探秘奖励"""
     # 斗境探秘
     d.get("cmd=newAct&subtype=177")
     # 领取每日探秘奖励
@@ -2698,10 +2472,6 @@ def 幸运金蛋(d: DaLeDou):
 
 
 def 春联大赛(d: DaLeDou):
-    """
-    答题：每天最多3次（字库中不存在春联则结束）
-    斗币：每天领取3次
-    """
     # 开始答题
     d.get("cmd=newAct&subtype=146&op=1")
     if "您的活跃度不足" in d.html:
@@ -2806,7 +2576,6 @@ def 春联大赛(d: DaLeDou):
 
 
 def 新春拜年(d: DaLeDou):
-    """随机赠礼3个礼物"""
     # 新春拜年
     d.get("cmd=newAct&subtype=147")
     if "op=1" in d.html:
@@ -2819,7 +2588,6 @@ def 新春拜年(d: DaLeDou):
 
 
 def 喜从天降(d: DaLeDou):
-    """每天最多点燃烟花10次，活动时间20.00-22.00"""
     for _ in range(10):
         d.get("cmd=newAct&subtype=137&op=1")
         d.log(d.find()).append()
@@ -2828,7 +2596,6 @@ def 喜从天降(d: DaLeDou):
 
 
 def 福利_历练(d: DaLeDou, name: str):
-    """节日福利、金秋福利每天反向乐斗BOSS"""
     # 乐斗助手
     d.get("cmd=view&type=6")
     if "开启自动使用活力药水" in d.html:
@@ -2852,10 +2619,6 @@ def 福利_历练(d: DaLeDou, name: str):
 
 
 def 节日福利(d: DaLeDou):
-    """
-    历练：每天反向乐斗BOSS（自动使用活力药水），是否乐斗详见配置文件
-    斗神塔：周四自动挑战（次数耗尽或到不了顶层结束），挑战次数详见配置文件
-    """
     config: dict = d.config["节日福利"]
 
     if config["历练"]:
@@ -2872,10 +2635,6 @@ def 节日福利(d: DaLeDou):
 
 
 def 金秋福利(d: DaLeDou):
-    """
-    历练：每天反向乐斗BOSS（自动使用活力药水），是否乐斗详见配置文件
-    斗神塔：周四自动挑战（次数耗尽或到不了顶层结束），挑战次数详见配置文件
-    """
     config: dict = d.config["金秋福利"]
 
     if config["历练"]:
@@ -2892,14 +2651,12 @@ def 金秋福利(d: DaLeDou):
 
 
 def 预热礼包(d: DaLeDou):
-    """每天领取一次礼包"""
     # 领取
     d.get("cmd=newAct&subtype=117&op=1")
     d.log(d.find(r"<br /><br />(.*?)<")).append()
 
 
 def 微信兑换(d: DaLeDou):
-    """周四微信兑换，兑换码详见全局配置文件"""
     code: int = d.config["微信兑换"]
     # 兑换
     d.get(f"cmd=weixin&cdkey={code}&sub=2&zapp_sid=&style=0&channel=0&i_p_w=cdkey|")
@@ -2907,14 +2664,13 @@ def 微信兑换(d: DaLeDou):
 
 
 def 五一礼包(d: DaLeDou):
-    """周四领取3次劳动节礼包"""
     for _id in range(3):
+        # 领取
         d.get(f"cmd=newAct&subtype=113&op=1&id={_id}")
         d.log(d.find(r"】<br /><br />(.*?)<")).append()
 
 
 def 浩劫宝箱(d: DaLeDou):
-    """周四领取一次"""
     d.get("cmd=index")
     t1 = d.find(r'subtype=(\d+)">浩劫宝箱')
     # 浩劫宝箱
@@ -2929,7 +2685,6 @@ def 浩劫宝箱(d: DaLeDou):
 
 def 端午有礼(d: DaLeDou):
     """
-    周四兑换礼包：2次礼包4、1次礼包3
     活动期间最多可以得到 4x7=28 个粽子
 
     index
@@ -2951,7 +2706,6 @@ def 端午有礼(d: DaLeDou):
 
 
 def 圣诞有礼(d: DaLeDou):
-    """周四领取点亮奖励和连线奖励"""
     # 圣诞有礼
     d.get("cmd=newAct&subtype=145")
     for _id in d.findall(r"task_id=(\d+)"):
@@ -2966,7 +2720,6 @@ def 圣诞有礼(d: DaLeDou):
 
 
 def 新春礼包(d: DaLeDou):
-    """周四领取礼包"""
     for _id in [280, 281, 282]:
         # 领取
         d.get(f"cmd=xinChunGift&subtype=2&giftid={_id}")
@@ -2974,7 +2727,6 @@ def 新春礼包(d: DaLeDou):
 
 
 def 登录商店(d: DaLeDou):
-    """周四兑换"""
     t: int = d.config["登录商店"]
     if t is None:
         d.log("你没有配置兑换物品id").append()
@@ -2991,7 +2743,6 @@ def 登录商店(d: DaLeDou):
 
 
 def 盛世巡礼(d: DaLeDou):
-    """周四收下礼物"""
     for s in range(1, 8):
         # 点击进入
         d.get(f"cmd=newAct&subtype=150&op=2&sceneId={s}")
@@ -3006,7 +2757,6 @@ def 盛世巡礼(d: DaLeDou):
 
 
 def 新春登录礼(d: DaLeDou):
-    """最多领取7次"""
     # 新春登录礼
     d.get("cmd=newAct&subtype=99&op=0")
     day = d.findall(r"day=(\d+)")
@@ -3021,11 +2771,6 @@ def 新春登录礼(d: DaLeDou):
 
 
 def 年兽大作战(d: DaLeDou):
-    """
-    随机武技库免费一次
-    自选武技库从大、中、小、投、技各随机选择一个补位
-    挑战3次
-    """
     # 年兽大作战
     d.get("cmd=newAct&subtype=170&op=0")
     if "等级不够" in d.html:
@@ -3057,7 +2802,6 @@ def 年兽大作战(d: DaLeDou):
 
 
 def 惊喜刮刮卡(d: DaLeDou):
-    """最多领取3次、点击刮卡20次"""
     # 领取
     for _id in range(3):
         d.get(f"cmd=newAct&subtype=148&op=2&id={_id}")
@@ -3074,7 +2818,6 @@ def 惊喜刮刮卡(d: DaLeDou):
 
 
 def 开心娃娃机(d: DaLeDou):
-    """免费抓取一次"""
     # 开心娃娃机
     d.get("cmd=newAct&subtype=124&op=0")
     if "1/1" not in d.html:
@@ -3087,7 +2830,6 @@ def 开心娃娃机(d: DaLeDou):
 
 
 def 好礼步步升(d: DaLeDou):
-    """每天领取一次"""
     d.get("cmd=newAct&subtype=43&op=get")
     d.log(d.find()).append()
 
@@ -3113,10 +2855,6 @@ def 企鹅吉利兑_兑换(d: DaLeDou):
 
 
 def 企鹅吉利兑(d: DaLeDou):
-    """
-    领取：每天领取
-    兑换：截止日前一天兑换材料，详见配置文件
-    """
     # 企鹅吉利兑
     d.get("cmd=geelyexchange")
     if _ids := d.findall(r'id=(\d+)">领取</a>'):
@@ -3140,7 +2878,6 @@ def 乐斗大笨钟(d: DaLeDou):
 
 
 def 乐斗激运牌(d: DaLeDou):
-    """每天领取激运牌两次、翻牌"""
     for _id in [0, 1]:
         # 领取
         d.get(f"cmd=realgoods&op=getTaskReward&id={_id}")
@@ -3154,10 +2891,6 @@ def 乐斗激运牌(d: DaLeDou):
 
 
 def 乐斗能量棒(d: DaLeDou):
-    """
-    能量棒：每天最多领取3次
-    历练：每天反向乐斗BOSS（关闭自动使用活力药水）
-    """
     # 乐斗能量棒
     d.get("cmd=newAct&subtype=108&op=0")
     data = d.findall(r"id=(\d+)")
@@ -3195,10 +2928,6 @@ def 乐斗能量棒(d: DaLeDou):
 
 
 def 爱的同心结(d: DaLeDou):
-    """
-    赠送：周四指定好友赠送一个同心结，指定QQ详见配置文件
-    兑换：周四依次兑换礼包5、4、3、2、1
-    """
     config: list[int] = d.config["爱的同心结"]
     if config is not None:
         for uin in config:
@@ -3226,10 +2955,6 @@ def 爱的同心结(d: DaLeDou):
 
 
 def 乐斗回忆录(d: DaLeDou):
-    """
-    回忆礼包：周四领取
-    进阶礼包：周四领取
-    """
     for _id in range(1, 11):
         # 领取
         d.get(f"cmd=newAct&subtype=171&op=3&id={_id}")
@@ -3237,7 +2962,6 @@ def 乐斗回忆录(d: DaLeDou):
 
 
 def 疯狂许愿(d: DaLeDou, config: str):
-    """乐斗儿童节、乐斗开学季周四领取选择奖励"""
     # 乐斗儿童节、乐斗开学季
     d.get("cmd=newAct&subtype=130")
     if "取消返回" in d.html:
@@ -3257,33 +2981,25 @@ def 疯狂许愿(d: DaLeDou, config: str):
 
 
 def 乐斗儿童节(d: DaLeDou):
-    """周四领取选择奖励，详见配置文件"""
     疯狂许愿(d, d.config["乐斗儿童节"])
 
 
 def 乐斗开学季(d: DaLeDou):
-    """周四领取选择奖励，详见配置文件"""
     疯狂许愿(d, d.config["乐斗开学季"])
 
 
 def 周年生日祝福(d: DaLeDou):
-    """周四领取"""
     for day in range(1, 8):
         d.get(f"cmd=newAct&subtype=165&op=3&day={day}")
         d.log(d.find()).append()
 
 
 def 重阳太白诗会(d: DaLeDou):
-    """
-    重阳礼包：每天领取一次
-    不支持赋诗奖赏礼包
-    """
     d.get("cmd=newAct&subtype=168&op=2")
     d.log(d.find(r"<br /><br />(.*?)<br />")).append()
 
 
 def 五一预订礼包(d: DaLeDou):
-    """每天领取登录礼包"""
     # 5.1预订礼包
     d.get("cmd=lokireservation")
     if _id := d.find(r"idx=(\d+)"):

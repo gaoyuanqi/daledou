@@ -8,7 +8,6 @@ from ..core.daledou import DaLeDou
 
 
 def c_邪神秘宝(d: DaLeDou):
-    """高级秘宝和极品秘宝免费一次或者抽奖一次"""
     for i in [0, 1]:
         # 免费一次 或 抽奖一次
         d.get(f"cmd=tenlottery&op=2&type={i}")
@@ -73,21 +72,12 @@ def 兑换商店(d: DaLeDou):
 
 
 def c_帮派商会(d: DaLeDou):
-    """
-    帮派宝库：每天领取礼包
-    交易会所：每天交易物品
-    兑换商店：每天兑换物品
-    """
     帮派宝库(d)
     交易会所(d)
     兑换商店(d)
 
 
 def c_任务派遣中心(d: DaLeDou):
-    """
-    领取奖励：每天最多3次
-    接受：每天最多3次；优先S、A级，如果S、A已尝试且没有免费刷新次数则选择B级
-    """
     base_name = "任务派遣中心"
     # 任务派遣中心
     d.get("cmd=missionassign&subtype=0")
@@ -164,12 +154,6 @@ def c_任务派遣中心(d: DaLeDou):
 
 
 def c_侠士客栈(d: DaLeDou):
-    """
-    领取奖励：每天3次
-    客栈奇遇：
-        前来捣乱的xx：与TA理论
-        黑市商人：物品交换，详见配置文件
-    """
     # 侠士客栈
     d.get("cmd=warriorinn")
     for t, n in d.findall(r"type=(\d+)&amp;num=(\d+)"):
@@ -197,17 +181,12 @@ def c_侠士客栈(d: DaLeDou):
 
 
 def c_帮派巡礼(d: DaLeDou):
-    """每天领取巡游赠礼"""
     # 领取巡游赠礼
     d.get("cmd=abysstide&op=getfactiongift")
     d.log(d.find()).append()
 
 
 def c_深渊秘境(d: DaLeDou):
-    """
-    每天兑换副本，兑换次数详见配置文件
-    每天通关副本，副本次数有多少就通关多少次，副本详见配置文件
-    """
     config: dict = d.config["深渊之潮"]
     exchange_count: int = config["exchange_count"]
     _id: int = config["id"]
@@ -243,7 +222,6 @@ def c_深渊秘境(d: DaLeDou):
 
 
 def c_龙凰论武(d: DaLeDou):
-    """每月4~25号每天随机挑战，挑战次数详见配置文件"""
     # 龙凰之境
     d.get("cmd=dragonphoenix&op=lunwu")
     if "已报名" in d.html:
@@ -267,9 +245,6 @@ def c_龙凰论武(d: DaLeDou):
 
 
 def c_客栈同福(d: DaLeDou):
-    """
-    献酒：每天当有匹配项时献酒，详见配置文件
-    """
     config: list = d.config["客栈同福"]
     if config is None:
         d.log("你没有配置匹配").append()
@@ -301,7 +276,6 @@ def c_客栈同福(d: DaLeDou):
 
 
 def c_幸运金蛋(d: DaLeDou):
-    """砸金蛋一次"""
     # 幸运金蛋
     d.get("cmd=newAct&subtype=110&op=0")
     if i := d.find(r"index=(\d+)"):
@@ -313,7 +287,6 @@ def c_幸运金蛋(d: DaLeDou):
 
 
 def c_乐斗大笨钟(d: DaLeDou):
-    """领取一次"""
     # 领取
     d.get("cmd=newAct&subtype=18")
     d.log(d.find(r"<br /><br /><br />(.*?)<br />")).append()

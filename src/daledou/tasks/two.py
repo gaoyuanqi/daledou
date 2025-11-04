@@ -41,7 +41,6 @@ def 深渊之潮(d: DaLeDou):
 
 
 def 侠客岛(d: DaLeDou):
-    """侠客行最多领取3次任务奖励"""
     # 侠客行
     d.get("cmd=knight_island&op=viewmissionindex")
     data = d.findall(r"getmissionreward&amp;pos=(\d+)")
@@ -60,7 +59,6 @@ def 龙凰之境(d: DaLeDou):
 
 
 def 背包(d: DaLeDou):
-    """使用背包物品"""
     use: list[str] = d.config["背包"]
     if use is None:
         d.log("你没有配置背包").append()
@@ -114,8 +112,6 @@ def 背包(d: DaLeDou):
 
 
 def 镶嵌(d: DaLeDou):
-    """周四镶嵌魂珠升级（碎 -> 1 -> 2 -> 3 -> 4）"""
-
     def get_p():
         for p_1 in range(4001, 4062, 10):
             # 魂珠1级
@@ -210,18 +206,12 @@ def 符石打造(d: DaLeDou):
 
 
 def 神匠坊(d: DaLeDou):
-    """
-    普通合成：每月20号合成
-    符石分解：每月20号分解，分解类型详见配置文件
-    符石打造：每月20号打造
-    """
     普通合成(d)
     符石分解(d)
     符石打造(d)
 
 
 def 每日宝箱(d: DaLeDou):
-    """每月20号打开所有的铜质、银质、金质宝箱"""
     counter = Counter()
     # 每日宝箱
     d.get("cmd=dailychest")
@@ -239,7 +229,6 @@ def 每日宝箱(d: DaLeDou):
 
 
 def 商店(d: DaLeDou):
-    """每天查询商店积分"""
     urls = [
         "cmd=longdreamexchange",  # 江湖长梦
         "cmd=wlmz&op=view_exchange",  # 武林盟主
@@ -272,7 +261,6 @@ def 幸运金蛋(d: DaLeDou):
 
 
 def 新春拜年(d: DaLeDou):
-    """收取礼物"""
     # 新春拜年
     d.get("cmd=newAct&subtype=147")
     if "op=3" not in d.html:
