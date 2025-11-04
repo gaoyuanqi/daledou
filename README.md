@@ -5,41 +5,41 @@
 **本项目按 MIT 许可证授权，详情请参阅 [LICENSE](LICENSE) 文件**
 
 
-## 项目功能
-
-- [第一轮任务](https://www.gaoyuanqi.cn/python-daledou/?highlight=大乐斗#第一轮任务)
-- [第二轮任务](https://www.gaoyuanqi.cn/python-daledou/?highlight=大乐斗#第二轮任务)
-- [其它任务](https://www.gaoyuanqi.cn/python-daledou/?highlight=大乐斗#其它任务)
-
-
-## Python版本
-
-```
-Python 3.12
-```
-
-
 ## 快速开始
 
-### 1.下载脚本
+### 环境要求
+
+**Python版本**：Python 3.12+
+
+### 下载项目
+
+方式一：使用 `Git` 克隆
+
 ```sh
 git clone https://github.com/gaoyuanqi/daledou.git
 cd daledou
 ```
 
-### 2.安装依赖（三选一）
+方式二：下载压缩包
 
-使用 [uv](https://hellowac.github.io/uv-zh-cn/) 安装：
+访问 [Tags页面](https://github.com/gaoyuanqi/daledou/tags) 下载最新版压缩包
+
+### 安装依赖
+
+使用 [uv](https://hellowac.github.io/uv-zh-cn/) 快速安装（推荐）
+
 ```sh
 uv sync
 ```
 
-使用 `pip` 一键安装：
+使用 `pip` 一键安装
+
 ```sh
 pip install -r requirements.txt
 ```
 
-使用 `pip` 手动安装：
+手动安装依赖
+
 ```sh
 pip install loguru
 pip install pyyaml
@@ -48,8 +48,15 @@ pip install requests
 pip install schedule
 ```
 
-### 3.启动脚本
+### 启动程序命令
 
 ```sh
 python main.py
 ```
+
+
+## 大乐斗任务文档
+
+- [第一轮任务](docs/one.md)
+- [第二轮任务](docs/two.md)
+- [其它任务](docs/other.md)
