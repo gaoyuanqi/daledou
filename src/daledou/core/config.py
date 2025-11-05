@@ -162,7 +162,7 @@ class Config(ConfigManager):
     """配置管理类 - 负责配置文件的创建、加载和解析"""
 
     @classmethod
-    def create_account_config(cls, config_file: str, cookie: str) -> str:
+    def create_account_config(cls, config_file: str, cookie: str) -> Path:
         """创建或更新账号配置文件
 
         当配置文件不存在时，基于模板创建新的账号配置文件，包含基础配置和任务编排模板
@@ -177,7 +177,7 @@ class Config(ConfigManager):
             ValueError: 当配置文件存在但找不到格式正确的COOKIE配置时抛出
 
         Returns:
-            str: 账号配置文件路径
+            Path: 账号配置文件路径
         """
         import re
 
