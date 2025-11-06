@@ -698,11 +698,11 @@ def 门派(d: DaLeDou):
     is_exchange: dict[str, bool] = d.config["门派"]
     if is_exchange["门派高香"]:
         d.get("cmd=exchange&subtype=2&type=1248&times=1")
-        d.log(d.find())
+        d.log(d.find()).append()
     is_exchange_success = False
     if is_exchange["门派战书"]:
         d.get("cmd=exchange&subtype=2&type=1249&times=1")
-        d.log(d.find())
+        d.log(d.find()).append()
         if "成功" in d.html:
             is_exchange_success = True
 
