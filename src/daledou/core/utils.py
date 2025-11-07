@@ -1,18 +1,31 @@
 import os
-from datetime import timedelta
+import sys
+import textwrap
+from datetime import datetime, timedelta
 from enum import StrEnum
+from pathlib import Path
 
+import pytz
 import requests
 import questionary
+from loguru import logger
 
-from .log import LoguruLogger
 
+# 上海时区
+SHANGHAI_TZ = pytz.timezone("Asia/Shanghai")
 
 DLD_EXECUTION_MODE_ENV = "DLD_EXECUTION_MODE"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
 }
+
+LoguruLogger = type(logger)
+
+
+def get_shanghai_now() -> datetime:
+    """获取当前上海时区的时间"""
+    return datetime.now(SHANGHAI_TZ)
 
 
 class ExecutionMode(StrEnum):
@@ -81,6 +94,64 @@ class Input:
             return int(response)
 
 
+class LogManager:
+    """日志管理类"""
+
+    @classmethod
+    def _shanghai_format(cls, record):
+        """自定义控制台输出格式，使用上海时间"""
+        shanghai_time = get_shanghai_now().strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )  # 修改为使用统一函数
+        return f"<green>{shanghai_time}</green> | <level>{record['message']}</level>\n"
+
+    @classmethod
+    def get_qq_logger(cls, qq: str) -> tuple[LoguruLogger, int]:
+        """获取qq专属日志记录器
+
+        Returns:
+            tuple[LoguruLogger, int]: (日志记录器实例, 处理器ID)
+        """
+        log_dir = Path(f"./log/{qq}")
+        log_dir.mkdir(parents=True, exist_ok=True)
+
+        current_shanghai = get_shanghai_now()
+        log_file = log_dir / f"{current_shanghai.strftime('%Y-%m-%d')}.log"
+
+        user_logger = logger.bind(user_qq=qq)
+
+        handler_id = user_logger.add(
+            sink=log_file,
+            format=cls._shanghai_format,
+            enqueue=True,
+            encoding="utf-8",
+            retention="30 days",
+            level="INFO",
+            filter=lambda record: record["extra"].get("user_qq") == qq,
+        )
+
+        return user_logger, handler_id
+
+    @staticmethod
+    def remove_handler(handler_id: int | None = None) -> None:
+        """移除日志处理器，默认移除所有处理器"""
+        if handler_id is None:
+            logger.remove()
+        else:
+            logger.remove(handler_id)
+
+    @classmethod
+    def set_terminal_output_format(cls) -> None:
+        """设置控制台输出格式"""
+        cls.remove_handler()
+
+        logger.add(
+            sink=sys.stderr,
+            format=cls._shanghai_format,
+            colorize=True,
+        )
+
+
 class ModulePath(StrEnum):
     OTHER = "src.daledou.tasks.other"
     ONE = "src.daledou.tasks.one"
@@ -91,6 +162,33 @@ class TaskType(StrEnum):
     OTHER = "other"
     ONE = "one"
     TWO = "two"
+
+
+class TimingConfig:
+    """定时配置常量类"""
+
+    # 使用上海时区的时间
+    ONE_EXECUTION_TIME: str = "13:01:00"
+    TWO_EXECUTION_TIME: str = "20:01:00"
+
+    @classmethod
+    def print_schedule_info(cls) -> str:
+        """打印定时任务信息"""
+        shanghai_now = get_shanghai_now()
+        current_time = shanghai_now.strftime("%Y-%m-%d %H:%M:%S")
+
+        print(
+            textwrap.dedent(f"""
+            当前上海时间：{current_time}
+
+            定时任务守护进程已启动：
+            每天上海时间 {cls.ONE_EXECUTION_TIME} 执行第一轮任务
+            每天上海时间 {cls.TWO_EXECUTION_TIME} 执行第二轮任务
+
+            任务配置目录：config
+            任务日志目录：log
+        """)
+        )
 
 
 def formatted_time(delta: timedelta) -> str:
@@ -131,7 +229,10 @@ def push(token: str, title: str, content: str, qq_logger: LoguruLogger) -> None:
         response = requests.post(
             "http://www.pushplus.plus/send/", data=data, timeout=10
         )
-        qq_logger.success(f"pushplus | {response.json()}\n")
+        result = response.json()
+        qq_logger.success(f"pushplus | code：{result.get('code')}")
+        qq_logger.success(f"pushplus | msg：{result.get('msg')}")
+        qq_logger.success(f"pushplus | data：{result.get('data')}\n")
     except Exception as e:
         qq_logger.error(f"pushplus | 发送失败: {e}\n")
 

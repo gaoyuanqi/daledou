@@ -1,6 +1,5 @@
 import os
 import time
-import textwrap
 
 from schedule import every, repeat, run_pending
 
@@ -13,29 +12,12 @@ from .utils import (
     Input,
     ModulePath,
     TaskType,
+    TimingConfig,
     parse_cookie,
     parse_qq_from_cookie,
     print_separator,
+    SHANGHAI_TZ,
 )
-
-
-class TimingConfig:
-    """定时配置常量类"""
-
-    ONE_EXECUTION_TIME: str = "13:01"
-    TWO_EXECUTION_TIME: str = "20:01"
-
-    @classmethod
-    def get_schedule_info(cls) -> str:
-        """获取定时任务信息"""
-        return textwrap.dedent(f"""
-            定时任务守护进程已启动：
-            日常任务默认 {cls.ONE_EXECUTION_TIME} 定时运行
-            晚间任务默认 {cls.TWO_EXECUTION_TIME} 定时运行
-
-            任务配置目录：config
-            任务日志目录：log
-        """)
 
 
 def _execute_one() -> None:
@@ -48,19 +30,19 @@ def _execute_two() -> None:
     TaskSchedule.execute(TaskType.TWO, ModulePath.TWO)
 
 
-@repeat(every().day.at(TimingConfig.ONE_EXECUTION_TIME))
+@repeat(every().day.at(TimingConfig.ONE_EXECUTION_TIME, SHANGHAI_TZ))
 def job_one() -> None:
-    """每天定时执行第一轮任务"""
+    """每天定时执行第一轮任务（上海时区）"""
     _execute_one()
-    print(TimingConfig.get_schedule_info())
+    TimingConfig.print_schedule_info()
     print_separator()
 
 
-@repeat(every().day.at(TimingConfig.TWO_EXECUTION_TIME))
+@repeat(every().day.at(TimingConfig.TWO_EXECUTION_TIME, SHANGHAI_TZ))
 def job_two() -> None:
-    """每天定时执行第二轮任务"""
+    """每天定时执行第二轮任务（上海时区）"""
     _execute_two()
-    print(TimingConfig.get_schedule_info())
+    TimingConfig.print_schedule_info()
     print_separator()
 
 
@@ -69,7 +51,7 @@ def _execute_timing() -> None:
     if not Config.list_all_qq_numbers():
         return
 
-    print(TimingConfig.get_schedule_info())
+    TimingConfig.print_schedule_info()
     print_separator()
 
     while True:
@@ -120,8 +102,10 @@ class CLIHandler:
         }
 
         print("💡 任务类型说明：")
-        print("• 第一轮包含绝大部分日常任务，建议 13:01 后执行")
-        print("• 第二轮是收尾日常任务，建议 20:01 后执行")
+        print(
+            f"• 第一轮包含绝大部分日常任务，建议 {TimingConfig.ONE_EXECUTION_TIME} 后执行"
+        )
+        print(f"• 第二轮是收尾日常任务，建议 {TimingConfig.TWO_EXECUTION_TIME} 后执行")
         print("• 定时任务是定时执行第一、二轮任务\n")
 
         task = Input.select("请选择任务：", list(tasks))

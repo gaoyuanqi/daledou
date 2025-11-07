@@ -6,7 +6,6 @@ import time
 import traceback
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
 from functools import lru_cache
 from importlib import import_module
 from typing import Generator, Pattern, Self
@@ -14,16 +13,18 @@ from typing import Generator, Pattern, Self
 from requests import Session
 
 from .config import Config
-from .log import LogManager, LoguruLogger
 from .session import SessionManager
 from .utils import (
     DLD_EXECUTION_MODE_ENV,
     HEADERS,
+    LoguruLogger,
     ExecutionMode,
     Input,
+    LogManager,
     ModulePath,
     TaskType,
     formatted_time,
+    get_shanghai_now,
     print_separator,
     push,
 )
@@ -63,7 +64,7 @@ class DaLeDou:
         self._current_task_index = 0
         self._last_log: str | None = None
         self._pushplus_content: list[str] = [
-            f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} 星期{self.week}"
+            f"{get_shanghai_now().strftime('%Y-%m-%d %H:%M:%S')} 星期{self.week}"
         ]
 
         self.html: str | None = None
@@ -71,19 +72,19 @@ class DaLeDou:
 
     @property
     def year(self) -> int:
-        return datetime.now().year
+        return get_shanghai_now().year
 
     @property
     def month(self) -> int:
-        return datetime.now().month
+        return get_shanghai_now().month
 
     @property
     def day(self) -> int:
-        return datetime.now().day
+        return get_shanghai_now().day
 
     @property
     def week(self) -> int:
-        return datetime.now().isoweekday()
+        return get_shanghai_now().isoweekday()
 
     @property
     def config(self) -> dict[str, dict]:
@@ -115,7 +116,7 @@ class DaLeDou:
         if self._end_time:
             delta = self._end_time - self._start_time
         else:
-            delta = datetime.now() - self._start_time
+            delta = get_shanghai_now() - self._start_time
         return formatted_time(delta)
 
     def append(self, info: str | None = None) -> None:
@@ -143,7 +144,7 @@ class DaLeDou:
 
         # 检查是否完成所有任务
         if self._current_task_index >= self._task_len:
-            self._end_time = datetime.now()
+            self._end_time = get_shanghai_now()
             self.log(f"{self._get_running_time()}", "运行时间")
 
     def find(self, regex: str | None = None) -> str | None:
@@ -216,7 +217,7 @@ class DaLeDou:
 
     def start_timing(self):
         """开始执行任务"""
-        self._start_time = datetime.now()
+        self._start_time = get_shanghai_now()
 
 
 def _generate_daledou_instances(
@@ -341,7 +342,7 @@ class Concurrency:
     @classmethod
     def execute_accounts(cls, task_type: TaskType, module_path: ModulePath):
         """并发执行多个账号"""
-        global_start_time = datetime.now()
+        global_start_time = get_shanghai_now()
         optimal_concurrency = min(_CPU_COUNT * 2, _MAX_CONCURRENCY)
         d_gen = _generate_daledou_instances(task_type)
         active_accounts = []
@@ -421,7 +422,7 @@ class Concurrency:
             with lock:
                 cls._display_accounts_status(active_accounts, completed_count)
 
-        end_time = datetime.now()
+        end_time = get_shanghai_now()
         total_time = end_time - global_start_time
         print_separator()
         print(f"总完成账号数: {completed_count}")

@@ -4,7 +4,6 @@
 
 import time
 from abc import ABC, abstractmethod
-from datetime import datetime
 
 from ..core.daledou import DaLeDou, print_separator, Input
 
@@ -2093,6 +2092,10 @@ def 全真古墓意难平(
 
 def get_open_copy_data(d: DaLeDou) -> dict:
     """获取开放副本数据"""
+    from datetime import datetime, timedelta
+
+    from ..core.utils import get_shanghai_now
+
     base_data = {
         "柒承的忙碌日常": {
             "material_name": "追忆香炉",
@@ -2165,12 +2168,12 @@ def get_open_copy_data(d: DaLeDou) -> dict:
             copy_data[k]["incense_burner_number"] = incense_burner_number
             continue
 
-        year = int(d.find(r"-(\d+)年"))
-        month = int(d.find(r"-\d+年(\d+)月"))
-        day = int(d.find(r"-\d+年\d+月(\d+)日"))
-        end_time = datetime(2000 + year, month, day, 6, 0)
-        current_time = datetime.now()
-        if current_time < end_time:
+        end_year = 2000 + int(d.find(r"-(\d+)年"))
+        end_month = int(d.find(r"-\d+年(\d+)月"))
+        end_day = int(d.find(r"-\d+年\d+月(\d+)日"))
+        current_date = get_shanghai_now().date()
+        end_date = datetime(end_year, end_month, end_day).date() - timedelta(days=1)
+        if current_date <= end_date:
             copy_data[k] = v
             copy_data[k]["copy_duration"] = copy_duration
             copy_data[k]["incense_burner_number"] = incense_burner_number

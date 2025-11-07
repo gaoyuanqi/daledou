@@ -1,10 +1,10 @@
-from datetime import datetime
 from pathlib import Path
 
 import yaml
 
 from .utils import (
     TaskType,
+    get_shanghai_now,
     parse_cookie,
     parse_qq_from_cookie,
 )
@@ -256,7 +256,7 @@ class Config(ConfigManager):
         if not task_definitions:
             return active_tasks
 
-        current_time = datetime.now()
+        current_time = get_shanghai_now()
         current_day_of_month = current_time.day
         current_day_of_week = current_time.isoweekday()
 

@@ -5,7 +5,6 @@
 import random
 import re
 import time
-from datetime import datetime, timedelta
 
 from ..core.daledou import DaLeDou
 from .common import (
@@ -98,11 +97,15 @@ def is_target_date_reached(
         >>> # 判断当前日期是否为2024-11-2（2024-11-8的前6天）
         >>> is_target_date_reached(6, (2024, 11, 8))
     """
+    from datetime import datetime, timedelta
+
+    from ..core.utils import get_shanghai_now
+
     end_year, end_month, end_day = end_date_tuple
-    current_date = datetime.now().date()
-    target_date = datetime(end_year, end_month, end_day).date() - timedelta(
-        days=days_before
-    )
+    current_date = get_shanghai_now().date()
+    end_date = datetime(end_year, end_month, end_day).date()
+    target_date = end_date - timedelta(days=days_before)
+
     return current_date >= target_date
 
 
