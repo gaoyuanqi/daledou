@@ -7,6 +7,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "loguru>=0.7.3",
+    "pytz>=2025.2",
     "pyyaml>=6.0.2",
     "questionary>=2.1.0",
     "requests>=2.32.3",
