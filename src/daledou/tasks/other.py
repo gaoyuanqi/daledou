@@ -27,17 +27,6 @@ def compute(fail_value, consume_num, now_value, total_value) -> int:
     return total_deplete
 
 
-def get_backpack_number(d: DaLeDou, item_id: str) -> int:
-    """返回背包物品id数量"""
-    # 背包物品详情
-    d.get(f"cmd=owngoods&id={item_id}")
-    if "很抱歉" in d.html:
-        number = 0
-    else:
-        number = d.find(r"数量：(\d+)")
-    return int(number)
-
-
 def get_blessing_value(d: DaLeDou) -> tuple[int, int]:
     """返回当前祝福（进度）、总祝福（进度）"""
     now_value = int(d.find(r"(\d+)/\d+"))
@@ -61,7 +50,7 @@ def get_consume(d: DaLeDou, backpack_id: str = None) -> tuple[str, int, int]:
     if backpack_id is None:
         possess_num = int(d.find(r"消耗：.*?\d+.*?(\d+)"))
     else:
-        possess_num = get_backpack_number(d, backpack_id)
+        possess_num = d.get_backpack_number(backpack_id)
     return consume_name, consume_num, possess_num
 
 
@@ -865,7 +854,7 @@ class ShenJi(BaseUpgrader):
         data = {}
         store_exchange_num = self.store_points // 40
         consume_name = "神秘精华"
-        possess_num = get_backpack_number(self.d, "3567")
+        possess_num = self.d.get_backpack_number("3567")
 
         for _id in self.get_data_id():
             self.d.get(f"cmd=outfit&op=2&magic_skill_id={_id}")
@@ -1503,7 +1492,7 @@ class GuZhenPian(BaseUpgrader):
         t_store_exchange_num = store_points // 40
         t_consume_name = "突破石"
         # 突破石拥有数量
-        t_possess_num = get_backpack_number(self.d, "5153")
+        t_possess_num = self.d.get_backpack_number("5153")
 
         for _id in ["1", "2", "3", "4"]:
             # 宝物详情
@@ -1524,7 +1513,7 @@ class GuZhenPian(BaseUpgrader):
             # 碎片消耗数量
             s_consume_num = int(self.d.find(r"碎片\*(\d+)"))
             # 碎片拥有数量
-            s_possess_num = get_backpack_number(self.d, self.S_ID[s_consume_name])
+            s_possess_num = self.d.get_backpack_number(self.S_ID[s_consume_name])
 
             data[name] = {
                 "名称": name,
@@ -2155,7 +2144,7 @@ def get_open_copy_data(d: DaLeDou) -> dict:
         material_id = v["material_id"]
         ins_id = v["ins_id"]
 
-        incense_burner_number = get_backpack_number(d, material_id)
+        incense_burner_number = d.get_backpack_number(material_id)
         if incense_burner_number == 0:
             print(f"{k}（{material_name}不足）")
             continue

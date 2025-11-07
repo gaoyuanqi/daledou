@@ -911,17 +911,6 @@ def 梦想之旅(d: DaLeDou):
 
 
 def 问鼎天下_商店兑换(d: DaLeDou):
-    def get_number():
-        """获取背包物品数量"""
-        # 背包物品详情
-        d.get(f"cmd=owngoods&id={backpack_id}")
-        if "很抱歉" in d.html:
-            number = 0
-        else:
-            number = d.find(r"数量：(\d+)")
-            d.log(number, f"{name}-拥有数量")
-        return int(number)
-
     def exchange():
         """问鼎天下商店兑换"""
         q, r = divmod((consume_number - possess_number), 10)
@@ -966,7 +955,9 @@ def 问鼎天下_商店兑换(d: DaLeDou):
         t = _dict["t"]
         backpack_id = _dict["backpack_id"]
         _name = _dict["name"]
-        possess_number = get_number()
+
+        possess_number = d.get_backpack_number(backpack_id)
+        d.log(possess_number, f"{name}-拥有数量")
 
         # 神魔录古阵篇宝物详情
         d.get(f"cmd=ancient_gods&op=4&id={_id}")

@@ -187,6 +187,16 @@ class DaLeDou:
             break
         return self.html
 
+    def get_backpack_number(self, item_id: str | int) -> int:
+        """返回背包物品id数量"""
+        # 背包物品详情
+        self.get(f"cmd=owngoods&id={item_id}")
+        if "很抱歉" in self.html:
+            number = 0
+        else:
+            number = self.find(r"数量：(\d+)")
+        return int(number)
+
     def get_display_info(self):
         """获取终端显示信息"""
         return (
