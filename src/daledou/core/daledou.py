@@ -18,13 +18,12 @@ from .utils import (
     DLD_EXECUTION_MODE_ENV,
     HEADERS,
     LoguruLogger,
+    DateTime,
     ExecutionMode,
     Input,
     LogManager,
     ModulePath,
     TaskType,
-    formatted_time,
-    get_shanghai_now,
     print_separator,
     push,
 )
@@ -64,7 +63,7 @@ class DaLeDou:
         self._current_task_index = 0
         self._last_log: str | None = None
         self._pushplus_content: list[str] = [
-            f"{get_shanghai_now().strftime('%Y-%m-%d %H:%M:%S')} 星期{self.week}"
+            f"{DateTime.formatted_datetime()} 星期{self.week}"
         ]
 
         self.html: str | None = None
@@ -72,19 +71,19 @@ class DaLeDou:
 
     @property
     def year(self) -> int:
-        return get_shanghai_now().year
+        return DateTime.now().year
 
     @property
     def month(self) -> int:
-        return get_shanghai_now().month
+        return DateTime.now().month
 
     @property
     def day(self) -> int:
-        return get_shanghai_now().day
+        return DateTime.now().day
 
     @property
     def week(self) -> int:
-        return get_shanghai_now().isoweekday()
+        return DateTime.now().isoweekday()
 
     @property
     def config(self) -> dict[str, dict]:
@@ -116,8 +115,8 @@ class DaLeDou:
         if self._end_time:
             delta = self._end_time - self._start_time
         else:
-            delta = get_shanghai_now() - self._start_time
-        return formatted_time(delta)
+            delta = DateTime.now() - self._start_time
+        return DateTime.format_timedelta(delta)
 
     def append(self, info: str | None = None) -> None:
         """向pushplus正文追加消息内容
@@ -144,7 +143,7 @@ class DaLeDou:
 
         # 检查是否完成所有任务
         if self._current_task_index >= self._task_len:
-            self._end_time = get_shanghai_now()
+            self._end_time = DateTime.now()
             self.log(f"{self._get_running_time()}", "运行时间")
 
     def find(self, regex: str | None = None) -> str | None:
@@ -227,7 +226,7 @@ class DaLeDou:
 
     def start_timing(self):
         """开始执行任务"""
-        self._start_time = get_shanghai_now()
+        self._start_time = DateTime.now()
 
 
 def _generate_daledou_instances(
@@ -352,7 +351,7 @@ class Concurrency:
     @classmethod
     def execute_accounts(cls, task_type: TaskType, module_path: ModulePath):
         """并发执行多个账号"""
-        global_start_time = get_shanghai_now()
+        global_start_time = DateTime.now()
         optimal_concurrency = min(_CPU_COUNT * 2, _MAX_CONCURRENCY)
         d_gen = _generate_daledou_instances(task_type)
         active_accounts = []
@@ -432,11 +431,11 @@ class Concurrency:
             with lock:
                 cls._display_accounts_status(active_accounts, completed_count)
 
-        end_time = get_shanghai_now()
+        end_time = DateTime.now()
         total_time = end_time - global_start_time
         print_separator()
         print(f"总完成账号数: {completed_count}")
-        print(f"总运行时间: {formatted_time(total_time)}")
+        print(f"总运行时间: {DateTime.format_timedelta(total_time)}")
         print(
             f"任务完成时间：{end_time.strftime('%Y-%m-%d %H:%M:%S')} 星期{end_time.isoweekday()}"
         )

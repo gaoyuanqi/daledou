@@ -2081,9 +2081,7 @@ def 全真古墓意难平(
 
 def get_open_copy_data(d: DaLeDou) -> dict:
     """获取开放副本数据"""
-    from datetime import datetime, timedelta
-
-    from ..core.utils import get_shanghai_now
+    from ..core.utils import DateTime
 
     base_data = {
         "柒承的忙碌日常": {
@@ -2160,9 +2158,11 @@ def get_open_copy_data(d: DaLeDou) -> dict:
         end_year = 2000 + int(d.find(r"-(\d+)年"))
         end_month = int(d.find(r"-\d+年(\d+)月"))
         end_day = int(d.find(r"-\d+年\d+月(\d+)日"))
-        current_date = get_shanghai_now().date()
-        end_date = datetime(end_year, end_month, end_day).date() - timedelta(days=1)
-        if current_date <= end_date:
+        # 获取当前日期和结束日期前一天
+        current_date, day_before_end = DateTime.get_current_and_end_date_offset(
+            end_year, end_month, end_day
+        )
+        if current_date <= day_before_end:
             copy_data[k] = v
             copy_data[k]["copy_duration"] = copy_duration
             copy_data[k]["incense_burner_number"] = incense_burner_number

@@ -8,6 +8,7 @@ from .daledou import TaskSchedule
 from .session import SessionManager
 from .utils import (
     DLD_EXECUTION_MODE_ENV,
+    DateTime,
     ExecutionMode,
     Input,
     ModulePath,
@@ -16,7 +17,6 @@ from .utils import (
     parse_cookie,
     parse_qq_from_cookie,
     print_separator,
-    SHANGHAI_TZ,
 )
 
 
@@ -30,7 +30,7 @@ def _execute_two() -> None:
     TaskSchedule.execute(TaskType.TWO, ModulePath.TWO)
 
 
-@repeat(every().day.at(TimingConfig.ONE_EXECUTION_TIME, SHANGHAI_TZ))
+@repeat(every().day.at(TimingConfig.ONE_EXECUTION_TIME, DateTime.SHANGHAI_TZ))
 def job_one() -> None:
     """每天定时执行第一轮任务（上海时区）"""
     _execute_one()
@@ -38,7 +38,7 @@ def job_one() -> None:
     print_separator()
 
 
-@repeat(every().day.at(TimingConfig.TWO_EXECUTION_TIME, SHANGHAI_TZ))
+@repeat(every().day.at(TimingConfig.TWO_EXECUTION_TIME, DateTime.SHANGHAI_TZ))
 def job_two() -> None:
     """每天定时执行第二轮任务（上海时区）"""
     _execute_two()

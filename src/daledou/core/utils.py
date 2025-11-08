@@ -1,7 +1,7 @@
 import os
 import sys
 import textwrap
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
 
@@ -10,9 +10,6 @@ import requests
 import questionary
 from loguru import logger
 
-
-# 上海时区
-SHANGHAI_TZ = pytz.timezone("Asia/Shanghai")
 
 DLD_EXECUTION_MODE_ENV = "DLD_EXECUTION_MODE"
 
@@ -23,9 +20,63 @@ HEADERS = {
 LoguruLogger = type(logger)
 
 
-def get_shanghai_now() -> datetime:
-    """获取当前上海时区的时间"""
-    return datetime.now(SHANGHAI_TZ)
+class DateTime:
+    """日期时间工具类（基于上海时区）"""
+
+    # 上海时区
+    SHANGHAI_TZ = pytz.timezone("Asia/Shanghai")
+
+    @classmethod
+    def now(cls) -> datetime:
+        """获取当前时间（上海时区）"""
+        return datetime.now(cls.SHANGHAI_TZ)
+
+    @classmethod
+    def formatted_datetime(cls) -> str:
+        """获取格式化的日期时间"""
+        return cls.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    @classmethod
+    def formatted_date(cls) -> str:
+        """获取格式化的日期"""
+        return cls.now().strftime("%Y-%m-%d")
+
+    @classmethod
+    def formatted_time(cls) -> str:
+        """获取格式化的时间"""
+        return cls.now().strftime("%H:%M:%S")
+
+    @staticmethod
+    def format_timedelta(delta: timedelta) -> str:
+        """格式化时间差 -> HH:MM:SS"""
+        total_seconds = int(delta.total_seconds())
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    @classmethod
+    def get_current_and_end_date_offset(
+        cls, end_year: int, end_month: int, end_day: int, days_offset: int = 1
+    ) -> tuple[date, date]:
+        """
+        获取当前日期和结束日期偏移指定天数后的日期
+
+        Args:
+            end_year: 结束年
+            end_month: 结束月
+            end_day: 结束日
+            days_offset: 相对于结束日期的天数偏移量，默认为1（表示结束日期前一天）
+                        - 正数表示结束日期之前的天数
+                        - 负数表示结束日期之后的天数
+
+        Returns:
+            tuple[date, date]: (当前日期, 结束日期偏移后的日期)
+        """
+        current_date = cls.now().date()
+        end_date = datetime(end_year, end_month, end_day).date()
+        offset_date = end_date - timedelta(days=days_offset)
+
+        return current_date, offset_date
 
 
 class ExecutionMode(StrEnum):
@@ -98,14 +149,9 @@ class LogManager:
     """日志管理类"""
 
     @classmethod
-    def _get_shanghai_strftime(cls) -> str:
-        """获取上海格式化时间字符串"""
-        return datetime.now(SHANGHAI_TZ).strftime("%Y-%m-%d %H:%M:%S")
-
-    @classmethod
     def _shanghai_time_patcher(cls, record):
         """动态为所有日志记录添加上海时间"""
-        record["extra"]["shanghai_time"] = cls._get_shanghai_strftime()
+        record["extra"]["shanghai_time"] = DateTime.formatted_datetime()
         return record
 
     @classmethod
@@ -117,7 +163,7 @@ class LogManager:
         """
         log_dir = Path(f"./log/{qq}")
         log_dir.mkdir(parents=True, exist_ok=True)
-        log_file = log_dir / f"{get_shanghai_now().strftime('%Y-%m-%d')}.log"
+        log_file = log_dir / f"{DateTime.formatted_date()}.log"
 
         logger.configure(patcher=cls._shanghai_time_patcher)
 
@@ -176,12 +222,9 @@ class TimingConfig:
     @classmethod
     def print_schedule_info(cls) -> str:
         """打印定时任务信息"""
-        shanghai_now = get_shanghai_now()
-        current_time = shanghai_now.strftime("%Y-%m-%d %H:%M:%S")
-
         print(
             textwrap.dedent(f"""
-            当前上海时间：{current_time}
+            当前上海时间：{DateTime.formatted_datetime()}
 
             定时任务守护进程已启动：
             每天上海时间 {cls.ONE_EXECUTION_TIME} 执行第一轮任务
@@ -191,14 +234,6 @@ class TimingConfig:
             任务日志目录：log
         """)
         )
-
-
-def formatted_time(delta: timedelta) -> str:
-    """格式化时间 HH:MM:SS"""
-    total_seconds = int(delta.total_seconds())
-    hours, remainder = divmod(total_seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
 def parse_qq_from_cookie(cookie: dict) -> str:

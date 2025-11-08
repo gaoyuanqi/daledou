@@ -7,6 +7,7 @@ import re
 import time
 
 from ..core.daledou import DaLeDou
+from ..core.utils import DateTime
 from .common import (
     c_邪神秘宝,
     c_帮派商会,
@@ -75,38 +76,6 @@ def get_exchange_config(config: list[dict]):
         exchange_quantity: int = item["exchange_quantity"]
         if exchange_quantity > 0:
             yield name, _id, exchange_quantity
-
-
-def is_target_date_reached(
-    days_before: int, end_date_tuple: tuple[int, int, int]
-) -> bool:
-    """
-    判断当前日期是否已达到或超过目标日期（结束日期的前N天）
-
-    Args:
-        days_before: 结束日期之前的天数（目标日期 = 结束日期 - days_before）
-        end_date_tuple: 结束日期的年月日三元组，格式为 (年, 月, 日)
-
-    Returns:
-        bool: 如果当前日期大于等于目标日期返回True，否则返回False
-
-    Examples:
-        >>> # 判断当前日期是否为2024-11-7（2024-11-8的前1天）
-        >>> is_target_date_reached(1, (2024, 11, 8))
-
-        >>> # 判断当前日期是否为2024-11-2（2024-11-8的前6天）
-        >>> is_target_date_reached(6, (2024, 11, 8))
-    """
-    from datetime import datetime, timedelta
-
-    from ..core.utils import get_shanghai_now
-
-    end_year, end_month, end_day = end_date_tuple
-    current_date = get_shanghai_now().date()
-    end_date = datetime(end_year, end_month, end_day).date()
-    target_date = end_date - timedelta(days=days_before)
-
-    return current_date >= target_date
 
 
 # ============================================================
@@ -1529,8 +1498,11 @@ def 遗迹征伐(d: DaLeDou):
     month = int(d.find(r"(\d+)月"))
     day = int(d.find(r"(\d+)日"))
 
-    # 判断当前日期是否到达结束日期的前一天
-    if is_target_date_reached(1, (year, month, day)):
+    # 获取当前日期和结束日期前一天
+    current_date, day_before_end = DateTime.get_current_and_end_date_offset(
+        year, month, day
+    )
+    if current_date == day_before_end:
         # 悬赏任务-登录奖励
         d.get("cmd=spacerelic&op=task&type=1&id=1")
         d.log(d.find(r"赛季任务</a><br /><br />(.*?)<"), "时空遗迹-悬赏任务").append()
@@ -1541,9 +1513,13 @@ def 遗迹征伐(d: DaLeDou):
         遗迹商店(d)
         return
 
-    # 判断当前日期是否到达第八周
-    if is_target_date_reached(7, (year, month, day)):
-        d.log("当前处于休赛期，结束前一天领取赛季奖励和悬赏商店兑换").append()
+    # 获取当前日期和结束日期前七天
+    current_date, seven_date_before_end = DateTime.get_current_and_end_date_offset(
+        year, month, day, 7
+    )
+    if current_date >= seven_date_before_end:
+        # 第八周（结束日期上周四~本周三）
+        d.log("当前处于休赛期，结束前一天领取登录奖励、赛季奖励和悬赏商店兑换").append()
         return
 
     异兽洞窟(d)
@@ -2133,16 +2109,17 @@ def 万圣节(d: DaLeDou):
     # 万圣节
     d.get("cmd=hallowmas")
     month, day = d.findall(r"(\d+)月(\d+)日6点")[0]
-    # 判断当前日期是否到达结束日期的前一天
-    if not is_target_date_reached(1, (d.year, int(month), int(day))):
-        return
-
-    # 兑换礼包B 消耗40个南瓜灯
-    d.get("cmd=hallowmas&gb_id=6")
-    d.log(d.find()).append()
-    # 兑换礼包A 消耗20个南瓜灯
-    d.get("cmd=hallowmas&gb_id=5")
-    d.log(d.find()).append()
+    # 获取当前日期和结束日期前一天
+    current_date, day_before_end = DateTime.get_current_and_end_date_offset(
+        d.year, int(month), int(day)
+    )
+    if current_date == day_before_end:
+        # 兑换礼包B 消耗40个南瓜灯
+        d.get("cmd=hallowmas&gb_id=6")
+        d.log(d.find()).append()
+        # 兑换礼包A 消耗20个南瓜灯
+        d.get("cmd=hallowmas&gb_id=5")
+        d.log(d.find()).append()
 
 
 def 元宵节(d: DaLeDou):
@@ -2862,8 +2839,11 @@ def 企鹅吉利兑(d: DaLeDou):
     year = d.year
     month = int(d.find(r"至(\d+)月"))
     day = int(d.find(r"至\d+月(\d+)日"))
-    # 判断当前日期是否到达结束日期的前一天
-    if is_target_date_reached(1, (year, month, day)):
+    # 获取当前日期和结束日期前一天
+    current_date, day_before_end = DateTime.get_current_and_end_date_offset(
+        year, month, day
+    )
+    if current_date == day_before_end:
         企鹅吉利兑_兑换(d)
 
 

@@ -4,7 +4,7 @@ import yaml
 
 from .utils import (
     TaskType,
-    get_shanghai_now,
+    DateTime,
     parse_cookie,
     parse_qq_from_cookie,
 )
@@ -256,9 +256,8 @@ class Config(ConfigManager):
         if not task_definitions:
             return active_tasks
 
-        current_time = get_shanghai_now()
-        current_day_of_month = current_time.day
-        current_day_of_week = current_time.isoweekday()
+        current_day_of_month = DateTime.now().day
+        current_day_of_week = DateTime.now().isoweekday()
 
         task_config = account_config.get(cls.TASK_CONFIG_KEY, {})
 
