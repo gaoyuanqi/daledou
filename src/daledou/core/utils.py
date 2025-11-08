@@ -98,12 +98,15 @@ class LogManager:
     """日志管理类"""
 
     @classmethod
-    def _shanghai_format(cls, record):
-        """自定义控制台输出格式，使用上海时间"""
-        shanghai_time = get_shanghai_now().strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )  # 修改为使用统一函数
-        return f"<green>{shanghai_time}</green> | <level>{record['message']}</level>\n"
+    def _get_shanghai_strftime(cls) -> str:
+        """获取上海格式化时间字符串"""
+        return datetime.now(SHANGHAI_TZ).strftime("%Y-%m-%d %H:%M:%S")
+
+    @classmethod
+    def _shanghai_time_patcher(cls, record):
+        """动态为所有日志记录添加上海时间"""
+        record["extra"]["shanghai_time"] = cls._get_shanghai_strftime()
+        return record
 
     @classmethod
     def get_qq_logger(cls, qq: str) -> tuple[LoguruLogger, int]:
@@ -114,15 +117,14 @@ class LogManager:
         """
         log_dir = Path(f"./log/{qq}")
         log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / f"{get_shanghai_now().strftime('%Y-%m-%d')}.log"
 
-        current_shanghai = get_shanghai_now()
-        log_file = log_dir / f"{current_shanghai.strftime('%Y-%m-%d')}.log"
+        logger.configure(patcher=cls._shanghai_time_patcher)
 
         user_logger = logger.bind(user_qq=qq)
-
         handler_id = user_logger.add(
             sink=log_file,
-            format=cls._shanghai_format,
+            format="<green>{extra[shanghai_time]}</green> | <level>{message}</level>",
             enqueue=True,
             encoding="utf-8",
             retention="30 days",
@@ -144,10 +146,10 @@ class LogManager:
     def set_terminal_output_format(cls) -> None:
         """设置控制台输出格式"""
         cls.remove_handler()
-
+        logger.configure(patcher=cls._shanghai_time_patcher)
         logger.add(
             sink=sys.stderr,
-            format=cls._shanghai_format,
+            format="<green>{extra[shanghai_time]}</green> | <level>{message}</level>",
             colorize=True,
         )
 
@@ -229,10 +231,7 @@ def push(token: str, title: str, content: str, qq_logger: LoguruLogger) -> None:
         response = requests.post(
             "http://www.pushplus.plus/send/", data=data, timeout=10
         )
-        result = response.json()
-        qq_logger.success(f"pushplus | code：{result.get('code')}")
-        qq_logger.success(f"pushplus | msg：{result.get('msg')}")
-        qq_logger.success(f"pushplus | data：{result.get('data')}\n")
+        qq_logger.success(f"pushplus | {response.json()}\n")
     except Exception as e:
         qq_logger.error(f"pushplus | 发送失败: {e}\n")
 
