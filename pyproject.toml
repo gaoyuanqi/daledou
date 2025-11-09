@@ -1,7 +1,7 @@
 [project]
 name = "daledou"
-version = "13.4.3"
-description = "Q宠大乐斗脚本辅助"
+version = "13.5.0"
+description = "Q宠大乐斗自动化任务系统"
 authors = [{ name = "雨园"}]
 readme = "README.md"
 requires-python = ">=3.12"

@@ -5,6 +5,19 @@
 **本项目按 MIT 许可证授权，详情请参阅 [LICENSE](LICENSE) 文件**
 
 
+## 项目功能
+
+一个基于Python的Q宠大乐斗自动化任务系统，主要功能：
+
+- ✅ 支持多账号管理
+- ✅ 支持多账号并发执行（最多5个）
+- ✅ 支持定时运行日常任务（每天上海时间 `13:01:00` 和 `20:01:00` 执行）
+- ✅ 支持自动兑换强化（奥义、神装等）
+- ✅ 支持积分商店兑换
+- ✅ 支持江湖长梦副本
+- ✅ 支持微信推送通知
+
+
 ## 快速开始
 
 ### 环境要求
@@ -42,6 +55,7 @@ pip install -r requirements.txt
 
 ```sh
 pip install loguru
+pip install pytz
 pip install pyyaml
 pip install questionary
 pip install requests
@@ -49,6 +63,12 @@ pip install schedule
 ```
 
 ### 启动程序命令
+
+```sh
+uv run main.py
+```
+
+或者
 
 ```sh
 python main.py
@@ -60,3 +80,20 @@ python main.py
 - [第一轮任务](docs/one.md)
 - [第二轮任务](docs/two.md)
 - [其它任务](docs/other.md)
+
+
+## 配置文件说明
+
+```
+config/
+├── accounts/              # 账号配置目录
+│   ├── 123456.yaml       # QQ号命名的账号配置文件
+│   ├── 234567.yaml
+│   └── ...
+├── merged/               # 合并配置目录（自动生成）
+│   ├── 123456.yaml      # 账号配置与全局配置合并后的最终配置
+│   ├── 234567.yaml
+│   └── ...
+├── global.yaml           # 全局配置文件
+└── default.yaml          # 默认配置模板
+```
