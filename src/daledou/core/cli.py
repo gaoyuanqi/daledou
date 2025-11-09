@@ -72,7 +72,6 @@ class CLIHandler:
             "执行任务": self.execute_tasks,
             "调试任务": self.execute_debug,
             "配置账号": self.configure_account,
-            "重建配置": self.rebuild_all_configs,
         }
 
     def execute_tasks(self) -> None:
@@ -169,38 +168,11 @@ class CLIHandler:
             print(f"📁 账号配置文件：{account_config_path}")
             print_separator()
 
-    def rebuild_all_configs(self) -> None:
-        """重建配置 - 重新生成所有账号的合并配置文件"""
-        account_files = Config.list_numeric_config_files()
-        if not account_files:
-            print("❌ 没有找到账号配置文件")
-            print_separator()
-            return
-
-        for account_file in account_files:
-            try:
-                Config.load_and_merge_account_config(account_file)
-                print(f"✅ {account_file}: 合并配置已重建")
-            except Exception as e:
-                print(f"❌ {e}")
-                print_separator()
-                return
-
-        print("\n💡「执行任务」、「调试任务」会自动重建配置")
-
-        print("\n💡 配置查看说明:")
-        print("• 账号配置: config/accounts/QQ号.yaml")
-        print("• 全局配置: config/global.yaml")
-        print("• 合并配置: config/merged/QQ号.yaml (最终生效配置)")
-        print_separator()
-
 
 def run_serve() -> None:
     """运行主服务"""
-    account_files = Config.list_numeric_config_files()
-    Config.sync_merged_directory(account_files)
-
     handler = CLIHandler()
+    account_files = Config.list_numeric_config_files()
 
     if not account_files:
         print_separator()
@@ -208,6 +180,18 @@ def run_serve() -> None:
         print("💡 请先使用「配置账号」功能，配置成功后再重启程序\n")
         available_tasks = {"配置账号": handler.configure_account}
     else:
+        Config.sync_merged_directory(account_files)
+        for account_file in account_files:
+            try:
+                Config.load_and_merge_account_config(account_file)
+            except Exception as e:
+                print(f"\n❌ {e}")
+                print_separator()
+                return
+        print("\n✅ 配置文件检查完成")
+        print("   - 账号配置格式正确")
+        print("   - 全局配置格式正确")
+        print("   - 合并配置已生成")
         print_separator()
         available_tasks = handler.tasks
 
