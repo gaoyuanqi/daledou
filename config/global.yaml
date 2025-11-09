@@ -802,8 +802,24 @@ TASK_CONFIG:
         id: 1265
         exchange_quantity: 3
 
-  江湖长梦: # 每月20号商店兑换
-    exchange:
+  江湖长梦:
+    open:
+      # 每天开启副本，消耗所有香炉，如果战败则结束回忆并跳过该副本
+      # 副本要保持纯净，即没有进行中的副本，否则跳过
+      # 副本优先金币
+
+      柒承的忙碌日常: true
+      # 群英拭剑谁为峰: true
+      # 时空守护者: true
+      # 倚天屠龙归我心: true
+      # 神雕侠侣: true
+      # 雪山藏魂: true
+      # 桃花自古笑春风: true
+      # 战乱襄阳: true
+      # 天涯浪子: true
+      # 全真古墓意难平: true
+
+    exchange: # 每月20号商店兑换
       - name: 侠士修身录
         id: 0
         exchange_quantity: 0
