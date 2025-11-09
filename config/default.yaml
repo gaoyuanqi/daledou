@@ -5,10 +5,6 @@
 # 大乐斗Cookie - 通过「配置账号」功能自动生成
 COOKIE: ""
 
-# 账号激活状态
-IS_ACTIVATE_ACCOUNT: true # 激活账号，参与任务执行
-# IS_ACTIVATE_ACCOUNT: false # 禁用账号，跳过该账号的所有任务
-
 # pushplus推送token - 用于微信消息推送 
 PUSH_TOKEN: ""
 

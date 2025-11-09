@@ -237,28 +237,14 @@ def _generate_daledou_instances(
         if select_qq is not None and select_qq != qq:
             continue
 
-        config_file = f"{qq}.yaml"
         qq_logger, handler_id = LogManager.get_qq_logger(qq)
 
         try:
-            account_config = Config.load_and_merge_account_config(config_file)
-            cookie, push_token, is_activate_account = Config.parse_account_credentials(
-                account_config
-            )
+            account_config = Config.load_and_merge_account_config(f"{qq}.yaml")
+            cookie, push_token = Config.parse_account_credentials(account_config)
         except Exception as e:
             qq_logger.error(f"{e}\n")
             LogManager.remove_handler(handler_id)
-            continue
-
-        if not is_activate_account:
-            qq_logger.warning(f"{qq} | {config_file} 配置账号为未激活状态，已跳过执行")
-            LogManager.remove_handler(handler_id)
-            push(
-                push_token,
-                f"{qq} | 账号未激活",
-                f"{config_file} 配置账号为未激活状态，已跳过执行",
-                qq_logger,
-            )
             continue
 
         session = SessionManager.create_verified_session(cookie)

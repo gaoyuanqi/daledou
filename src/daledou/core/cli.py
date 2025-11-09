@@ -177,7 +177,8 @@ def run_serve() -> None:
     print_separator()
     if not qq_numbers:
         print("❌ 没有找到账号配置文件")
-        print("💡 请先使用「配置账号」功能，配置成功后再重启程序\n")
+        print("💡 请先使用「配置账号」功能添加账号")
+        print("💡 禁用账号只需将对应配置文件移出 config/accounts 目录即可\n")
         available_tasks = {"配置账号": handler.configure_account}
     else:
         for qq in qq_numbers:

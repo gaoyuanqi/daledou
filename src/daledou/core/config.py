@@ -290,19 +290,18 @@ class Config(ConfigManager):
     @staticmethod
     def parse_account_credentials(
         account_config: dict,
-    ) -> tuple[dict, str, bool]:
+    ) -> tuple[dict, str]:
         """从配置数据中解析用户凭证和激活状态
 
         Args:
             account_config: 账号配置字典
 
         Returns:
-            tuple: Cookie字典、推送token、账号激活状态的元组
+            tuple: Cookie字典、推送token
         """
         cookie: dict = parse_cookie(account_config["COOKIE"])
         push_token: str = account_config["PUSH_TOKEN"]
-        is_activate_account: bool = account_config["IS_ACTIVATE_ACCOUNT"]
-        return cookie, push_token, is_activate_account
+        return cookie, push_token
 
     @classmethod
     def list_all_qq_numbers(cls) -> list[str]:
