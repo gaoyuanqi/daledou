@@ -89,16 +89,16 @@ class CLIHandler:
         if mode is None:
             return
 
-        os.environ[DLD_EXECUTION_MODE_ENV] = modes[mode]
-        print(f"已设置为{mode}")
-        print_separator()
-
         # 任务类型选择
         tasks = {
             "定时任务": _execute_timing,
             "第一轮任务": _execute_one,
             "第二轮任务": _execute_two,
         }
+
+        os.environ[DLD_EXECUTION_MODE_ENV] = modes[mode]
+        print(f"已设置为{mode}")
+        print_separator()
 
         print("💡 任务类型说明：")
         print(
@@ -172,23 +172,22 @@ class CLIHandler:
 def run_serve() -> None:
     """运行主服务"""
     handler = CLIHandler()
-    account_files = Config.list_numeric_config_files()
+    qq_numbers = Config.list_all_qq_numbers()
 
-    if not account_files:
-        print_separator()
+    print_separator()
+    if not qq_numbers:
         print("❌ 没有找到账号配置文件")
         print("💡 请先使用「配置账号」功能，配置成功后再重启程序\n")
         available_tasks = {"配置账号": handler.configure_account}
     else:
-        Config.sync_merged_directory(account_files)
-        for account_file in account_files:
+        for qq in qq_numbers:
             try:
-                Config.load_and_merge_account_config(account_file)
+                Config.load_and_merge_account_config(f"{qq}.yaml")
             except Exception as e:
-                print(f"\n❌ {e}")
+                print(f"❌ {e}")
                 print_separator()
                 return
-        print("\n✅ 配置文件检查完成")
+        print("✅ 配置文件检查完成")
         print("   - 账号配置格式正确")
         print("   - 全局配置格式正确")
         print("   - 合并配置已生成")

@@ -6,7 +6,6 @@ from .utils import (
     TaskType,
     DateTime,
     parse_cookie,
-    parse_qq_from_cookie,
 )
 
 
@@ -291,20 +290,19 @@ class Config(ConfigManager):
     @staticmethod
     def parse_account_credentials(
         account_config: dict,
-    ) -> tuple[str, dict, str, bool]:
+    ) -> tuple[dict, str, bool]:
         """从配置数据中解析用户凭证和激活状态
 
         Args:
             account_config: 账号配置字典
 
         Returns:
-            tuple: 包含QQ号、Cookie字典、推送token、账号激活状态的元组
+            tuple: Cookie字典、推送token、账号激活状态的元组
         """
         cookie: dict = parse_cookie(account_config["COOKIE"])
-        qq: str = parse_qq_from_cookie(cookie)
         push_token: str = account_config["PUSH_TOKEN"]
         is_activate_account: bool = account_config["IS_ACTIVATE_ACCOUNT"]
-        return qq, cookie, push_token, is_activate_account
+        return cookie, push_token, is_activate_account
 
     @classmethod
     def list_all_qq_numbers(cls) -> list[str]:
@@ -315,41 +313,15 @@ class Config(ConfigManager):
         Returns:
             list[str]: QQ号列表，如果没有配置文件则返回空列表
         """
-        return [
-            file_name.split(".", 1)[0] for file_name in cls.list_numeric_config_files()
-        ]
-
-    @classmethod
-    def list_numeric_config_files(cls) -> list[str]:
-        """列出账号配置目录下所有数字命名的YAML配置文件
-
-        扫描账号配置目录，筛选出以纯数字命名且扩展名为yaml的文件
-
-        Returns:
-            list[str]: 配置文件名列表，如果没有符合条件的文件则返回空列表
-        """
         cls.ensure_directories()
 
-        return [
-            file.name
-            for file in cls.ACCOUNTS_DIR.iterdir()
+        qq_numbers = []
+        for file in cls.ACCOUNTS_DIR.iterdir():
             if (
                 file.is_file()
                 and file.stem.isdigit()
                 and file.suffix.lower() == ".yaml"
-            )
-        ]
+            ):
+                qq_numbers.append(file.stem)
 
-    @classmethod
-    def sync_merged_directory(cls, account_files: list[str]) -> None:
-        """同步merged目录，删除accounts中没有的文件"""
-        cls.ensure_directories()
-
-        merged_files = [
-            file.name for file in cls.MERGED_DIR.iterdir() if file.is_file()
-        ]
-
-        for merged_file in merged_files:
-            if merged_file not in account_files:
-                merged_file_path = cls.MERGED_DIR / merged_file
-                merged_file_path.unlink()
+        return qq_numbers

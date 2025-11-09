@@ -233,18 +233,26 @@ def _generate_daledou_instances(
     task_type: TaskType, select_qq: str | None = None
 ) -> Generator[DaLeDou, None, None]:
     """生成大乐斗账号实例的生成器"""
-    for config_file in Config.list_numeric_config_files():
-        if select_qq is not None and select_qq not in config_file:
+    for qq in Config.list_all_qq_numbers():
+        if select_qq is not None and select_qq != qq:
             continue
 
-        account_config = Config.load_and_merge_account_config(config_file)
-        qq, cookie, push_token, is_activate_account = Config.parse_account_credentials(
-            account_config
-        )
-
+        config_file = f"{qq}.yaml"
         qq_logger, handler_id = LogManager.get_qq_logger(qq)
+
+        try:
+            account_config = Config.load_and_merge_account_config(config_file)
+            cookie, push_token, is_activate_account = Config.parse_account_credentials(
+                account_config
+            )
+        except Exception as e:
+            qq_logger.error(f"{e}\n")
+            LogManager.remove_handler(handler_id)
+            continue
+
         if not is_activate_account:
             qq_logger.warning(f"{qq} | {config_file} 配置账号为未激活状态，已跳过执行")
+            LogManager.remove_handler(handler_id)
             push(
                 push_token,
                 f"{qq} | 账号未激活",
@@ -255,13 +263,12 @@ def _generate_daledou_instances(
 
         session = SessionManager.create_verified_session(cookie)
         if session is None:
-            qq_logger.error(
-                f"{qq} | Cookie无效或已过期，请在 {config_file} 配置文件中更新Cookie"
-            )
+            qq_logger.error(f"{qq} | Cookie无效或已过期，请通过「配置账号」更新Cookie")
+            LogManager.remove_handler(handler_id)
             push(
                 push_token,
                 f"{qq} | Cookie无效或已过期",
-                f"请在 {config_file} 配置文件中更新Cookie",
+                "请通过「配置账号」更新Cookie",
                 qq_logger,
             )
             continue
@@ -269,8 +276,9 @@ def _generate_daledou_instances(
         html = SessionManager.get_index_html(session)
         if html is None:
             qq_logger.warning(
-                f"{qq} 无法连接大乐斗服务器，可能服务繁忙或正在维护，已跳过执行"
+                f"{qq} | 无法连接大乐斗服务器，可能服务繁忙或正在维护，已跳过执行"
             )
+            LogManager.remove_handler(handler_id)
             push(
                 push_token,
                 f"{qq} | 连接失败",
@@ -284,6 +292,7 @@ def _generate_daledou_instances(
             qq_logger.warning(
                 f"{qq} | 无可用任务，可能{task_type}类型任务不在执行时间、未找到或者未配置"
             )
+            LogManager.remove_handler(handler_id)
             push(
                 push_token,
                 f"{qq} | 无可用任务",
