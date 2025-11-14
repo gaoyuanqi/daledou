@@ -248,12 +248,12 @@ def _generate_daledou_instances(
 
         session = SessionManager.create_verified_session(cookie)
         if session is None:
-            qq_logger.error(f"{qq} | Cookie无效或已过期，请通过「配置账号」更新Cookie")
+            qq_logger.error(f"{qq} | Cookie无效或已过期，请通过「管理账号」更新Cookie")
             LogManager.remove_handler(handler_id)
             push(
                 push_token,
                 f"{qq} | Cookie无效或已过期",
-                "请通过「配置账号」更新Cookie",
+                "请通过「管理账号」更新Cookie",
                 qq_logger,
             )
             continue

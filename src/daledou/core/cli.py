@@ -70,7 +70,7 @@ class CLIHandler:
         self.tasks = {
             "执行任务": self.execute_tasks,
             "调试任务": self.execute_debug,
-            "配置账号": self.configure_account,
+            "管理账号": self.manage_account,
         }
 
     def execute_tasks(self) -> None:
@@ -131,8 +131,8 @@ class CLIHandler:
         task_type, module_path = task_map[task]
         TaskSchedule.execute_debug(task_type, module_path)
 
-    def configure_account(self) -> None:
-        """配置账号 - 创建或更新账号配置"""
+    def manage_account(self) -> None:
+        """管理账号 - 创建或更新账号配置"""
         print("💡 操作说明：")
         print("• 添加新账号会创建对应的配置文件")
         print("• 如果账号已存在，则仅更新Cookie，保留其它所有配置\n")
@@ -177,9 +177,9 @@ def run_serve() -> None:
     print_separator()
     if not qq_numbers:
         print("❌ 没有找到账号配置文件")
-        print("💡 请先使用「配置账号」功能添加账号")
+        print("💡 请先使用「管理账号」功能添加账号")
         print("💡 禁用账号只需将对应配置文件移出 config/accounts 目录即可\n")
-        available_tasks = {"配置账号": handler.configure_account}
+        available_tasks = {"管理账号": handler.manage_account}
     else:
         for qq in qq_numbers:
             Config.load_account_config(f"{qq}.yaml")
