@@ -240,10 +240,9 @@ def _generate_daledou_instances(
         qq_logger, handler_id = LogManager.get_qq_logger(qq)
 
         try:
-            account_config = Config.load_and_merge_account_config(f"{qq}.yaml")
-            cookie, push_token = Config.parse_account_credentials(account_config)
-        except Exception as e:
-            qq_logger.error(f"{e}\n")
+            cookie, push_token, merged_config = Config.load_account_config(f"{qq}.yaml")
+        except Exception:
+            qq_logger.error(traceback.format_exc())
             LogManager.remove_handler(handler_id)
             continue
 
@@ -273,7 +272,7 @@ def _generate_daledou_instances(
             )
             continue
 
-        task_config = Config.filter_active_tasks(account_config, task_type, html)
+        task_config = Config.filter_active_tasks(merged_config, task_type, html)
         if not task_config:
             qq_logger.warning(
                 f"{qq} | 无可用任务，可能{task_type}类型任务不在执行时间、未找到或者未配置"
@@ -299,10 +298,10 @@ def _generate_daledou_instances(
 
 def _run_tasks(d: DaLeDou, task_names: list[str], module_path: ModulePath):
     """执行单个账号的所有任务"""
-    module_type = import_module(module_path)
-    d.start_timing()
-    for task_name in task_names:
-        try:
+    try:
+        d.start_timing()
+        module_type = import_module(module_path)
+        for task_name in task_names:
             d.current_task_name = task_name
             d.append(f"\n【{task_name}】")
 
@@ -313,8 +312,8 @@ def _run_tasks(d: DaLeDou, task_names: list[str], module_path: ModulePath):
                 d.log(f"函数 {task_name} 不存在").append()
 
             d.complete_task()
-        except Exception:
-            d.log(traceback.format_exc()).append()
+    except Exception:
+        d.log(traceback.format_exc()).append()
 
 
 class Concurrency:
@@ -386,6 +385,7 @@ class Concurrency:
                 def worker():
                     nonlocal completed_count, active_accounts
                     while True:
+                        d = None
                         try:
                             d = account_queue.get(timeout=1)
                             if d is None:
@@ -398,8 +398,8 @@ class Concurrency:
                             try:
                                 _run_tasks(d, d.task_names, module_path)
                                 d.pushplus_send(task_type)
-                            finally:
                                 d.remove_qq_handler()
+                            finally:
                                 with lock:
                                     active_accounts.remove(d)
                                     completed_count += 1
@@ -409,7 +409,10 @@ class Concurrency:
                             if not filler_thread.is_alive() and account_queue.empty():
                                 return
                         except Exception:
-                            traceback.print_exc()
+                            if d is None:
+                                traceback.print_exc()
+                            else:
+                                d.log(traceback.format_exc()).append()
                             account_queue.task_done()
 
                 for _ in range(optimal_concurrency):

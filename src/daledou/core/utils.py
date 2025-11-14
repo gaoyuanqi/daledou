@@ -236,11 +236,6 @@ class TimingConfig:
         )
 
 
-def parse_qq_from_cookie(cookie: dict) -> str:
-    """从cookie中获取QQ号"""
-    return cookie["newuin"]
-
-
 def parse_cookie(cookie: str) -> dict:
     """解析cookie字符串为字典格式"""
     cookies = {}

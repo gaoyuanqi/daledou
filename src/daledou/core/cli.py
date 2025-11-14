@@ -15,7 +15,6 @@ from .utils import (
     TaskType,
     TimingConfig,
     parse_cookie,
-    parse_qq_from_cookie,
     print_separator,
 )
 
@@ -162,8 +161,9 @@ class CLIHandler:
                 print_separator()
                 continue
 
-            qq = parse_qq_from_cookie(ck)
-            account_config_path = Config.create_account_config(f"{qq}.yaml", cookie)
+            qq = ck["newuin"]
+            account_config_path = Config.save_account_config(f"{qq}.yaml", cookie)
+
             print(f"\n✅ 账号 {qq} 配置成功！")
             print(f"📁 账号配置文件：{account_config_path}")
             print_separator()
@@ -182,12 +182,8 @@ def run_serve() -> None:
         available_tasks = {"配置账号": handler.configure_account}
     else:
         for qq in qq_numbers:
-            try:
-                Config.load_and_merge_account_config(f"{qq}.yaml")
-            except Exception as e:
-                print(f"❌ {e}")
-                print_separator()
-                return
+            Config.load_account_config(f"{qq}.yaml")
+
         print("✅ 配置文件检查完成")
         print("   - 账号配置格式正确")
         print("   - 全局配置格式正确")
