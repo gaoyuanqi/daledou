@@ -303,16 +303,15 @@ def 设置战队(d: DaLeDou):
         d.log("您没有至少一个侠士，无法设置战队").append()
         return
 
-    for i, knight in enumerate(knight_config, 1):
-        if i > 5:
+    for i, knight in enumerate(knight_config):
+        if i > 4:
             break
         if _id := knight_data.get(knight, None):
-            p = i - 1
             # 出战
-            d.get(f"cmd=knightfight&op=set_knight&id={_id}&pos={p}&type=1")
-            d.log(f"第{i}战：{knight}").append()
+            d.get(f"cmd=knightfight&op=set_knight&id={_id}&pos={i}&type=1")
+            d.log(f"第{i + 1}战：{knight}").append()
         else:
-            d.log(f"第{i}战：您没有{knight}").append()
+            d.log(f"第{i + 1}战：您没有{knight}").append()
 
 
 def 群侠(d: DaLeDou):
