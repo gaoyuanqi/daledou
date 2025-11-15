@@ -85,54 +85,6 @@ def 邪神秘宝(d: DaLeDou):
     c_邪神秘宝(d)
 
 
-def 战阵调整(d: DaLeDou) -> bool:
-    """
-    调整华山论剑出战侠士，仅替换耐久为0或未出战的位置
-
-    Returns:
-        bool: 调整是否成功完成
-    """
-    # 获取所有侠士id
-    # 侠士页面
-    d.get("cmd=knightarena&op=viewsetknightlist&pos=0")
-    available_knight_ids = d.findall(r"knightid=(\d+)")
-    if not available_knight_ids:
-        d.log(d.find(r"<p>(.*?)</p>")).append()
-        return False
-
-    # 处理当前出战侠士
-    # 战阵调整
-    d.get("cmd=knightarena&op=viewteam")
-    vacant_positions = d.findall(r'pos=(\d+)">选择侠士')
-    deployed_knights = d.findall(r'耐久：(\d+).*?pos=(\d+)">更改侠士.*?id=(\d+)')
-
-    positions_to_clear = []
-    for durability, position, knight_id in deployed_knights:
-        # 从可用列表中移除已出战的侠士
-        if knight_id in available_knight_ids:
-            available_knight_ids.remove(knight_id)
-
-        # 记录需要清退的0耐久位置
-        if durability == "0":
-            positions_to_clear.append(position)
-            # 下阵0耐久侠士
-            d.get(f"cmd=knightarena&op=setknight&id={knight_id}&pos={position}&type=0")
-
-    # 重新分配侠士
-    all_vacant_positions = vacant_positions + positions_to_clear
-    for position in all_vacant_positions:
-        if not available_knight_ids:
-            d.log("可用侠士已耗尽").append()
-            break
-
-        selected_knight = available_knight_ids.pop()
-        # 上阵新侠士
-        d.get(
-            f"cmd=knightarena&op=setknight&id={selected_knight}&pos={position}&type=1"
-        )
-    return True
-
-
 def 荣誉兑换(d: DaLeDou):
     config: list[dict] = d.config["华山论剑"]["exchange"]
     if config is None:
@@ -176,22 +128,39 @@ def 华山论剑(d: DaLeDou):
         侠士招募(d)
         return
 
-    for _ in range(10):
-        # 华山论剑
-        d.get("cmd=knightarena")
-        if "免费挑战" not in d.html:
-            d.log("没有免费挑战次数了").append()
-            break
-        # 免费挑战
-        d.get("cmd=knightarena&op=challenge")
-        d.log(d.find()).append()
-        if "增加荣誉点数" in d.html:
-            continue
+    knight_config: dict[int, list] = d.config["华山论剑"]["战阵调整"]
+    if knight_config is None:
+        d.log("你需要在账号配置战阵调整才能挑战").append()
+        return
 
-        # 请先设置上阵侠士后再开始战斗
-        # 耐久不足
-        if not 战阵调整(d):
-            break
+    # 更改侠士/选择侠士
+    d.get("cmd=knightarena&op=viewsetknightlist&pos=0")
+    knight_data = dict(d.findall(r">([\u4e00-\u9fff]+) \d+级.*?knightid=(\d+)"))
+    if not knight_data:
+        d.log("您没有至少一个侠士，无法战阵调整").append()
+        return
+
+    def 战阵调整(knights: list[str]):
+        for i, knight in enumerate(knights):
+            if i > 2:
+                break
+            if _id := knight_data.get(knight, None):
+                # 出战
+                d.get(f"cmd=knightarena&op=setknight&id={_id}&pos={i}&type=1")
+                d.log(f"第{i + 1}战：{knight}").append()
+            else:
+                d.log(f"第{i + 1}战：您没有{knight}").append()
+
+    for challenge_count, knights in knight_config.items():
+        战阵调整(knights)
+        for _ in range(challenge_count):
+            # 免费挑战/开始挑战
+            d.get("cmd=knightarena&op=challenge")
+            d.log(d.find()).append()
+            if "增加荣誉点数" not in d.html:
+                # 请先设置上阵侠士后再开始战斗
+                # 当前论剑队伍中有侠士耐久不足，请更换上阵！
+                break
 
 
 def 斗豆月卡(d: DaLeDou):
