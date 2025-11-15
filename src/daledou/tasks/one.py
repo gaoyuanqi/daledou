@@ -322,7 +322,33 @@ def 武林(d: DaLeDou):
         d.log(d.find(r"升级。<br />(.*?) ")).append()
 
 
+def 设置战队(d: DaLeDou):
+    knight_config: list[str] = d.config["群侠"]["设置战队"]
+    if knight_config is None:
+        return
+
+    # 更改侠士/选择侠士
+    d.get("cmd=knightfight&op=viewsetknightlist&pos=0")
+    knight_data = dict(d.findall(r">([\u4e00-\u9fff]+) \d+级.*?knightid=(\d+)"))
+    if not knight_data:
+        d.log("您没有至少一个侠士，无法设置战队").append()
+        return
+
+    for i, knight in enumerate(knight_config, 1):
+        if i > 5:
+            break
+        if _id := knight_data.get(knight, None):
+            p = i - 1
+            # 出战
+            d.get(f"cmd=knightfight&op=set_knight&id={_id}&pos={p}&type=1")
+            d.log(f"第{i}战：{knight}").append()
+        else:
+            d.log(f"第{i}战：您没有{knight}").append()
+
+
 def 群侠(d: DaLeDou):
+    设置战队(d)
+
     # 报名
     d.get("cmd=knightfight&op=signup")
     d.log(d.find(r"侠士侠号.*?<br />(.*?)<br />")).append()
