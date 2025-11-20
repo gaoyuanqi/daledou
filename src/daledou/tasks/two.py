@@ -838,17 +838,23 @@ def 神匠坊(d: DaLeDou):
 
 
 def 每日宝箱(d: DaLeDou):
-    counter = Counter()
     # 每日宝箱
     d.get("cmd=dailychest")
-    while t := d.find(r'type=(\d+)">打开'):
-        # 打开
-        d.get(f"cmd=dailychest&op=open&type={t}")
-        msg = d.find(r"说明</a><br />(.*?)<")
-        d.log(msg)
-        counter.update({msg: 1})
-        if "今日开宝箱次数已达上限" in d.html:
-            break
+    data = d.findall(r'type=(\d+)">打开.*?(\d+)/(\d+)')
+    if not data:
+        d.log("没有可打开的宝箱").append()
+        return
+
+    counter = Counter()
+    for t, possess, consume in data:
+        for _ in range(min(10, int(possess) // int(consume))):
+            # 打开
+            d.get(f"cmd=dailychest&op=open&type={t}")
+            msg = d.find(r"说明</a><br />(.*?)<")
+            d.log(msg)
+            if "今日开宝箱次数已达上限" in d.html:
+                break
+            counter.update({msg: 1})
 
     for k, v in counter.items():
         d.append(f"{v}次{k}")
