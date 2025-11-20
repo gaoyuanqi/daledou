@@ -626,6 +626,10 @@ def 江湖长梦(d: DaLeDou):
     }
 
     config: dict[str, bool] = d.config["江湖长梦"]["open"]
+    if config is None:
+        d.log("你没有配置副本").append()
+        return
+
     for name, is_open in config.items():
         if not is_open:
             continue
