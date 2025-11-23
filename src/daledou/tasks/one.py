@@ -128,7 +128,7 @@ def 华山论剑(d: DaLeDou):
         侠士招募(d)
         return
 
-    knight_config: dict[int, list] = d.config["华山论剑"]["战阵调整"]
+    knight_config: list[dict] = d.config["华山论剑"]["战阵调整"]
     if knight_config is None:
         d.log("你需要在账号配置战阵调整才能挑战").append()
         return
@@ -151,7 +151,9 @@ def 华山论剑(d: DaLeDou):
             else:
                 d.log(f"第{i + 1}战：您没有{knight}").append()
 
-    for challenge_count, knights in knight_config.items():
+    for item in knight_config:
+        challenge_count: int = item["challenge_count"]
+        knights: list[str] = item["knights"]
         战阵调整(knights)
         for _ in range(challenge_count):
             # 免费挑战/开始挑战
