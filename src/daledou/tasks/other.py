@@ -107,7 +107,7 @@ class Exchange:
 
         exchange_num = self.consume_num - self.possess_num
 
-        if "江湖长梦" in self.store_name or self.store_name == "许愿帮铺":
+        if "江湖长梦" in self.store_name:
             # 只能一个兑换
             if not self.execute_exchange(self.exchange_url, exchange_num):
                 return False
@@ -120,7 +120,17 @@ class Exchange:
                 return False
             if not self.execute_exchange(one_url, one_count):
                 return False
+        elif self.store_name == "许愿帮铺":
+            # 只能一个兑换和25个兑换
+            twenty_five_count, one_count = divmod(exchange_num, 25)
+            twenty_five_url = f"{self.exchange_url}&times=25"
+            one_url = self.exchange_url
+            if not self.execute_exchange(twenty_five_url, twenty_five_count):
+                return False
+            if not self.execute_exchange(one_url, one_count):
+                return False
         else:
+            # 一次批量兑换
             url = f"{self.exchange_url}&times={exchange_num}"
             if not self.execute_exchange(url, 1):
                 return False
