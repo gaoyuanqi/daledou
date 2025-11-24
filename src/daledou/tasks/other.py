@@ -468,8 +468,8 @@ class JiTanShouHuShou(BaseUpgrader):
             "one": "cmd=longdreamexchange&op=exchange&key_id=21&page=2",
         },
         "投掷武器符咒": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=21&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=21&page=2",
+            "ten": "cmd=longdreamexchange&op=exchange&key_id=22&page=2",
+            "one": "cmd=longdreamexchange&op=exchange&key_id=22&page=2",
         },
     }
 
@@ -561,8 +561,8 @@ class JiTanShouHuShou(BaseUpgrader):
 class FengYinJiTan(BaseUpgrader):
     EXCHANGE_URL_MAP = {
         "石中剑": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
+            "ten": "cmd=longdreamexchange&op=exchange&key_id=18&page=2",
+            "one": "cmd=longdreamexchange&op=exchange&key_id=18&page=2",
         }
     }
 
