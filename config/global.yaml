@@ -772,7 +772,7 @@ TASK_CONFIG:
       #     - 王重阳 # 第一战
       #     - 王处一 # 第二战
       #     - 林朝英 # 第三战
-      # - challenge_count: 4 # 本编队挑战8次
+      # - challenge_count: 4 # 本编队挑战4次
       #   knights:
       #     - 龙岛主 # 第一战
       #     - 木岛主 # 第二战
