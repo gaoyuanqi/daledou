@@ -901,7 +901,7 @@ class XingPan(BaseUpgrader):
         "月光石": "cmd=exchange&subtype=2&type=1238&costtype=9",
     }
 
-    PRICE = {
+    STAR_PRICE = {
         "翡翠石": 32,
         "玛瑙石": 40,
         "迅捷石": 40,
@@ -910,7 +910,7 @@ class XingPan(BaseUpgrader):
         "月光石": 32,
     }
 
-    STAR_GEM = {
+    STAR_TYPE_MAP = {
         "日曜石": 1,
         "玛瑙石": 2,
         "迅捷石": 3,
@@ -930,82 +930,88 @@ class XingPan(BaseUpgrader):
         6: 2,  # 2个6级星石合成一个7级星石
     }
 
-    def __init__(self, d: DaLeDou, synth_level: int):
-        self.synth_level = synth_level
-        self.synth_count = {}
+    def __init__(self, d: DaLeDou, target_level: int):
+        self.target_level = target_level
+        self.required_counts = {}
         super().__init__(d)
 
-    def compute_exchange_level1_num(
-        self, name: str, level: int, star_number: dict, count=1
+    def calculate_required_level1_stones(
+        self,
+        name: str,
+        current_level: int,
+        star_counts: dict,
+        required_count: int = 1,
     ) -> int:
-        """返回一级某星石兑换数量"""
-        self.synth_count[name][level] = count
-        # 下一级
-        level -= 1
-        # 次级拥有数量
-        possess_num = star_number[level]
-        # 次级消耗数量
-        consume_num = self.SYNTHESIS_RULES[level] * count
+        """计算需要的一级星石数量"""
+        self.required_counts[name][current_level] = required_count
+        # 计算下一级
+        next_level = current_level - 1
+        # 下一级星石拥有数量
+        next_level_count = star_counts[next_level]
+        # 下一级星石消耗数量
+        required_next_level_count = self.SYNTHESIS_RULES[next_level] * required_count
 
-        if possess_num >= consume_num:
+        if next_level_count >= required_next_level_count:
             return 0
         else:
-            number = consume_num - possess_num
-            if level == 1:
+            deficit = required_next_level_count - next_level_count
+            if next_level == 1:
                 # 一级星石兑换数量
-                return number
+                return deficit
             else:
-                return self.compute_exchange_level1_num(
-                    name, level, star_number, number
+                return self.calculate_required_level1_stones(
+                    name, next_level, star_counts, deficit
                 )
 
-    def get_synth_id(self, name: str) -> dict[int, str]:
-        """返回2~7级星石合成id"""
-        gem = self.STAR_GEM[name]
-        self.d.get(f"cmd=astrolabe&op=showgemupgrade&gem_type={gem}")
-        _ids = self.d.findall(r"gem=(\d+)")[1:]
-        return {level: synth_id for level, synth_id in enumerate(_ids, start=2)}
+    def get_synthesis_ids(self, name: str) -> dict[int, str]:
+        """获取2~7级星石合成id"""
+        star_type = self.STAR_TYPE_MAP[name]
+        self.d.get(f"cmd=astrolabe&op=showgemupgrade&gem_type={star_type}")
+        ids = self.d.findall(r"gem=(\d+)")[1:]
+        return {level: synthesis_id for level, synthesis_id in enumerate(ids, start=2)}
 
-    def get_store_max_number(self, name: str, store_points: int) -> int:
-        """返回幻境商店星石最大兑换数量"""
-        if price := self.PRICE.get(name):
+    def get_max_exchange_count(self, name: str, store_points: int) -> int:
+        """获取商店最大可兑换数量"""
+        if price := self.STAR_PRICE.get(name):
             return store_points // price
         return 0
 
     def get_data(self) -> dict:
-        """获取1~6级星石数量及2~7级星石合成id"""
+        """获取星盘数据"""
         data = {}
         store_name = "幻境"
         store_points = get_store_points(self.d, "cmd=exchange&subtype=10&costtype=9")
 
-        for name, gem in self.STAR_GEM.items():
-            self.d.get(f"cmd=astrolabe&op=showgemupgrade&gem_type={gem}")
+        for name, star_type in self.STAR_TYPE_MAP.items():
+            self.d.get(f"cmd=astrolabe&op=showgemupgrade&gem_type={star_type}")
             result = self.d.findall(r"（(\d+)）")[1:]
 
-            self.synth_count[name] = {level: 0 for level in range(2, self.synth_level)}
+            self.required_counts[name] = {
+                level: 0 for level in range(2, self.target_level)
+            }
             # 1~6级星石数量
-            star_number = {i + 1: int(item) for i, item in enumerate(result)}
+            star_counts = {i + 1: int(count) for i, count in enumerate(result)}
             # 幻境商店可兑换数量
-            store_exchange_num = self.get_store_max_number(name, store_points)
-            # 一级星石兑换数量
-            exchange_level1_num = self.compute_exchange_level1_num(
-                name, self.synth_level, star_number
+            max_exchange_count = self.get_max_exchange_count(name, store_points)
+            # 需要的一级星石数量
+            required_level1_count = self.calculate_required_level1_stones(
+                name, self.target_level, star_counts
             )
 
             data[name] = {
                 "名称": name,
-                "1级数量": star_number[1],
-                "2级数量": star_number[2],
-                "3级数量": star_number[3],
-                "4级数量": star_number[4],
-                "5级数量": star_number[5],
-                "6级数量": star_number[6],
-                "积分": f"{store_points}（{store_exchange_num}）",
-                "一级星石兑换数量": exchange_level1_num,
-                "合成等级": self.synth_level,
-                "是否强化": store_exchange_num >= exchange_level1_num,
+                "1级数量": star_counts[1],
+                "2级数量": star_counts[2],
+                "3级数量": star_counts[3],
+                "4级数量": star_counts[4],
+                "5级数量": star_counts[5],
+                "6级数量": star_counts[6],
+                "积分": f"{store_points}（{max_exchange_count}）",
+                "需要一级星石数量": required_level1_count,
+                "目标等级": self.target_level,
+                "是否强化": max_exchange_count >= required_level1_count,
                 "consume_name": name,
-                "consume_num": exchange_level1_num,
+                "consume_num": required_level1_count,
                 "possess_num": 0,
                 "store_name": store_name,
             }
@@ -1018,25 +1024,25 @@ class XingPan(BaseUpgrader):
             if not e.is_exchange():
                 return
 
-        synth_id = self.get_synth_id(name)
-        for level, count in self.synth_count[name].items():
+        synthesis_ids = self.get_synthesis_ids(name)
+        for level, count in self.required_counts[name].items():
             if count == 0:
                 continue
 
-            _id = synth_id[level]
+            synthesis_id = synthesis_ids[level]
             for _ in range(count):
                 # 合成
-                self.d.get(f"cmd=astrolabe&op=upgradegem&gem={_id}")
+                self.d.get(f"cmd=astrolabe&op=upgradegem&gem={synthesis_id}")
                 self.d.log(self.d.find(r"规则</a><br />(.*?)<"), f"{level}级{name}")
 
 
 def 星盘(d: DaLeDou):
-    level_list = ["2", "3", "4", "5", "6", "7"]
+    available_levels = ["2", "3", "4", "5", "6", "7"]
     while True:
-        synth_level = Input.select("请选择合成星石等级：", level_list)
-        if synth_level is None:
+        target_level = Input.select("请选择目标星石等级：", available_levels)
+        if target_level is None:
             return
-        upgrade(XingPan(d, int(synth_level)))
+        upgrade(XingPan(d, int(target_level)))
 
 
 class YongBing(BaseUpgrader):
