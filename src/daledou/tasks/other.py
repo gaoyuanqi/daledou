@@ -930,8 +930,9 @@ class XingPan(BaseUpgrader):
         6: 2,  # 2个6级星石合成一个7级星石
     }
 
-    def __init__(self, d: DaLeDou, target_level: int):
+    def __init__(self, d: DaLeDou, target_level: int, target_quantity: int = 1):
         self.target_level = target_level
+        self.target_quantity = target_quantity
         self.required_counts = {}
         super().__init__(d)
 
@@ -995,7 +996,7 @@ class XingPan(BaseUpgrader):
             max_exchange_count = self.get_max_exchange_count(name, store_points)
             # 需要的一级星石数量
             required_level1_count = self.calculate_required_level1_stones(
-                name, self.target_level, star_counts
+                name, self.target_level, star_counts, self.target_quantity
             )
 
             data[name] = {
@@ -1009,6 +1010,7 @@ class XingPan(BaseUpgrader):
                 "积分": f"{store_points}（{max_exchange_count}）",
                 "需要一级星石数量": required_level1_count,
                 "目标等级": self.target_level,
+                "目标数量": self.target_quantity,
                 "是否强化": max_exchange_count >= required_level1_count,
                 "consume_name": name,
                 "consume_num": required_level1_count,
@@ -1042,7 +1044,13 @@ def 星盘(d: DaLeDou):
         target_level = Input.select("请选择目标星石等级：", available_levels)
         if target_level is None:
             return
-        upgrade(XingPan(d, int(target_level)))
+
+        target_quantity = Input.number("请输入合成数量：")
+        print_separator()
+        if target_quantity is None:
+            return
+
+        upgrade(XingPan(d, int(target_level), target_quantity))
 
 
 class YongBing(BaseUpgrader):
