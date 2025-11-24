@@ -81,17 +81,14 @@ class Exchange:
     def __init__(
         self,
         d: DaLeDou,
-        url: dict,
+        exchange_url: str,
         consume_num: int,
         possess_num: int,
         store_name: str,
         regex: str | None = None,
     ):
         self.d = d
-        # 材料兑换10个链接
-        self.exchange_ten_url = url["ten"]
-        # 材料兑换一个链接
-        self.exchange_one_url = url["one"]
+        self.exchange_url = exchange_url
         self.consume_num = consume_num
         self.possess_num = possess_num
         self.store_name = store_name
@@ -110,15 +107,22 @@ class Exchange:
 
         exchange_num = self.consume_num - self.possess_num
 
-        if self.exchange_ten_url == self.exchange_one_url:
-            # 有些物品只能一个兑换，比如江湖长梦、许愿帮铺
-            if not self.exchange_count(self.exchange_one_url, exchange_num):
+        if "江湖长梦" in self.store_name or self.store_name == "许愿帮铺":
+            # 只能一个兑换
+            if not self.execute_exchange(self.exchange_url, exchange_num):
+                return False
+        elif self.store_name == "竞技场":
+            # 只能一个兑换和十个兑换
+            ten_count, one_count = divmod(exchange_num, 10)
+            ten_url = f"{self.exchange_url}&times=10"
+            one_url = f"{self.exchange_url}&times=1"
+            if not self.execute_exchange(ten_url, ten_count):
+                return False
+            if not self.execute_exchange(one_url, one_count):
                 return False
         else:
-            ten_count, one_count = divmod(exchange_num, 10)
-            if not self.exchange_count(self.exchange_ten_url, ten_count):
-                return False
-            if not self.exchange_count(self.exchange_one_url, one_count):
+            url = f"{self.exchange_url}&times={exchange_num}"
+            if not self.execute_exchange(url, 1):
                 return False
 
         # 兑换成功则两者数量一致
@@ -126,14 +130,14 @@ class Exchange:
         print_separator()
         return True
 
-    def exchange_count(self, url: str, count: int) -> bool:
+    def execute_exchange(self, url: str, count: int) -> bool:
         """兑换足够数量返回True，否则返回False"""
         while count > 0:
             self.d.get(url)
             self.d.log(self.d.find(self.regex), self.store_name)
             if "成功" in self.d.html:
                 count -= 1
-            elif "不足" in self.d.html or "达到当日兑换上限" in self.d.html:
+            else:
                 return False
         return True
 
@@ -156,9 +160,10 @@ class BaseUpgrader(ABC):
         consume_num = self.data[name]["consume_num"]
         possess_num = self.data[name]["possess_num"]
         store_name = self.data[name]["store_name"]
+        exchange_url = exchange_url_map[consume_name]
         return Exchange(
             self.d,
-            exchange_url_map[consume_name],
+            exchange_url,
             consume_num,
             possess_num,
             store_name,
@@ -211,10 +216,7 @@ def upgrade(upgrader: BaseUpgrader):
 
 class AoYi(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "奥秘元素": {
-            "ten": "cmd=exchange&subtype=2&type=1261&times=10&costtype=12",
-            "one": "cmd=exchange&subtype=2&type=1261&times=1&costtype=12",
-        }
+        "奥秘元素": "cmd=exchange&subtype=2&type=1261&costtype=12",
     }
 
     def __init__(self, d: DaLeDou):
@@ -285,10 +287,7 @@ class AoYi(BaseUpgrader):
 
 class JiNengLan(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "四灵魂石": {
-            "ten": "cmd=exchange&subtype=2&type=1262&times=10&costtype=12",
-            "one": "cmd=exchange&subtype=2&type=1262&times=1&costtype=12",
-        }
+        "四灵魂石": "cmd=exchange&subtype=2&type=1262&costtype=12",
     }
 
     def __init__(self, d: DaLeDou):
@@ -455,22 +454,10 @@ def 背包(d: DaLeDou):
 
 class JiTanShouHuShou(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "大型武器符咒": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
-        },
-        "中型武器符咒": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=20&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=20&page=2",
-        },
-        "小型武器符咒": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=21&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=21&page=2",
-        },
-        "投掷武器符咒": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=22&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=22&page=2",
-        },
+        "大型武器符咒": "cmd=longdreamexchange&op=exchange&key_id=19&page=2",
+        "中型武器符咒": "cmd=longdreamexchange&op=exchange&key_id=20&page=2",
+        "小型武器符咒": "cmd=longdreamexchange&op=exchange&key_id=21&page=2",
+        "投掷武器符咒": "cmd=longdreamexchange&op=exchange&key_id=22&page=2",
     }
 
     REGEX = r"</a><br />(.*?)<"
@@ -560,10 +547,7 @@ class JiTanShouHuShou(BaseUpgrader):
 
 class FengYinJiTan(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "石中剑": {
-            "ten": "cmd=longdreamexchange&op=exchange&key_id=18&page=2",
-            "one": "cmd=longdreamexchange&op=exchange&key_id=18&page=2",
-        }
+        "石中剑": "cmd=longdreamexchange&op=exchange&key_id=18&page=2",
     }
 
     REGEX = r"</a><br />(.*?)<"
@@ -677,30 +661,12 @@ def 掠夺(d: DaLeDou):
 
 class ShenZhuang(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "凤凰羽毛": {
-            "ten": "cmd=exchange&subtype=2&type=1100&times=10&costtype=1",
-            "one": "cmd=exchange&subtype=2&type=1100&times=1&costtype=1",
-        },
-        "奔流气息": {
-            "ten": "cmd=exchange&subtype=2&type=1205&times=10&costtype=3",
-            "one": "cmd=exchange&subtype=2&type=1205&times=1&costtype=3",
-        },
-        "潜能果实": {
-            "ten": "cmd=exchange&subtype=2&type=1200&times=10&costtype=2",
-            "one": "cmd=exchange&subtype=2&type=1200&times=1&costtype=2",
-        },
-        "上古玉髓": {
-            "ten": "cmd=exchange&subtype=2&type=1201&times=10&costtype=2",
-            "one": "cmd=exchange&subtype=2&type=1201&times=1&costtype=2",
-        },
-        "神兵原石": {
-            "ten": "cmd=arena&op=exchange&id=3573&times=10",
-            "one": "cmd=arena&op=exchange&id=3573&times=1",
-        },
-        "软猥金丝": {
-            "ten": "cmd=arena&op=exchange&id=3574&times=10",
-            "one": "cmd=arena&op=exchange&id=3574&times=1",
-        },
+        "凤凰羽毛": "cmd=exchange&subtype=2&type=1100&costtype=1",
+        "奔流气息": "cmd=exchange&subtype=2&type=1205&costtype=3",
+        "潜能果实": "cmd=exchange&subtype=2&type=1200&costtype=2",
+        "上古玉髓": "cmd=exchange&subtype=2&type=1201&costtype=2",
+        "神兵原石": "cmd=arena&op=exchange&id=3573",
+        "软猥金丝": "cmd=arena&op=exchange&id=3574",
     }
 
     PAGE_DATA = [
@@ -816,22 +782,10 @@ class ShenZhuang(BaseUpgrader):
 
 class ShenJi(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "矿洞": {
-            "ten": "cmd=exchange&subtype=2&type=1206&times=10&costtype=3",
-            "one": "cmd=exchange&subtype=2&type=1206&times=1&costtype=3",
-        },
-        "掠夺": {
-            "ten": "cmd=exchange&subtype=2&type=1202&times=10&costtype=2",
-            "one": "cmd=exchange&subtype=2&type=1202&times=1&costtype=2",
-        },
-        "踢馆": {
-            "ten": "cmd=exchange&subtype=2&type=1101&times=10&costtype=1",
-            "one": "cmd=exchange&subtype=2&type=1101&times=1&costtype=1",
-        },
-        "竞技场": {
-            "ten": "cmd=arena&op=exchange&id=3567&times=10",
-            "one": "cmd=arena&op=exchange&id=3567&times=1",
-        },
+        "矿洞": "cmd=exchange&subtype=2&type=1206&costtype=3",
+        "掠夺": "cmd=exchange&subtype=2&type=1202&costtype=2",
+        "踢馆": "cmd=exchange&subtype=2&type=1101&costtype=1",
+        "竞技场": "cmd=arena&op=exchange&id=3567",
     }
 
     def __init__(self, d: DaLeDou, store_name: str, store_points: int):
@@ -929,30 +883,12 @@ def 神装(d: DaLeDou):
 
 class XingPan(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "翡翠石": {
-            "ten": "cmd=exchange&subtype=2&type=1233&times=10&costtype=9",
-            "one": "cmd=exchange&subtype=2&type=1233&times=1&costtype=9",
-        },
-        "玛瑙石": {
-            "ten": "cmd=exchange&subtype=2&type=1234&times=10&costtype=9",
-            "one": "cmd=exchange&subtype=2&type=1234&times=1&costtype=9",
-        },
-        "迅捷石": {
-            "ten": "cmd=exchange&subtype=2&type=1235&times=10&costtype=9",
-            "one": "cmd=exchange&subtype=2&type=1235&times=1&costtype=9",
-        },
-        "紫黑玉": {
-            "ten": "cmd=exchange&subtype=2&type=1236&times=10&costtype=9",
-            "one": "cmd=exchange&subtype=2&type=1236&times=1&costtype=9",
-        },
-        "日曜石": {
-            "ten": "cmd=exchange&subtype=2&type=1237&times=10&costtype=9",
-            "one": "cmd=exchange&subtype=2&type=1237&times=1&costtype=9",
-        },
-        "月光石": {
-            "ten": "cmd=exchange&subtype=2&type=1238&times=10&costtype=9",
-            "one": "cmd=exchange&subtype=2&type=1238&times=1&costtype=9",
-        },
+        "翡翠石": "cmd=exchange&subtype=2&type=1233&costtype=9",
+        "玛瑙石": "cmd=exchange&subtype=2&type=1234&costtype=9",
+        "迅捷石": "cmd=exchange&subtype=2&type=1235&costtype=9",
+        "紫黑玉": "cmd=exchange&subtype=2&type=1236&costtype=9",
+        "日曜石": "cmd=exchange&subtype=2&type=1237&costtype=9",
+        "月光石": "cmd=exchange&subtype=2&type=1238&costtype=9",
     }
 
     PRICE = {
@@ -1206,22 +1142,10 @@ def 佣兵(d: DaLeDou):
 
 class WuQiZhuanJing(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "投掷武器符文石": {
-            "ten": "cmd=exchange&subtype=2&type=1208&times=10&costtype=4",
-            "one": "cmd=exchange&subtype=2&type=1208&times=1&costtype=4",
-        },
-        "小型武器符文石": {
-            "ten": "cmd=exchange&subtype=2&type=1211&times=10&costtype=4",
-            "one": "cmd=exchange&subtype=2&type=1211&times=1&costtype=4",
-        },
-        "中型武器符文石": {
-            "ten": "cmd=exchange&subtype=2&type=1210&times=10&costtype=4",
-            "one": "cmd=exchange&subtype=2&type=1210&times=1&costtype=4",
-        },
-        "大型武器符文石": {
-            "ten": "cmd=exchange&subtype=2&type=1213&times=10&costtype=4",
-            "one": "cmd=exchange&subtype=2&type=1213&times=1&costtype=4",
-        },
+        "投掷武器符文石": "cmd=exchange&subtype=2&type=1208&costtype=4",
+        "小型武器符文石": "cmd=exchange&subtype=2&type=1211&costtype=4",
+        "中型武器符文石": "cmd=exchange&subtype=2&type=1210&costtype=4",
+        "大型武器符文石": "cmd=exchange&subtype=2&type=1213&costtype=4",
     }
 
     def __init__(self, d: DaLeDou):
@@ -1301,10 +1225,7 @@ class WuQiZhuanJing(BaseUpgrader):
 
 class WuQiLan(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "千年寒铁": {
-            "ten": "cmd=exchange&subtype=2&type=1209&times=10&costtype=4",
-            "one": "cmd=exchange&subtype=2&type=1209&times=1&costtype=4",
-        }
+        "千年寒铁": "cmd=exchange&subtype=2&type=1209&costtype=4",
     }
 
     def __init__(self, d: DaLeDou):
@@ -1390,10 +1311,7 @@ def 专精(d: DaLeDou):
 
 class LingShouPian(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "神魔残卷": {
-            "ten": "cmd=exchange&subtype=2&type=1267&times=10&costtype=14",
-            "one": "cmd=exchange&subtype=2&type=1267&times=1&costtype=14",
-        }
+        "神魔残卷": "cmd=exchange&subtype=2&type=1267&costtype=14",
     }
 
     def __init__(self, d: DaLeDou):
@@ -1466,10 +1384,7 @@ class LingShouPian(BaseUpgrader):
 
 class GuZhenPian(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "突破石": {
-            "ten": "cmd=exchange&subtype=2&type=1266&times=10&costtype=14",
-            "one": "cmd=exchange&subtype=2&type=1266&times=1&costtype=14",
-        }
+        "突破石": "cmd=exchange&subtype=2&type=1266&costtype=14",
     }
 
     # 背包碎片id
@@ -1556,18 +1471,9 @@ def 神魔录(d: DaLeDou):
 
 class SanHun(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "御魂丹-天": {
-            "ten": "cmd=abysstide&op=abyssexchange&id=1&times=10",
-            "one": "cmd=abysstide&op=abyssexchange&id=1&times=1",
-        },
-        "御魂丹-地": {
-            "ten": "cmd=abysstide&op=abyssexchange&id=2&times=10",
-            "one": "cmd=abysstide&op=abyssexchange&id=2&times=1",
-        },
-        "御魂丹-命": {
-            "ten": "cmd=abysstide&op=abyssexchange&id=3&times=10",
-            "one": "cmd=abysstide&op=abyssexchange&id=3&times=1",
-        },
+        "御魂丹-天": "cmd=abysstide&op=abyssexchange&id=1",
+        "御魂丹-地": "cmd=abysstide&op=abyssexchange&id=2",
+        "御魂丹-命": "cmd=abysstide&op=abyssexchange&id=3",
     }
 
     def __init__(self, d: DaLeDou):
@@ -1636,34 +1542,13 @@ class SanHun(BaseUpgrader):
 
 class QiPo(BaseUpgrader):
     EXCHANGE_URL_MAP = {
-        "气魄之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=5",
-            "one": "cmd=abysstide&op=wishexchange&id=5",
-        },
-        "力魄之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=6",
-            "one": "cmd=abysstide&op=wishexchange&id=6",
-        },
-        "精魄之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=7",
-            "one": "cmd=abysstide&op=wishexchange&id=7",
-        },
-        "英魄之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=8",
-            "one": "cmd=abysstide&op=wishexchange&id=8",
-        },
-        "中枢之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=9",
-            "one": "cmd=abysstide&op=wishexchange&id=9",
-        },
-        "天冲之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=10",
-            "one": "cmd=abysstide&op=wishexchange&id=10",
-        },
-        "灵慧之书": {
-            "ten": "cmd=abysstide&op=wishexchange&id=11",
-            "one": "cmd=abysstide&op=wishexchange&id=11",
-        },
+        "气魄之书": "cmd=abysstide&op=wishexchange&id=5",
+        "力魄之书": "cmd=abysstide&op=wishexchange&id=6",
+        "精魄之书": "cmd=abysstide&op=wishexchange&id=7",
+        "英魄之书": "cmd=abysstide&op=wishexchange&id=8",
+        "中枢之书": "cmd=abysstide&op=wishexchange&id=9",
+        "天冲之书": "cmd=abysstide&op=wishexchange&id=10",
+        "灵慧之书": "cmd=abysstide&op=wishexchange&id=11",
     }
 
     def __init__(self, d: DaLeDou):
