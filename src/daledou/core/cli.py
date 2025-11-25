@@ -135,14 +135,15 @@ class CLIHandler:
         """管理账号 - 创建或更新账号配置"""
         print("💡 操作说明：")
         print("• 添加新账号会创建对应的配置文件")
-        print("• 如果账号已存在，则仅更新Cookie，保留其它所有配置\n")
+        print("• 如果账号已存在，则仅更新Cookie和Token，保留其它所有配置\n")
 
         print("💡 获取大乐斗Cookie流程：")
         print("1. 应用商店下载Via浏览器")
         print("2. 将Via设为默认浏览器")
         print("3. 使用Via一键登录文字版大乐斗")
         print("4. 等待3秒后点击Via左上角✓")
-        print("5. 再点击查看Cookies\n")
+        print("5. 再点击查看Cookies")
+        print_separator()
 
         while True:
             cookie = Input.text("请输入大乐斗Cookie：")
@@ -160,12 +161,27 @@ class CLIHandler:
                 print("\n❌ Cookie无效或验证失败")
                 print_separator()
                 continue
+            print_separator()
+
+            is_update_push_token = Input.select(
+                "是否更新pushplus推送加token？", ["yes", "no"]
+            )
+            if is_update_push_token is None:
+                break
+            elif is_update_push_token == "yes":
+                push_token = Input.text("请输入pushplus推送加token：")
+                if push_token is None:
+                    break
+                print_separator()
+            elif is_update_push_token == "no":
+                push_token = ""
 
             qq = ck["newuin"]
-            account_config_path = Config.save_account_config(f"{qq}.yaml", cookie)
-
-            print(f"\n✅ 账号 {qq} 配置成功！")
-            print(f"📁 账号配置文件：{account_config_path}")
+            account_config_path = Config.save_account_config(
+                f"{qq}.yaml", cookie, push_token
+            )
+            print(f"✅ 账号 {qq} 配置成功！")
+            print(f"📁 账号配置文件：{account_config_path}\n")
             print_separator()
 
 

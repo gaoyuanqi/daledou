@@ -121,15 +121,15 @@ class Config(ConfigManager):
     """配置管理类 - 负责配置文件的创建、加载和解析"""
 
     @classmethod
-    def save_account_config(cls, account_file: str, cookie: str) -> Path:
+    def save_account_config(
+        cls, account_file: str, cookie: str, push_token: str = ""
+    ) -> Path:
         """保存账号配置 - 创建或更新账号配置文件
-
-        当配置文件不存在时，基于模板创建新的账号配置文件，包含基础配置和任务类型模板
-        当配置文件已存在时，仅更新COOKIE字段的值，保留其他所有配置
 
         Args:
             account_file: 账号配置文件名
             cookie: 大乐斗Cookie字符串
+            push_token: pushplus推送加token字符串
 
         Returns:
             Path: 账号配置文件路径
@@ -139,22 +139,36 @@ class Config(ConfigManager):
         cls.ensure_directories()
         account_config_path = cls.ACCOUNTS_DIR / account_file
 
-        def replace_cookie_in_content(file_path: Path, cookie: str) -> str:
-            """在配置内容中替换COOKIE值"""
+        def replace_config_in_content(file_path: Path) -> str:
+            """在配置内容中替换COOKIE和PUSH_TOKEN值"""
             content = cls._read_file_content(file_path)
-            pattern = r'^COOKIE:\s*"([^"]*)"'
-            replacement = f'COOKIE: "{cookie}"'
+
+            cookie_pattern = r'^COOKIE:\s*"([^"]*)"'
+            cookie_replacement = f'COOKIE: "{cookie}"'
             new_content, count = re.subn(
-                pattern, replacement, content, flags=re.MULTILINE
+                cookie_pattern, cookie_replacement, content, flags=re.MULTILINE
             )
             if count == 0:
                 raise ValueError(f"{file_path} 读取错误：缺失 COOKIE 字段")
+
+            if push_token:
+                push_token_pattern = r'^PUSH_TOKEN:\s*"([^"]*)"'
+                push_token_replacement = f'PUSH_TOKEN: "{push_token}"'
+                new_content, count = re.subn(
+                    push_token_pattern,
+                    push_token_replacement,
+                    new_content,
+                    flags=re.MULTILINE,
+                )
+                if count == 0:
+                    raise ValueError(f"{file_path} 读取错误：缺失 PUSH_TOKEN 字段")
+
             return new_content
 
         if not account_config_path.exists():
-            new_content = replace_cookie_in_content(cls.DEFAULT_CONFIG_PATH, cookie)
+            new_content = replace_config_in_content(cls.DEFAULT_CONFIG_PATH)
         else:
-            new_content = replace_cookie_in_content(account_config_path, cookie)
+            new_content = replace_config_in_content(account_config_path)
 
         with account_config_path.open("w", encoding="utf-8") as f:
             f.write(new_content)
