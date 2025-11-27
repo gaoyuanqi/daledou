@@ -571,6 +571,39 @@ def 全真古墓意难平(
     jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
 
 
+def 南海有岛名侠客(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
+            _id = _ids[-1]
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
+            # 奇遇
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            if day in {1, 5}:
+                # 即刻前往 / 采摘野果（30金币）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            elif day == 3:
+                # 龙岛主
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 岛中闲逛（80金币）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
 def 江湖长梦(d: DaLeDou):
     copy_data = {
         "柒承的忙碌日常": {
@@ -612,6 +645,10 @@ def 江湖长梦(d: DaLeDou):
         "全真古墓意难平": {
             "material_name": "全真香炉",
             "material_id": "6662",
+        },
+        "南海有岛名侠客": {
+            "material_name": "海岛香炉",
+            "material_id": "6982",
         },
     }
 
