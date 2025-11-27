@@ -54,18 +54,15 @@ def jiang_hu_chang_meng(
         copy_duration：副本时长
         event：处理每天事件的函数
     """
-    open_count = 0
+    counter = Counter()
 
     def 结束回忆():
-        nonlocal open_count
+        nonlocal counter
         # 结束回忆
         d.get("cmd=jianghudream&op=endInstance")
-        d.log(d.find(), name)
-        open_count += 1
-        if open_count <= 10:
-            d.append()
-        else:
-            d.append(f"{name}：共结束回忆 {open_count} 次（战败最多一次）")
+        msg = d.find()
+        counter.update({msg: 1})
+        d.log(msg, name)
 
     for _ in range(incense_burner_number):
         # 开启副本
@@ -91,9 +88,14 @@ def jiang_hu_chang_meng(
             is_defeat = event(day)
             if is_defeat:
                 结束回忆()
+                for k, v in counter.items():
+                    d.append(f"{v}次{k}")
                 return
 
         结束回忆()
+
+    for k, v in counter.items():
+        d.append(f"{v}次{k}")
 
     # 领取首通奖励
     d.get(f"cmd=jianghudream&op=getFirstReward&ins_id={ins_id}")
