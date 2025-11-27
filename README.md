@@ -38,17 +38,6 @@ uv sync
 pip install -r requirements.txt
 ```
 
-手动安装依赖
-
-```sh
-pip install loguru
-pip install pytz
-pip install pyyaml
-pip install questionary
-pip install requests
-pip install schedule
-```
-
 ### 启动程序命令
 
 ```sh
