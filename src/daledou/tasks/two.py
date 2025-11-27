@@ -572,71 +572,77 @@ def 全真古墓意难平(
 
 
 def 江湖长梦(d: DaLeDou):
-    base_data = {
+    copy_data = {
         "柒承的忙碌日常": {
             "material_name": "追忆香炉",
             "material_id": "6477",
-            "ins_id": "1",
         },
         "群英拭剑谁为峰": {
             "material_name": "拭剑香炉",
             "material_id": "6940",
-            "ins_id": "32",
         },
         "时空守护者": {
             "material_name": "时空香炉",
             "material_id": "6532",
-            "ins_id": "47",
         },
         "倚天屠龙归我心": {
             "material_name": "九阳香炉",
             "material_id": "6904",
-            "ins_id": "48",
         },
         "神雕侠侣": {
             "material_name": "盛世香炉",
             "material_id": "6476",
-            "ins_id": "49",
         },
         "雪山藏魂": {
             "material_name": "雪山香炉",
             "material_id": "8121",
-            "ins_id": "50",
         },
         "桃花自古笑春风": {
             "material_name": "桃花香炉",
             "material_id": "6825",
-            "ins_id": "51",
         },
         "战乱襄阳": {
             "material_name": "忠义香炉",
             "material_id": "6888",
-            "ins_id": "52",
         },
         "天涯浪子": {
             "material_name": "中秋香炉",
             "material_id": "6547",
-            "ins_id": "53",
         },
         "全真古墓意难平": {
             "material_name": "全真香炉",
             "material_id": "6662",
-            "ins_id": "54",
         },
     }
 
     config: dict[str, bool] = d.config["江湖长梦"]["open"]
     if config is None:
-        d.log("你没有配置副本").append()
+        d.log("你没有启用任何一个副本").append()
         return
+
+    # 江湖长梦
+    d.get("cmd=jianghudream")
+    ins_data = d.findall(r'id=(\d+)">(.*?)<')
+    if not ins_data:
+        d.log("无法获取副本数据").append()
+        return
+
+    for ins_id, copy in ins_data:
+        if copy not in copy_data:
+            continue
+        copy_data[copy]["ins_id"] = ins_id
 
     for name, is_open in config.items():
         if not is_open:
             continue
 
-        material_name = base_data[name]["material_name"]
-        material_id = base_data[name]["material_id"]
-        ins_id = base_data[name]["ins_id"]
+        if name not in copy_data:
+            d.log(f"{name}：还未开发该副本").append()
+            continue
+
+        material_name = copy_data[name]["material_name"]
+        material_id = copy_data[name]["material_id"]
+        ins_id = copy_data[name]["ins_id"]
 
         d.get(f"cmd=jianghudream&op=showCopyInfo&id={ins_id}")
         copy_duration = int(d.find(r"副本时长：(\d+)"))
