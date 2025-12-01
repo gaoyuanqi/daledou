@@ -347,7 +347,6 @@ class Concurrency:
         """并发执行多个账号"""
         global_start_time = DateTime.now()
         optimal_concurrency = min(_CPU_COUNT * 2, _MAX_CONCURRENCY)
-        d_gen = _generate_daledou_instances(task_type)
         active_accounts = []
         completed_count = 0
         lock = threading.Lock()
@@ -356,7 +355,7 @@ class Concurrency:
 
         def fill_queue():
             try:
-                for d in d_gen:
+                for d in _generate_daledou_instances(task_type):
                     account_queue.put(d)
             finally:
                 for _ in range(optimal_concurrency):
