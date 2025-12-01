@@ -298,10 +298,10 @@ def _generate_daledou_instances(
 
 def _run_tasks(d: DaLeDou, task_names: list[str], module_path: ModulePath):
     """执行单个账号的所有任务"""
-    try:
-        d.start_timing()
-        module_type = import_module(module_path)
-        for task_name in task_names:
+    d.start_timing()
+    module_type = import_module(module_path)
+    for task_name in task_names:
+        try:
             d.current_task_name = task_name
             d.append(f"\n【{task_name}】")
 
@@ -312,8 +312,8 @@ def _run_tasks(d: DaLeDou, task_names: list[str], module_path: ModulePath):
                 d.log(f"函数 {task_name} 不存在").append()
 
             d.complete_task()
-    except Exception:
-        d.log(traceback.format_exc()).append()
+        except Exception:
+            d.log(traceback.format_exc()).append()
 
 
 class Concurrency:
