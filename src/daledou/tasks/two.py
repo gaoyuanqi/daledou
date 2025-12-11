@@ -600,6 +600,60 @@ def 南海有岛名侠客(
                 d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
                 # 岛中闲逛（80金币）
                 d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+        d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
+def 老鹅的圣诞冒险(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _ids := d.findall(r'event_id=(\d+)">战斗'):
+            if day == 3:
+                _id = _ids[1]
+            else:
+                _id = _ids[0]
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">奇遇'):
+            # 奇遇
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            if day == 1:
+                # 喝口酒（30金币，血量-20%）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            elif day == 2:
+                # 要挟清官（30金币，血量-30）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=3")
+            elif day == 4:
+                if "继续前行" in d.html:
+                    # 继续前行
+                    d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+                    d.log(
+                        d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天"
+                    )
+                    # 认真搜寻（25金币）
+                    d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+                elif "路线1" in d.html:
+                    # 路线1（血量+10% / 10金币，血量-10%）
+                    d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+                elif "视而不见" in d.html:
+                    # 视而不见（无 / 血量-10%）
+                    d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 5:
+                # 抓住麋鹿
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 圣诞祝福（复活你的一名侠士）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
             d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
         return False
 
@@ -651,6 +705,10 @@ def 江湖长梦(d: DaLeDou):
         "南海有岛名侠客": {
             "material_name": "海岛香炉",
             "material_id": "6982",
+        },
+        "老鹅的圣诞冒险": {
+            "material_name": "圣诞香炉",
+            "material_id": "6609",
         },
     }
 
