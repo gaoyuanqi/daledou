@@ -64,7 +64,7 @@ def jiang_hu_chang_meng(
         counter.update({msg: 1})
         d.log(msg, name)
 
-    for _ in range(20):
+    for _ in range(incense_burner_number):
         # 开启副本
         d.get(f"cmd=jianghudream&op=beginInstance&ins_id={ins_id}")
         if "帮助" in d.html:
