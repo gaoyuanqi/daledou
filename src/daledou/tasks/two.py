@@ -600,7 +600,7 @@ def 南海有岛名侠客(
                 d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
                 # 岛中闲逛（80金币）
                 d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
-        d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
         return False
 
     jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
