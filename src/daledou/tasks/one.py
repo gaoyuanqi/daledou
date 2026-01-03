@@ -2639,6 +2639,15 @@ def 预热礼包(d: DaLeDou):
     d.log(d.find(r"<br /><br />(.*?)<")).append()
 
 
+def 豪侠出世(d: DaLeDou):
+    # 签到好礼
+    d.get("cmd=knightdraw&op=view&sub=signin&ty=free")
+    for _id in d.findall(r"giftId=(\d+)"):
+        # 领取
+        d.get(f"cmd=knightdraw&op=reqreward&sub=signin&ty=free&giftId={_id}")
+        d.log(d.find(r"活动规则</a><br />(.*?)<br />")).append()
+
+
 def 微信兑换(d: DaLeDou):
     code: int = d.config["微信兑换"]
     # 兑换
