@@ -2380,8 +2380,13 @@ def 双节签到(d: DaLeDou):
     d.get("cmd=newAct&subtype=144&op=1")
     d.log(d.find()).append()
 
-    month, day = d.findall(r"至(\d+)月(\d+)日")[0]
-    if (d.month == int(month)) and (d.day == (int(day) - 1)):
+    end_month = int(d.find(r"至(\d+)月"))
+    end_day = int(d.find(r"至\d+月(\d+)日"))
+    # 获取当前日期和结束日期前一天
+    current_date, day_before_end = DateTime.get_current_and_end_date_offset(
+        d.year, end_month, end_day
+    )
+    if current_date == day_before_end:
         # 奖励金
         d.get("cmd=newAct&subtype=144&op=3")
         d.log(d.find()).append()
