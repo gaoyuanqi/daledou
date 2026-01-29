@@ -1190,6 +1190,16 @@ def 全民乱斗(d: DaLeDou):
 def 侠士客栈(d: DaLeDou):
     c_侠士客栈(d)
 
+    if d.week != 4:
+        return
+
+    # 共建回馈
+    d.get("cmd=notice&op=view&sub=total")
+    for _id in d.findall(r"giftId=(\d+)"):
+        # 领取
+        d.get(f"cmd=notice&op=reqreward&giftId={_id}&sub=total")
+        d.log(d.find(r"<p>.*?<br />(.*?)<")).append()
+
 
 def 江湖长梦(d: DaLeDou):
     config: list[dict] = d.config["江湖长梦"]["exchange"]
