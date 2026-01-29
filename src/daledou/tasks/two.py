@@ -660,6 +660,42 @@ def 老鹅的圣诞冒险(
     jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
 
 
+def 世外桃源梦一场(
+    d: DaLeDou, name: str, ins_id: str, incense_burner_number: int, copy_duration: int
+):
+    def event(day: int) -> bool:
+        """战败返回True，否则返回False"""
+        if _ids := d.findall(r'event_id=(\d+)">战斗\(等级2\)'):
+            if day in {2, 3}:
+                _id = _ids[-1]
+            else:
+                _id = _ids[0]
+            # 战斗
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            # FIGHT!
+            d.get("cmd=jianghudream&op=doPveFight")
+            d.log(d.find(r"<p>(.*?)<br />"), f"{name}-第{day}天")
+            if "战败" in d.html:
+                return True
+        elif _id := d.find(r'event_id=(\d+)">奇遇\(等级2\)'):
+            # 奇遇
+            d.get(f"cmd=jianghudream&op=chooseEvent&event_id={_id}")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+            if day == 1:
+                # 向下望去（血量-5）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+                d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+                # 小心摸索（谨小慎微buff：速度+30%）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=2")
+            elif day == 6:
+                # 强势出手（势不可挡buff：力量+20%）
+                d.get("cmd=jianghudream&op=chooseAdventure&adventure_id=1")
+            d.log(d.find(r"获得金币：\d+<br />(.*?)<br />"), f"{name}-第{day}天")
+        return False
+
+    jiang_hu_chang_meng(d, name, ins_id, incense_burner_number, copy_duration, event)
+
+
 def 江湖长梦(d: DaLeDou):
     copy_data = {
         "柒承的忙碌日常": {
@@ -709,6 +745,10 @@ def 江湖长梦(d: DaLeDou):
         "老鹅的圣诞冒险": {
             "material_name": "圣诞香炉",
             "material_id": "6609",
+        },
+        "世外桃源梦一场": {
+            "material_name": "回梦香炉",
+            "material_id": "6855",
         },
     }
 
