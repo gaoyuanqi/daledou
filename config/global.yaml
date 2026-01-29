@@ -851,6 +851,7 @@ TASK_CONFIG:
       # 全真古墓意难平: true
       # 南海有岛名侠客: true
       # 老鹅的圣诞冒险: true
+      # 世外桃源梦一场: true
 
     exchange: # 每月20号商店兑换
       - name: 侠士修身录
