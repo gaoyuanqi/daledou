@@ -2586,6 +2586,22 @@ def 双旦福利(d: DaLeDou):
     斗神塔(d, "双旦福利-斗神塔", challenge_count)
 
 
+def 春节福利(d: DaLeDou):
+    config: dict = d.config["春节福利"]
+
+    if config["历练"]:
+        福利_历练(d, "春节福利-历练")
+
+    if d.week != 4:
+        return
+
+    challenge_count: int = config["斗神塔"]
+    if challenge_count <= 0:
+        return
+
+    斗神塔(d, "春节福利-斗神塔", challenge_count)
+
+
 def 预热礼包(d: DaLeDou):
     # 领取
     d.get("cmd=newAct&subtype=117&op=1")
