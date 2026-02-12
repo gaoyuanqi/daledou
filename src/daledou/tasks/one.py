@@ -2466,7 +2466,7 @@ def 春联大赛(d: DaLeDou):
             d.log("今日答题已结束").append()
             break
 
-        shang_lian = d.find(r"上联：([\u4e00-\u9fa5]+)")
+        shang_lian = d.find(r"上联：([^ &]*)")
         d.log(f"上联：{shang_lian}").append()
         options_A, index_A = d.findall(r"<br />A.(.*?)<.*?index=(\d+)")[0]
         options_B, index_B = d.findall(r"<br />B.(.*?)<.*?index=(\d+)")[0]
