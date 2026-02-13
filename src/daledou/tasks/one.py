@@ -2738,28 +2738,37 @@ def 年兽大作战(d: DaLeDou):
         d.log("等级不够，还未开启年兽大作战哦！").append()
         return
 
-    for _ in d.find(r"剩余免费随机次数：(\d+)"):
-        # 随机武技库 免费一次
-        d.get("cmd=newAct&subtype=170&op=6")
-        d.log(d.find(r"帮助</a><br />(.*?)<br />")).append()
-
     # 自选武技库
-    # 从大、中、小、投、技各随机选择一个
-    if "暂未选择" in d.html:
+    if choose_count := d.html.count("暂未选择"):
+        choose_ids = []
         for t in range(5):
+            # 大、中、小、投、技
             d.get(f"cmd=newAct&subtype=170&op=4&type={t}")
-            if "取消选择" in d.html:
-                continue
-            if ids := d.findall(r'id=(\d+)">选择'):
-                # 选择
-                d.get(f"cmd=newAct&subtype=170&op=7&id={random.choice(ids)}")
-                if "自选武技列表已满" in d.html:
-                    break
+            choose_ids += d.findall(r'id=(\d+)">选择')
+            if len(choose_ids) >= choose_count:
+                break
+        if len(choose_ids) < choose_count:
+            d.log(
+                f"自选武技库数量不够补位：需选择{choose_count}个，但只有{len(choose_ids)}个"
+            ).append()
+            return
+        for _id in choose_ids[:choose_count]:
+            # 选择
+            d.get(f"cmd=newAct&subtype=170&op=7&id={_id}")
+            name = d.find(rf'id={_id}">(.*?)<')
+            d.log(f"{name}：{d.find()}").append()
+
+    # 随机武技库
+    if "剩余免费随机次数：1" in d.html:
+        # 随机
+        d.get("cmd=newAct&subtype=170&op=6")
+        d.log(d.find()).append()
 
     for _ in range(3):
         # 挑战
         d.get("cmd=newAct&subtype=170&op=8")
-        d.log(d.find(r"帮助</a><br />(.*?)。")).append()
+        d.log(d.find()).append()
+        time.sleep(0.2)
 
 
 def 惊喜刮刮卡(d: DaLeDou):
