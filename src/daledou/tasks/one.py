@@ -2507,14 +2507,6 @@ def 新春拜年(d: DaLeDou):
         d.log("已赠礼").append()
 
 
-def 喜从天降(d: DaLeDou):
-    for _ in range(10):
-        d.get("cmd=newAct&subtype=137&op=1")
-        d.log(d.find()).append()
-        if "燃放烟花次数不足" in d.html:
-            break
-
-
 def 福利_历练(d: DaLeDou, name: str):
     # 乐斗助手
     d.get("cmd=view&type=6")

@@ -1027,6 +1027,15 @@ def 商店(d: DaLeDou):
         d.log(d.find()).append()
 
 
+def 喜从天降(d: DaLeDou):
+    """活动时间20.00-22.00"""
+    # 喜从天降
+    d.get("cmd=newAct&subtype=137")
+    for _ in range(int(d.find(r"剩余燃放次数：(\d+)"))):
+        d.get("cmd=newAct&subtype=137&op=1")
+        d.log(d.find()).append()
+
+
 def 客栈同福(d: DaLeDou):
     c_客栈同福(d)
 
