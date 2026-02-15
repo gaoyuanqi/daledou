@@ -1974,17 +1974,6 @@ def 乐斗黄历(d: DaLeDou):
     d.get("cmd=calender&op=4")
     d.log(d.find(r"<br /><br />(.*?)<br />")).append()
 
-    # 乐斗黄历
-    d.get("cmd=calender&op=0")
-    if "斗神塔掉落，每日奖励双倍" not in d.html:
-        return
-
-    challenge_count: int = d.config["乐斗黄历"]
-    if challenge_count <= 0:
-        return
-
-    斗神塔(d, "乐斗黄历-斗神塔", challenge_count)
-
 
 def 器魂附魔(d: DaLeDou):
     for _id in range(1, 4):
