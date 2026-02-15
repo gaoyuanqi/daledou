@@ -108,16 +108,6 @@ def 荣誉兑换(d: DaLeDou):
             d.append(f"兑换{name}*{count}")
 
 
-def 侠士招募(d: DaLeDou):
-    # 侠士招募
-    d.get("cmd=knightarena&op=viewlottery")
-    number = int(d.find(r"（(\d+)）"))
-    for _ in range(number // 100):
-        # 招募十次
-        d.get("cmd=knightarena&op=lottery&times=10")
-        d.log(d.find()).append()
-
-
 def 华山论剑(d: DaLeDou):
     if d.day == 26:
         # 领取赛季段位奖励
@@ -125,7 +115,6 @@ def 华山论剑(d: DaLeDou):
         d.log(d.find()).append()
 
         荣誉兑换(d)
-        侠士招募(d)
         return
 
     knight_config: list[dict] = d.config["华山论剑"]["战阵调整"]
