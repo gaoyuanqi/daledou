@@ -7,6 +7,40 @@ import random
 from ..core.daledou import DaLeDou
 
 
+def c_get_doushenta_cd(d: DaLeDou) -> int:
+    """返回斗神塔冷却时间"""
+    # 达人等级对应斗神塔CD时间
+    cd = {
+        "1": 7,
+        "2": 6,
+        "3": 5,
+        "4": 4,
+        "5": 3,
+        "6": 2,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+    }
+    # 乐斗达人
+    d.get("cmd=ledouvip")
+    if level := d.find(r"当前级别：(\d+)"):
+        return cd[level]
+    else:
+        # 还未成为达人
+        return 10
+
+
+def c_get_exchange_config(config: list[dict]):
+    """返回兑换名称、兑换id和兑换数量"""
+    for item in config:
+        name: str = item["name"]
+        _id: int = item["id"]
+        exchange_quantity: int = item["exchange_quantity"]
+        if exchange_quantity > 0:
+            yield name, _id, exchange_quantity
+
+
 def c_邪神秘宝(d: DaLeDou):
     for i in [0, 1]:
         # 免费一次 或 抽奖一次
