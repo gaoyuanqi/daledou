@@ -726,13 +726,13 @@ def 会武_商店兑换(d: DaLeDou):
     for name, _id, exchange_quantity in c_get_exchange_config(config):
         count = 0
         for _ in range(exchange_quantity // 10):
-            d.get(f"cmd=exchange&subtype=2&type={_id}&times=10")
+            d.get(f"cmd=exchange&subtype=2&type={_id}&times=10&costtype=13")
             d.log(d.find())
             if "成功" not in d.html:
                 break
             count += 10
         for _ in range(exchange_quantity - count):
-            d.get(f"cmd=exchange&subtype=2&type={_id}&times=1")
+            d.get(f"cmd=exchange&subtype=2&type={_id}&times=1&costtype=13")
             d.log(d.find())
             if "成功" not in d.html:
                 break
@@ -754,7 +754,7 @@ def 会武(d: DaLeDou):
                 break
             elif "你的试炼书不足" in d.html and d.config["会武"]["是否兑换试炼书*1"]:
                 # 兑换试炼书*1
-                d.get("cmd=exchange&subtype=2&type=1265&times=1")
+                d.get("cmd=exchange&subtype=2&type=1265&times=1&costtype=13")
                 d.log(d.find())
                 if "成功" not in d.html:
                     break
