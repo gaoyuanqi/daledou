@@ -752,8 +752,12 @@ def 会武(d: DaLeDou):
             d.log(d.find(r"规则</a><br />(.*?)<br />")).append()
             if "你已达今日挑战上限" in d.html:
                 break
-            elif "你的试炼书不足" in d.html:
-                break
+            elif "你的试炼书不足" in d.html and d.config["会武"]["是否兑换试炼书*1"]:
+                # 兑换试炼书*1
+                d.get("cmd=exchange&subtype=2&type=1265&times=1")
+                d.log(d.find())
+                if "成功" not in d.html:
+                    break
     elif d.week == 4:
         # 冠军助威 丐帮
         d.get("cmd=sectmelee&op=cheer&sect=1003")

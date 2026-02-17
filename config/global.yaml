@@ -899,17 +899,18 @@ TASK_CONFIG:
         id: 1250
         exchange_quantity: 0
 
-  会武: # 周四会武商店兑换
-    exchange:
+  会武:
+    # 周一、二、三试炼场试炼书不足时兑换
+    是否兑换试炼书*1: true
+    # 是否兑换试炼书*1: false
+
+    exchange: # 周四会武商店兑换
       - name: 真黄金卷轴
         id: 1263
         exchange_quantity: 20
       - name: 修为丹
         id: 1264
         exchange_quantity: 0
-      - name: 试炼书
-        id: 1265
-        exchange_quantity: 3
 
   江湖长梦:
     open:
