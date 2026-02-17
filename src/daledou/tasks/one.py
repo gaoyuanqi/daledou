@@ -1579,20 +1579,20 @@ def 龙凰之境(d: DaLeDou):
     龙吟破阵(d)
 
 
-def 增强经脉(d: DaLeDou):
+def 增强经脉(d: DaLeDou, name: str):
     # 经脉
     d.get("cmd=intfmerid&sub=1")
     if "关闭" in d.html:
         # 关闭合成两次确认
         d.get("cmd=intfmerid&sub=19")
-        d.log(r"关闭合成两次确认", "任务-增强经脉")
+        d.log(r"关闭合成两次确认", name)
     if "取消" in d.html and "doudou=0" in d.html:
         # 取消传功符不足用斗豆代替
         d.get("cmd=intfmerid&sub=21&doudou=0")
-        d.log("取消传功符不足用斗豆代替", "任务-增强经脉")
+        d.log("取消传功符不足用斗豆代替", name)
 
     if int(d.find(r"传功符</a>:(\d+)")) < 200:
-        d.log("传功符数量不足200", "任务-增强经脉")
+        d.log("传功符数量不足200", name)
         return
 
     for _ in range(12):
@@ -1602,16 +1602,16 @@ def 增强经脉(d: DaLeDou):
 
         # 传功
         d.get(f"cmd=intfmerid&sub=2&master_id={_id}")
-        d.log(d.find(r"</p>(.*?)<p>"), "任务-增强经脉")
+        d.log(d.find(r"</p>(.*?)<p>"), name)
         if "传功符不足！" in d.html:
             return
 
         # 一键拾取
         d.get("cmd=intfmerid&sub=5")
-        d.log(d.find(r"</p>(.*?)<p>"), "任务-增强经脉")
+        d.log(d.find(r"</p>(.*?)<p>"), name)
         # 一键合成
         d.get("cmd=intfmerid&sub=10&op=4")
-        d.log(d.find(r"</p>(.*?)<p>"), "任务-增强经脉")
+        d.log(d.find(r"</p>(.*?)<p>"), name)
 
 
 def 助阵(d: DaLeDou):
@@ -1720,7 +1720,7 @@ def 任务(d: DaLeDou):
     # 日常任务
     task_html = d.get("cmd=task&sub=1")
     if "增强经脉" in task_html:
-        增强经脉(d)
+        增强经脉(d, "任务-增强经脉")
     if "查看好友资料" in task_html:
         查看好友资料(d)
     if "徽章进阶" in task_html:
@@ -1864,6 +1864,12 @@ def 领取徒弟经验(d: DaLeDou):
 
 
 def 今日活跃度(d: DaLeDou):
+    # 首页
+    d.get("cmd=index")
+    activity_level = int(d.find(r"今日活跃度</a>:(\d+)"))
+    if 75 <= activity_level < 80:
+        增强经脉(d, "今日活跃度-传功")
+
     # 今日活跃度
     d.get("cmd=liveness")
     d.log(d.find(r"【(.*?)】")).append()
