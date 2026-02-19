@@ -1777,14 +1777,14 @@ def 乐斗开学季(d: DaLeDou):
 def 新春登录礼(d: DaLeDou):
     # 新春登录礼
     d.get("cmd=newAct&subtype=99&op=0")
-    day = d.findall(r"day=(\d+)")
-    if not day:
+    days = d.findall(r"day=(\d+)")
+    if not days:
         d.log("没有礼包领取").append()
         return
 
-    for d in day:
+    for day in days:
         # 领取
-        d.get(f"cmd=newAct&subtype=99&op=1&day={d}")
+        d.get(f"cmd=newAct&subtype=99&op=1&day={day}")
         d.log(d.find()).append()
 
 
