@@ -1498,6 +1498,16 @@ def 乐斗游记(d: DaLeDou):
     d.append(f"消耗{number}溢出积分兑换传功符*{number}")
 
 
+def 喜从天降(d: DaLeDou):
+    """活动时间20.00-22.00"""
+    # 喜从天降
+    d.get("cmd=newAct&subtype=137")
+    for _ in range(int(d.find(r"剩余燃放次数：(\d+)"))):
+        # 点燃烟花
+        d.get("cmd=newAct&subtype=137&op=1")
+        d.log(d.find()).append()
+
+
 def 微信兑换(d: DaLeDou):
     code: int = d.config["微信兑换"]
     # 兑换
@@ -1558,16 +1568,6 @@ def 新春礼包(d: DaLeDou):
     for _id in [280, 281, 282]:
         # 领取
         d.get(f"cmd=xinChunGift&subtype=2&giftid={_id}")
-        d.log(d.find()).append()
-
-
-def 喜从天降(d: DaLeDou):
-    """活动时间20.00-22.00"""
-    # 喜从天降
-    d.get("cmd=newAct&subtype=137")
-    for _ in range(int(d.find(r"剩余燃放次数：(\d+)"))):
-        # 点燃烟花
-        d.get("cmd=newAct&subtype=137&op=1")
         d.log(d.find()).append()
 
 
