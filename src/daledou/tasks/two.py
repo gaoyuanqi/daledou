@@ -1032,12 +1032,12 @@ def 商店(d: DaLeDou):
         d.log(d.find()).append()
 
 
-def 福利(d: DaLeDou, name: str):
+def 福利(d: DaLeDou):
     # 首页
     d.get("cmd=index")
     name = d.find(r">([\u4e00-\u9fa5]+)福利</a>")
     if name is None:
-        d.log("这不是节日/双旦/金秋/春节福利...，跳过").append()
+        d.log("只在节日/双旦/金秋/春节等多倍福利时执行").append()
         return
 
     name = f"{name}-斗神塔"
