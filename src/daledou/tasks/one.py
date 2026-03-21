@@ -19,7 +19,7 @@ from .common import (
     c_龙凰论武,
     c_幸运金蛋,
     c_客栈同福,
-    c_乐斗大笨钟,
+    c_大笨钟,
 )
 
 
@@ -2074,12 +2074,12 @@ def 新春拜年(d: DaLeDou):
         d.log("已赠礼").append()
 
 
-def 乐斗大笨钟(d: DaLeDou):
-    c_乐斗大笨钟(d)
+def 大笨钟(d: DaLeDou):
+    c_大笨钟(d)
 
 
-def 乐斗能量棒(d: DaLeDou):
-    # 乐斗能量棒
+def 能量棒(d: DaLeDou):
+    # 能量棒
     d.get("cmd=newAct&subtype=108&op=0")
     data = d.findall(r"id=(\d+)")
     if not data:

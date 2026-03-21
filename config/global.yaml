@@ -182,9 +182,9 @@ one: # 第一轮任务
     weeks: [1, 2, 3, 4, 5, 6, 7]
   新春拜年:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  乐斗大笨钟:
+  大笨钟:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  乐斗能量棒:
+  能量棒:
     weeks: [1, 2, 3, 4, 5, 6, 7]
 
 two: # 第二轮任务
@@ -295,25 +295,25 @@ two: # 第二轮任务
   5.1礼包:
     weeks: [4]
     func_name: 五一礼包
-  乐斗大笨钟:
+  大笨钟:
     weeks: [1, 2, 3, 4, 5, 6, 7]
   年兽大作战:
     weeks: [1, 2, 3, 4, 5, 6, 7]
   惊喜刮刮卡:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  开心娃娃机:
+  娃娃机:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  好礼步步升:
+  好礼提升:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  企鹅吉利兑:
+  吉利兑:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  乐斗激运牌:
+  激运牌:
     weeks: [1, 2, 3, 4, 5, 6, 7]
-  乐斗回忆录:
+  回忆录:
     weeks: [4]
-  乐斗儿童节:
+  儿童节:
     weeks: [4]
-  乐斗开学季:
+  开学季:
     weeks: [4]
   新春登录礼:
     weeks: [4]
@@ -452,50 +452,50 @@ TASK_CONFIG:
   # 登录商店: 1232 # 奔流气息*1
 
   # 周四领取选择奖励
-  # 乐斗儿童节: type=1&sub_type=0 # 神兵
-  # 乐斗儿童节: type=1&sub_type=1 # 神铠
-  # 乐斗儿童节: type=1&sub_type=2 # 神羽
-  # 乐斗儿童节: type=1&sub_type=3 # 神兽
-  # 乐斗儿童节: type=1&sub_type=4 # 神饰
-  # 乐斗儿童节: type=1&sub_type=5 # 神履
-  # 乐斗儿童节: type=2&sub_type=0 # 坚韧不拔
-  # 乐斗儿童节: type=2&sub_type=1 # 嗜血如命
-  乐斗儿童节: type=2&sub_type=2 # 坚定不移
-  # 乐斗儿童节: type=2&sub_type=3 # 生存本能
-  # 乐斗儿童节: type=2&sub_type=4 # 横扫千军
-  # 乐斗儿童节: type=2&sub_type=5 # 三魂之力
-  # 乐斗儿童节: type=2&sub_type=6 # 四魂天功
-  # 乐斗儿童节: type=2&sub_type=7 # 炙血战魂
-  # 乐斗儿童节: type=2&sub_type=8 # 百战之躯
-  # 乐斗儿童节: type=2&sub_type=9 # 攻无不克
-  # 乐斗儿童节: type=3&sub_type=0 # 投掷武器专精
-  # 乐斗儿童节: type=3&sub_type=1 # 小型武器专精
-  # 乐斗儿童节: type=3&sub_type=2 # 中型武器专精
-  # 乐斗儿童节: type=3&sub_type=3 # 大型武器专精
-  # 乐斗儿童节: type=4&sub_type=1 # 强化
+  # 儿童节: type=1&sub_type=0 # 神兵
+  # 儿童节: type=1&sub_type=1 # 神铠
+  # 儿童节: type=1&sub_type=2 # 神羽
+  # 儿童节: type=1&sub_type=3 # 神兽
+  # 儿童节: type=1&sub_type=4 # 神饰
+  # 儿童节: type=1&sub_type=5 # 神履
+  # 儿童节: type=2&sub_type=0 # 坚韧不拔
+  # 儿童节: type=2&sub_type=1 # 嗜血如命
+  儿童节: type=2&sub_type=2 # 坚定不移
+  # 儿童节: type=2&sub_type=3 # 生存本能
+  # 儿童节: type=2&sub_type=4 # 横扫千军
+  # 儿童节: type=2&sub_type=5 # 三魂之力
+  # 儿童节: type=2&sub_type=6 # 四魂天功
+  # 儿童节: type=2&sub_type=7 # 炙血战魂
+  # 儿童节: type=2&sub_type=8 # 百战之躯
+  # 儿童节: type=2&sub_type=9 # 攻无不克
+  # 儿童节: type=3&sub_type=0 # 投掷武器专精
+  # 儿童节: type=3&sub_type=1 # 小型武器专精
+  # 儿童节: type=3&sub_type=2 # 中型武器专精
+  # 儿童节: type=3&sub_type=3 # 大型武器专精
+  # 儿童节: type=4&sub_type=1 # 强化
 
   # 周四领取选择奖励
-  # 乐斗开学季: type=1&sub_type=0 # 神兵
-  # 乐斗开学季: type=1&sub_type=1 # 神铠
-  # 乐斗开学季: type=1&sub_type=2 # 神羽
-  # 乐斗开学季: type=1&sub_type=3 # 神兽
-  # 乐斗开学季: type=1&sub_type=4 # 神饰
-  # 乐斗开学季: type=1&sub_type=5 # 神履
-  # 乐斗开学季: type=2&sub_type=0 # 坚韧不拔
-  # 乐斗开学季: type=2&sub_type=1 # 嗜血如命
-  乐斗开学季: type=2&sub_type=2 # 坚定不移
-  # 乐斗开学季: type=2&sub_type=3 # 生存本能
-  # 乐斗开学季: type=2&sub_type=4 # 横扫千军
-  # 乐斗开学季: type=2&sub_type=5 # 三魂之力
-  # 乐斗开学季: type=2&sub_type=6 # 四魂天功
-  # 乐斗开学季: type=2&sub_type=7 # 炙血战魂
-  # 乐斗开学季: type=2&sub_type=8 # 百战之躯
-  # 乐斗开学季: type=2&sub_type=9 # 攻无不克
-  # 乐斗开学季: type=3&sub_type=0 # 投掷武器专精
-  # 乐斗开学季: type=3&sub_type=1 # 小型武器专精
-  # 乐斗开学季: type=3&sub_type=2 # 中型武器专精
-  # 乐斗开学季: type=3&sub_type=3 # 大型武器专精
-  # 乐斗开学季: type=4&sub_type=1 # 强化
+  # 开学季: type=1&sub_type=0 # 神兵
+  # 开学季: type=1&sub_type=1 # 神铠
+  # 开学季: type=1&sub_type=2 # 神羽
+  # 开学季: type=1&sub_type=3 # 神兽
+  # 开学季: type=1&sub_type=4 # 神饰
+  # 开学季: type=1&sub_type=5 # 神履
+  # 开学季: type=2&sub_type=0 # 坚韧不拔
+  # 开学季: type=2&sub_type=1 # 嗜血如命
+  开学季: type=2&sub_type=2 # 坚定不移
+  # 开学季: type=2&sub_type=3 # 生存本能
+  # 开学季: type=2&sub_type=4 # 横扫千军
+  # 开学季: type=2&sub_type=5 # 三魂之力
+  # 开学季: type=2&sub_type=6 # 四魂天功
+  # 开学季: type=2&sub_type=7 # 炙血战魂
+  # 开学季: type=2&sub_type=8 # 百战之躯
+  # 开学季: type=2&sub_type=9 # 攻无不克
+  # 开学季: type=3&sub_type=0 # 投掷武器专精
+  # 开学季: type=3&sub_type=1 # 小型武器专精
+  # 开学季: type=3&sub_type=2 # 中型武器专精
+  # 开学季: type=3&sub_type=3 # 大型武器专精
+  # 开学季: type=4&sub_type=1 # 强化
 
   侠士客栈: # 黑市商人点击 "与TA交换"，按照 "消耗xx换取xx" 格式填入
     # - 消耗斗灵石-空*66换取V级万能碎片*1
@@ -1067,7 +1067,7 @@ TASK_CONFIG:
         id: 4
         exchange_quantity: 0
 
-  企鹅吉利兑: # 截止日前一天兑换
+  吉利兑: # 截止日前一天兑换
     exchange:
       - name: V级万能碎片
         id: 5

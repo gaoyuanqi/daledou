@@ -320,7 +320,7 @@ def c_幸运金蛋(d: DaLeDou):
         d.log("没有砸蛋次数了").append()
 
 
-def c_乐斗大笨钟(d: DaLeDou):
+def c_大笨钟(d: DaLeDou):
     # 领取
     d.get("cmd=newAct&subtype=18")
     d.log(d.find(r"<br /><br /><br />(.*?)<br />")).append()

@@ -21,7 +21,7 @@ from .common import (
     c_龙凰论武,
     c_幸运金蛋,
     c_客栈同福,
-    c_乐斗大笨钟,
+    c_大笨钟,
 )
 
 
@@ -1608,8 +1608,8 @@ def 五一礼包(d: DaLeDou):
         d.log(d.find(r"】<br /><br />(.*?)<")).append()
 
 
-def 乐斗大笨钟(d: DaLeDou):
-    c_乐斗大笨钟(d)
+def 大笨钟(d: DaLeDou):
+    c_大笨钟(d)
 
 
 def 年兽大作战(d: DaLeDou):
@@ -1668,8 +1668,8 @@ def 惊喜刮刮卡(d: DaLeDou):
             break
 
 
-def 开心娃娃机(d: DaLeDou):
-    # 开心娃娃机
+def 娃娃机(d: DaLeDou):
+    # 娃娃机
     d.get("cmd=newAct&subtype=124&op=0")
     if "1/1" not in d.html:
         d.log("没有免费抓取次数").append()
@@ -1680,13 +1680,13 @@ def 开心娃娃机(d: DaLeDou):
     d.log(d.find()).append()
 
 
-def 好礼步步升(d: DaLeDou):
+def 好礼提升(d: DaLeDou):
     d.get("cmd=newAct&subtype=43&op=get")
     d.log(d.find()).append()
 
 
-def 企鹅吉利兑_兑换(d: DaLeDou):
-    config: list[dict] = d.config["企鹅吉利兑"]["exchange"]
+def 吉利兑_兑换(d: DaLeDou):
+    config: list[dict] = d.config["吉利兑"]["exchange"]
     if config is None:
         d.log("你没有配置兑换物品").append()
         return
@@ -1705,8 +1705,8 @@ def 企鹅吉利兑_兑换(d: DaLeDou):
             d.append(f"兑换{name}*{count}")
 
 
-def 企鹅吉利兑(d: DaLeDou):
-    # 企鹅吉利兑
+def 吉利兑(d: DaLeDou):
+    # 吉利兑
     d.get("cmd=geelyexchange")
     if _ids := d.findall(r'id=(\d+)">领取</a>'):
         for _id in _ids:
@@ -1724,10 +1724,10 @@ def 企鹅吉利兑(d: DaLeDou):
         year, month, day
     )
     if current_date == day_before_end:
-        企鹅吉利兑_兑换(d)
+        吉利兑_兑换(d)
 
 
-def 乐斗激运牌(d: DaLeDou):
+def 激运牌(d: DaLeDou):
     for _id in [0, 1]:
         # 领取
         d.get(f"cmd=realgoods&op=getTaskReward&id={_id}")
@@ -1740,7 +1740,7 @@ def 乐斗激运牌(d: DaLeDou):
         d.log(d.find(r"<br /><br />(.*?)<br />")).append()
 
 
-def 乐斗回忆录(d: DaLeDou):
+def 回忆录(d: DaLeDou):
     for _id in range(1, 11):
         # 领取
         d.get(f"cmd=newAct&subtype=171&op=3&id={_id}")
@@ -1748,7 +1748,7 @@ def 乐斗回忆录(d: DaLeDou):
 
 
 def 疯狂许愿(d: DaLeDou, config: str):
-    # 乐斗儿童节、乐斗开学季
+    # 儿童节、开学季
     d.get("cmd=newAct&subtype=130")
     if "取消返回" in d.html:
         # 取消返回
@@ -1766,12 +1766,12 @@ def 疯狂许愿(d: DaLeDou, config: str):
     d.log(d.find(r"】</p>(.*?)<")).append()
 
 
-def 乐斗儿童节(d: DaLeDou):
-    疯狂许愿(d, d.config["乐斗儿童节"])
+def 儿童节(d: DaLeDou):
+    疯狂许愿(d, d.config["儿童节"])
 
 
-def 乐斗开学季(d: DaLeDou):
-    疯狂许愿(d, d.config["乐斗开学季"])
+def 开学季(d: DaLeDou):
+    疯狂许愿(d, d.config["开学季"])
 
 
 def 新春登录礼(d: DaLeDou):
