@@ -154,12 +154,11 @@ def 分享(d: DaLeDou):
         d.log(d.find(r"】</p>(.*?)<p>")).append()
 
 
-def 乐斗(d: DaLeDou):
-    config: dict[str, bool] = d.config["乐斗"]
+def 好友(d: DaLeDou):
+    config: dict[str, bool] = d.config["好友"]
     use_count: int = config["贡献药水"]
     disable_boss_uin: list[str] = config["disable_boss_uin"] or []
     is_open_auto_use: bool = config["体力药水"]
-    is_ledou: bool = config["情师徒拜"]
 
     # 乐斗助手
     d.get("cmd=view&type=6")
@@ -191,12 +190,19 @@ def 乐斗(d: DaLeDou):
         if "体力值不足" in d.html:
             break
 
+
+def 帮友(d: DaLeDou):
     # 帮友首页
     d.get("cmd=viewmem&page=1")
     for u in d.findall(r"侠：.*?B_UID=(\d+)"):
         # 乐斗
         d.get(f"cmd=fight&B_UID={u}")
         d.log(d.find(r"<br />(.*?)，")).append()
+
+
+def 侠侣(d: DaLeDou):
+    config: dict[str, bool] = d.config["侠侣"]
+    is_ledou: bool = config["情师徒拜"]
 
     # 侠侣
     d.get("cmd=viewxialv&page=1")
