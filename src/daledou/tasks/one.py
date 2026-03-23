@@ -256,7 +256,7 @@ def 设置战队(d: DaLeDou):
 def 笑傲群侠(d: DaLeDou):
     # 群侠
     d.get("cmd=knightfight")
-    if "" in d.html:
+    if "已报名" in d.html:
         d.log("你已报名群侠，无法设置战队").append()
         return
 
