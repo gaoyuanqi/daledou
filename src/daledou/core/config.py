@@ -238,7 +238,7 @@ class Config(ConfigManager):
             if task_schedule_config is None:
                 continue
 
-            if f">{task_name}<" not in html_content:
+            if task_name not in html_content:
                 continue
 
             func_name = task_schedule_config.get("func_name", task_name)

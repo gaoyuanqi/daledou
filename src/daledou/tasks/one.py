@@ -154,11 +154,12 @@ def 分享(d: DaLeDou):
         d.log(d.find(r"】</p>(.*?)<p>")).append()
 
 
-def 好友(d: DaLeDou):
-    config: dict[str, bool] = d.config["好友"]
+def 乐斗(d: DaLeDou):
+    config: dict[str, bool] = d.config["乐斗"]
     use_count: int = config["贡献药水"]
     disable_boss_uin: list[str] = config["disable_boss_uin"] or []
     is_open_auto_use: bool = config["体力药水"]
+    is_ledou: bool = config["情师徒拜"]
 
     # 乐斗助手
     d.get("cmd=view&type=6")
@@ -190,19 +191,12 @@ def 好友(d: DaLeDou):
         if "体力值不足" in d.html:
             break
 
-
-def 帮友(d: DaLeDou):
     # 帮友首页
     d.get("cmd=viewmem&page=1")
     for u in d.findall(r"侠：.*?B_UID=(\d+)"):
         # 乐斗
         d.get(f"cmd=fight&B_UID={u}")
         d.log(d.find(r"<br />(.*?)，")).append()
-
-
-def 侠侣(d: DaLeDou):
-    config: dict[str, bool] = d.config["侠侣"]
-    is_ledou: bool = config["情师徒拜"]
 
     # 侠侣
     d.get("cmd=viewxialv&page=1")
@@ -221,7 +215,7 @@ def 侠侣(d: DaLeDou):
             break
 
 
-def 武林大会(d: DaLeDou):
+def 武林(d: DaLeDou):
     # 报名
     d.get("cmd=fastSignWulin&ifFirstSign=1")
     if "使用规则" in d.html:
@@ -231,7 +225,7 @@ def 武林大会(d: DaLeDou):
 
 
 def 设置战队(d: DaLeDou):
-    knight_config: list[str] = d.config["我要报名"]["设置战队"]
+    knight_config: list[str] = d.config["群侠"]["设置战队"]
     if knight_config is None:
         return
 
@@ -253,13 +247,7 @@ def 设置战队(d: DaLeDou):
             d.log(f"第{i + 1}战：您没有{knight}").append()
 
 
-def 笑傲群侠(d: DaLeDou):
-    # 群侠
-    d.get("cmd=knightfight")
-    if "已报名" in d.html:
-        d.log("你已报名群侠，无法设置战队").append()
-        return
-
+def 群侠(d: DaLeDou):
     设置战队(d)
 
     # 报名
@@ -267,10 +255,7 @@ def 笑傲群侠(d: DaLeDou):
     d.log(d.find(r"侠士侠号.*?<br />(.*?)<br />")).append()
 
 
-def 侠侣争霸(d: DaLeDou):
-    if d.week not in {2, 5, 7}:
-        return
-
+def 侠侣(d: DaLeDou):
     # 报名
     d.get("cmd=cfight&subtype=9")
     if "使用规则" in d.html:
@@ -279,10 +264,7 @@ def 侠侣争霸(d: DaLeDou):
         d.log(d.find(r"报名状态.*?<br />(.*?)<br />")).append()
 
 
-def 结拜争霸赛(d: DaLeDou):
-    if d.week != 1:
-        return
-
+def 结拜(d: DaLeDou):
     for _id in [1, 2, 3, 5, 4]:
         # 报名
         d.get(f"cmd=brofight&subtype=1&gidIdx={_id}")
@@ -291,23 +273,6 @@ def 结拜争霸赛(d: DaLeDou):
             continue
         d.append()
         break
-
-
-def 帮派战争(d: DaLeDou):
-    if d.week != 6:
-        return
-
-    # 报名帮战
-    d.get("cmd=facwar&sub=9")
-    d.log(d.find(r"</p>(.*?)<br /><a.*?查看上届")).append()
-
-
-def 我要报名(d: DaLeDou):
-    武林大会(d)
-    笑傲群侠(d)
-    侠侣争霸(d)
-    结拜争霸赛(d)
-    帮派战争(d)
 
 
 def 巅峰之战进行中(d: DaLeDou):
@@ -1831,16 +1796,6 @@ def 帮派任务(d: DaLeDou):
         d.log(d.find(r"日常任务</a><br />(.*?)<br />")).append()
 
 
-def 帮战(d: DaLeDou):
-    if d.week != 6:
-        return
-
-    # 领取奖励 》激活祝福
-    for sub in [4, 6]:
-        d.get(f"cmd=facwar&sub={sub}")
-        d.log(d.find(r"</p>(.*?)<br /><a.*?查看上届")).append()
-
-
 def 我的帮派(d: DaLeDou):
     # 我的帮派
     d.get("cmd=factionop&subtype=3&facid=0")
@@ -1850,7 +1805,14 @@ def 我的帮派(d: DaLeDou):
 
     帮派供奉(d)
     帮派任务(d)
-    帮战(d)
+
+    if d.week != 7:
+        return
+
+    # 领取奖励 》报名帮战 》激活祝福
+    for sub in [4, 9, 6]:
+        d.get(f"cmd=facwar&sub={sub}")
+        d.log(d.find(r"</p>(.*?)<br /><a.*?查看上届")).append()
 
 
 def 帮派祭坛(d: DaLeDou):
