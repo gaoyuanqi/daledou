@@ -5,4 +5,7 @@ __pycache__/
 .vscode
 
 log/
-config/merged/
+*.log
+
+config/accounts/*.yaml
+config/dld_cookie.yaml
