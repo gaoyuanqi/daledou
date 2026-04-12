@@ -535,7 +535,7 @@ async def 历练(d: DaLeDou):
 async def 镖行天下(d: DaLeDou):
     """
     镖师是蔡八斗且有免费刷新次数时刷新
-    随机拦截
+    顺序拦截3次
     """
     # 镖行天下
     await d.get("cmd=cargo")
@@ -572,16 +572,12 @@ async def 镖行天下(d: DaLeDou):
         if "刷新过于频繁" in d.html:
             await asyncio.sleep(2)
             continue
-        uins = d.findall(r'passerby_uin=(\d+)">拦截')
-        if not uins:
-            continue
-
-        uin = random.choice(uins)
-        # 拦截
-        await d.get(f"cmd=cargo&op=14&passerby_uin={uin}")
-        d.log(d.find())
-        if "剩余拦截次数：0" in d.html:
-            break
+        for u in d.findall(r'passerby_uin=(\d+)">拦截'):
+            # 拦截
+            await d.get(f"cmd=cargo&op=14&passerby_uin={u}")
+            d.log(d.find())
+            if "剩余拦截次数：0" in d.html:
+                return
 
 
 @register()
