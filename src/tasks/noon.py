@@ -1916,12 +1916,24 @@ async def 今日活跃度(d: DaLeDou):
     # 今日活跃度
     await d.get("cmd=liveness")
     if activity_level := d.find(r"今日活跃度：(\d+)"):
-        if 77 <= int(activity_level) < 80 and "16.[0/1]" in d.html:
-            d.log(activity_level)
-            await 助阵(d)
-        elif 75 <= int(activity_level) < 80 and "15.[0/1]" in d.html:
-            d.log(activity_level)
-            await 增强经脉(d)
+        num = int(activity_level)
+        if num < 80:
+            has_task_15 = "15.[0/1]" in d.html
+            has_task_16 = "16.[0/3]" in d.html
+
+            # 优先级：77 > 75 > 72
+            actions = []
+            if num >= 77 and has_task_16:
+                actions.append(助阵)
+            elif num >= 75 and has_task_15:
+                actions.append(增强经脉)
+            elif num >= 72 and has_task_15 and has_task_16:
+                actions.extend([助阵, 增强经脉])
+
+            if actions:
+                d.log(activity_level)
+                for action in actions:
+                    await action(d)
 
     # 今日活跃度
     await d.get("cmd=liveness")
