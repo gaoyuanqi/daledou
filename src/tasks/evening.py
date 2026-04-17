@@ -1671,6 +1671,9 @@ async def 新春礼包(d: DaLeDou):
 
 @register()
 async def 登录商店(d: DaLeDou):
+    if DateTime.week() != 4:
+        return
+
     t: int = d.config("登录商店.id")
     if t is None:
         d.log("你没有配置兑换物品id")
