@@ -5,7 +5,7 @@ from collections import Counter
 from typing import Callable
 
 from src.tasks.register import TaskModule
-from src.utils.client import Client, CookieInvalid, RequestError
+from src.utils.client import Client, RequestError
 from src.utils.config import Config, ConfigResolver
 from src.utils.daledou import DaLeDou
 from src.utils.date_time import DateTime
@@ -117,9 +117,7 @@ class TaskRunner:
                                 if f">{task_name}<" in index_html:
                                     d.task_name = task_name
                                     await task_func(d)
-                            except CookieInvalid:
-                                d.log("Cookie失效，终止该账号后续任务", task_name)
-                                d.log(d.html)
+                            except RequestError:
                                 raise
                             except Exception:
                                 d.log(traceback.format_exc(), task_name)
@@ -130,7 +128,6 @@ class TaskRunner:
 
                     async with self.stats_lock:
                         self.statistics["success"] += 1
-
                 except Exception as e:
                     traceback.print_exc()
                     failure_reason = f"{qq}: {str(e)}"

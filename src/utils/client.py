@@ -1,10 +1,7 @@
 import asyncio
+import traceback
 
 import httpx
-
-
-class CookieInvalid(Exception):
-    pass
 
 
 class RequestError(Exception):
@@ -14,7 +11,7 @@ class RequestError(Exception):
 class Client:
     BASE_URL = "https://dld.qzapp.z.qq.com/qpet/cgi-bin/phonepk?"
     HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0",
     }
 
     def __init__(self, qq: str, cookies: dict[str, str]):
@@ -27,28 +24,25 @@ class Client:
             headers=self.HEADERS,
             cookies=self._cookies,
             timeout=10.0,
-            follow_redirects=False,
+            follow_redirects=True,
         )
         self.html: str = ""
 
     async def get(self, path: str) -> str:
         url = f"{self.BASE_URL}{path}"
-        for _ in range(3):
-            response = await self._client.get(url)
-            self.html = response.text
-            if response.status_code != 200 and "大乐斗" not in self.html:
-                raise CookieInvalid(
-                    f"Cookie 无效，"
-                    f"状态码={response.status_code}，"
-                    f"URL={url}，\n"
-                    f"响应: \n{self.html}"
-                )
-
-            if "系统繁忙" in self.html:
-                await asyncio.sleep(0.2)
-                continue
+        try:
+            for _ in range(3):
+                response = await self._client.get(url)
+                self.html = response.text
+                if "系统繁忙" in self.html:
+                    await asyncio.sleep(0.2)
+                    continue
+                return self.html
             return self.html
-        return self.html
+        except httpx.TooManyRedirects:
+            raise RequestError(f"超过最大重定向次数（可能Cookie失效）: {url}")
+        except Exception:
+            raise RequestError(traceback.format_exc())
 
     async def close(self):
         await self._client.aclose()
