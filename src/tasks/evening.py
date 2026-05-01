@@ -1150,22 +1150,21 @@ async def 客栈同福(d: DaLeDou):
 
 
 async def 斗神塔(d: DaLeDou, link_text: str):
-    name = f"{link_text}: 斗神塔 -> "
     count: int = d.config(f"{link_text}.斗神塔.count")
     if count <= 0:
-        d.log(f"你设置斗神塔挑战次数为{count}", name)
+        d.log(f"斗神塔 -> 你设置自动挑战次数为{count}")
         return
 
     second = await c_get_doushenta_cd(d)
     for _ in range(count):
         # 自动挑战
         await d.get("cmd=towerfight&type=11")
-        d.log(d.find(), name)
+        d.log(f"斗神塔 -> {d.find()}")
         if "结束挑战" in d.html:
             await asyncio.sleep(second)
             # 结束挑战
             await d.get("cmd=towerfight&type=7")
-            d.log(d.find(), name)
+            d.log(f"斗神塔 -> {d.find()}")
         else:
             break
 
