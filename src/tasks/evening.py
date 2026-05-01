@@ -1716,6 +1716,18 @@ async def 五一礼包(d: DaLeDou):
 
 
 @register()
+async def 五一预订(d: DaLeDou):
+    # 5.1预订礼包
+    await d.get("cmd=lokireservation")
+    if _id := d.find(r"idx=(\d+)"):
+        # 领取
+        await d.get(f"cmd=lokireservation&op=draw&idx={_id}")
+        d.log(d.find(r"<br /><br />(.*?)<"))
+    else:
+        d.log("没有登录礼包领取")
+
+
+@register()
 async def 好礼提升(d: DaLeDou):
     # 领取
     await d.get("cmd=newAct&subtype=43&op=get")
@@ -1818,15 +1830,3 @@ async def 重阳太白诗会(d: DaLeDou):
     # 领取重阳礼包
     await d.get("cmd=newAct&subtype=168&op=2")
     d.log(d.find(r"<br /><br />(.*?)<br />"))
-
-
-@register()
-async def 五一预订礼包(d: DaLeDou):
-    # 5.1预订礼包
-    await d.get("cmd=lokireservation")
-    if _id := d.find(r"idx=(\d+)"):
-        # 领取
-        await d.get(f"cmd=lokireservation&op=draw&idx={_id}")
-        d.log(d.find(r"<br /><br />(.*?)<"))
-    else:
-        d.log("没有登录礼包领取")
