@@ -2146,7 +2146,7 @@ async def 客栈同福(d: DaLeDou):
 
 @register()
 async def 反向历练(d: DaLeDou, link_text: str):
-    if not d.config(f"{link_text}.历练"):
+    if not d.config(f"{link_text}.历练.enabled"):
         return
 
     # 乐斗助手
