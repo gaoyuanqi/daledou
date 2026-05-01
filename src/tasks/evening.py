@@ -1168,6 +1168,11 @@ async def 春节福利(d: DaLeDou):
 
 
 @register()
+async def 多倍福利(d: DaLeDou):
+    await 斗神塔(d, "多倍福利")
+
+
+@register()
 async def 新春拜年(d: DaLeDou):
     # 新春拜年
     await d.get("cmd=newAct&subtype=147")

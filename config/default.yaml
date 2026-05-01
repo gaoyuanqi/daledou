@@ -405,6 +405,10 @@ noon:
     历练: # 每天反向乐斗BOSS
       enabled: true
 
+  多倍福利:
+    历练: # 每天反向乐斗BOSS
+      enabled: true
+
 # evening.py 模块任务配置
 evening:
   帮派商会:
@@ -621,6 +625,10 @@ evening:
       count: 16
 
   春节福利:
+    斗神塔: # 周四自动挑战（次数耗尽或到不了顶层结束）
+      count: 16
+
+  多倍福利:
     斗神塔: # 周四自动挑战（次数耗尽或到不了顶层结束）
       count: 16
 
