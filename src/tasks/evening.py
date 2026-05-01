@@ -1722,14 +1722,12 @@ async def 五一礼包(d: DaLeDou):
 
 @register()
 async def 五一预订(d: DaLeDou):
-    # 5.1预订礼包
+    # 五一预订
     await d.get("cmd=lokireservation")
     if _id := d.find(r"idx=(\d+)"):
         # 领取
         await d.get(f"cmd=lokireservation&op=draw&idx={_id}")
         d.log(d.find(r"<br /><br />(.*?)<"))
-    else:
-        d.log("没有登录礼包领取")
 
 
 @register()
