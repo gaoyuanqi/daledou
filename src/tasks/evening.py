@@ -1150,7 +1150,7 @@ async def 客栈同福(d: DaLeDou):
 
 
 async def 斗神塔(d: DaLeDou, link_text: str):
-    name = f"{link_text}-斗神塔"
+    name = f"{link_text}: 斗神塔 -> "
     count: int = d.config(f"{link_text}.斗神塔.count")
     if count <= 0:
         d.log(f"你设置斗神塔挑战次数为{count}", name)
