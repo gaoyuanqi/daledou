@@ -723,6 +723,28 @@ async def 世界树轮回秘境(
         await j.end_memories()
 
 
+async def 技冠五绝(
+    d: DaLeDou, name: str, ins_id: str, material_quantity: int, duration: int
+):
+    j = JiangHuDream(d, name, ins_id)
+    for _ in range(material_quantity):
+        if not await j.begin_success():
+            break
+
+        for day in range(duration + 1):
+            day = await j.next_day(day)
+            if day is None:
+                return
+
+            # 战斗2
+            if event_id := d.find(r'event_id=(\d+)">战斗'):
+                if await j.choose_fight(day, event_id):
+                    continue
+                await j.end_memories()
+                return
+        await j.end_memories()
+
+
 @register()
 async def 江湖长梦(d: DaLeDou):
     # 江湖长梦

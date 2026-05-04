@@ -501,6 +501,10 @@ evening:
       enabled: false
       material_name: 树境香炉
       material_id: 8222
+    技冠五绝:
+      enabled: false
+      material_name: 五绝香炉
+      material_id: 8604
 
   深渊之潮:
     深渊秘境:
