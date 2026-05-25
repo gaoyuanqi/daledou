@@ -1210,8 +1210,8 @@ async def 江湖长梦(d: DaLeDou):
 
 
 @register()
-async def 大侠回归三重好礼(d: DaLeDou):
-    # 大侠回归三重好礼
+async def 大侠回归(d: DaLeDou):
+    # 大侠回归
     await d.get("cmd=newAct&subtype=173&op=1")
     if data := d.findall(r"subtype=(\d+).*?taskid=(\d+)"):
         for s, t in data:
