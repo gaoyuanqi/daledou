@@ -1788,6 +1788,16 @@ async def 周年祝福(d: DaLeDou):
         d.log(d.find())
 
 
+@register()
+async def 周年预热(d: DaLeDou):
+    # 周年预热
+    await d.get("cmd=newAct&subtype=117&op=0")
+    if "op=1" in d.html:
+        # 领取
+        await d.get("cmd=newAct&subtype=117&op=1")
+        d.log(d.find(r"<br /><br />(.*?)<"))
+
+
 # ---------------以下大乐斗首页链接文本待定-----------
 
 
