@@ -34,7 +34,7 @@ async def 华山论剑(d: DaLeDou):
     """
     每月1~25号挑战，26号领取赛季段位奖励、荣誉兑换
     """
-    if not (1 <= DateTime.day() <= 260):
+    if not (1 <= DateTime.day() <= 26):
         return
 
     if DateTime.day() == 26:
