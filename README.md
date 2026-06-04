@@ -19,7 +19,7 @@ cd daledou
 
 方式二：下载压缩包
 
-访问 [Tags页面](https://github.com/gaoyuanqi/daledou/tags) 下载最新版压缩包
+在仓库页面点击绿色的 `Code` 按钮，选择 `Download ZIP`
 
 **2、安装依赖**
 
