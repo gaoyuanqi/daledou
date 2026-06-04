@@ -1855,8 +1855,13 @@ async def 我的帮派(d: DaLeDou):
     if DateTime.week() != 7:
         return
 
-    # 领取奖励 》报名帮战 》激活祝福
-    for sub in [4, 9, 6]:
+    if d.config("我的帮派.帮战.enabled"):
+        # 领取奖励 》报名帮战 》激活祝福
+        subs = [4, 9, 6]
+    else:
+        subs = [4, 6]
+
+    for sub in subs:
         await d.get(f"cmd=facwar&sub={sub}")
         d.log(d.find(r"</p>(.*?)<br /><a.*?查看上届"))
 
