@@ -1643,11 +1643,11 @@ async def 喜从天降(d: DaLeDou):
 
 
 @register()
-async def 微信兑换(d: DaLeDou):
+async def 兑换码(d: DaLeDou):
     if DateTime.week() != 4:
         return
 
-    code: int = d.config("微信兑换.兑换码")
+    code: int = d.config("兑换码")
     # 兑换
     await d.get(
         f"cmd=weixin&cdkey={code}&sub=2&zapp_sid=&style=0&channel=0&i_p_w=cdkey|"
