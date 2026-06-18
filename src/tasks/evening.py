@@ -1739,7 +1739,7 @@ async def 登录商店(d: DaLeDou):
 
 
 @register()
-async def 盛世巡礼(d: DaLeDou):
+async def 周年巡礼(d: DaLeDou):
     if DateTime.week() != 4:
         return
 
