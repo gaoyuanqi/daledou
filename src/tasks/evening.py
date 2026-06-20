@@ -1798,15 +1798,12 @@ async def 周年预热(d: DaLeDou):
         d.log(d.find(r"<br /><br />(.*?)<"))
 
 
-# ---------------以下大乐斗首页链接文本待定-----------
-
-
 @register()
-async def 年兽大作战(d: DaLeDou):
-    # 年兽大作战
+async def 职业挑战(d: DaLeDou):
+    # 职业挑战
     await d.get("cmd=newAct&subtype=170&op=0")
     if "等级不够" in d.html:
-        d.log("等级不够，还未开启年兽大作战哦！")
+        d.log("等级不够，还未开启职业挑战哦！")
         return
 
     # 自选武技库
@@ -1838,6 +1835,9 @@ async def 年兽大作战(d: DaLeDou):
         await d.get("cmd=newAct&subtype=170&op=8")
         d.log(d.find())
         await asyncio.sleep(0.2)
+
+
+# ---------------以下大乐斗首页链接文本待定-----------
 
 
 @register()
