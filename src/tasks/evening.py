@@ -1782,8 +1782,10 @@ async def 好礼提升(d: DaLeDou):
 
 
 @register()
-async def 周年祝福(d: DaLeDou):
-    for day in range(1, 8):
+async def 十六周年生日祝福(d: DaLeDou):
+    # 周年祝福
+    await d.get("cmd=newAct&subtype=165&op=1")
+    for day in d.findall(r"day=(\d+)"):
         await d.get(f"cmd=newAct&subtype=165&op=3&day={day}")
         d.log(d.find())
 
