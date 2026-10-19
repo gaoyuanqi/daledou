@@ -2,6 +2,12 @@
 
 一个平民鹅日常周常任务自动化脚本，支持定时调度、多账号并发
 
+## 作者的 Rust 重写新项目
+
+目前维护精力有限，后续新任务只进 [dld](https://github.com/gaoyuanqi/dld)
+
+`daledou` 保留作 HTML 路线兜底，不再主动加功能
+
 ## Python版本
 
 推荐 **Python 3.13** 或更高版本
